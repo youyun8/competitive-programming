@@ -11,7 +11,7 @@
 </ul></div>
 
 <h3>2.2.1 不重疊區間最多選幾個（活動選擇）— 按右端點排</h3>
-<div class="problem">
+<div class="problem" data-problem-id="lc-435">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/non-overlapping-intervals/" target="_blank">LC 435 無重疊區間</a><span class="chip">區間</span><span class="chip">右端點排序</span></div>
 <p>移除最少的區間，使其餘互不重疊 ⟺ 選出最多互不重疊的區間。</p>
 <details><summary>思路</summary><p>按<b>右端點遞增</b>排序，能選就選（左端點 ≥ 上一個選中的右端點）。證明用領先論證：貪心第 k 個選中區間的右端點 ≤ 任意解第 k 個的右端點（歸納），所以任何解能塞下的，貪心都塞得下。<b>為什麼不是左端點</b>：一個很早開始但很長的區間會堵死後面 — 反例 <code>[1,100],[2,3],[4,5]</code>。</p></details>
@@ -24,7 +24,7 @@ return iv.size() - keep;</code></pre></details>
 </div>
 
 <h3>2.2.2 完全覆蓋最少段數 — 按左端點排 + 貪心延伸</h3>
-<div class="problem">
+<div class="problem" data-problem-id="lc-1024">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/video-stitching/" target="_blank">LC 1024 視頻拼接</a><span class="chip">區間</span><span class="chip">左端點排序</span><span class="chip">覆蓋</span></div>
 <p>用最少段影片覆蓋 [0, T]。同型：LC 45 跳躍遊戲 II、LC 1326 灌溉花園。</p>
 <details><summary>思路</summary><p>按左端點排序。維護目前已覆蓋到 <code>cur</code>；在所有左端點 ≤ <code>cur</code> 的區間中，選<b>右端點最遠</b>的一段接上（這一步是貪心選擇性質：反正都要有一段跨過 cur，選伸最遠的不會變差），<code>cur</code> 跳到該右端點。跳躍遊戲 II 是同一個模型的陣列形式，可 O(n) 一次掃描。</p></details>
@@ -37,7 +37,7 @@ for (int i = 0; i + 1 &lt; n; i++) {
 </div>
 
 <h3>2.2.3 最少資源數（區間分組）— 掃描線 / 小根堆</h3>
-<div class="problem">
+<div class="problem" data-problem-id="lc-253">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/meeting-rooms-ii/" target="_blank">LC 253 會議室 II</a><span class="chip">區間</span><span class="chip">堆</span><span class="chip">掃描線</span></div>
 <p>最少需要幾間會議室容納所有會議？同型：洛谷 P2887、CF 手機基地台類。</p>
 <details><summary>思路</summary><p>兩種等價視角：<b>掃描線</b> — 把開始 +1、結束 −1 排成事件，答案是前綴和最大值（= 最大同時重疊數，這是下界，也構造性地可達）；<b>小根堆</b> — 按開始時間排序，堆存每間房目前的結束時間，新會議若能接最早空出的房就接，否則開新房。</p></details>
@@ -52,7 +52,7 @@ return rooms.size();</code></pre></details>
 </div>
 
 <h3>2.2.4 區間選點 / 最少箭射氣球</h3>
-<div class="problem">
+<div class="problem" data-problem-id="lc-452">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/" target="_blank">LC 452 用最少數量的箭引爆氣球</a><span class="chip">區間</span><span class="chip">右端點排序</span></div>
 <details><summary>思路</summary><p>「最少的點使每個區間至少含一點」— 與活動選擇對偶。按右端點排序，箭射在目前區間的右端點（能捅穿的最晚位置，捅到最多後續區間），左端點超過箭位置就補新箭。答案 = 最多不相交區間數（LP 對偶的離散體現）。</p></details>
 </div>

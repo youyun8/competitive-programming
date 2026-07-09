@@ -3,7 +3,7 @@
 <div class="callout idea"><b>💡 核心想法</b>
 <p>字典序目標自帶貪心性質：<b>第一位越小/大，後面全不用比</b>。所以逐位確定「當前位能放的最好字元」，配一個 O(1)/O(log) 的<b>可行性檢查</b>（剩餘資源夠不夠完成約束）。實作上大量以單調堆疊出現：新字元把棧頂「還有機會再來的較差字元」彈掉。</p></div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-402">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/remove-k-digits/" target="_blank">LC 402 移掉 K 位數字</a><span class="chip">字典序</span><span class="chip">單調棧</span></div>
 <p>刪 k 位使剩下的數最小。</p>
 <details><summary>思路</summary><p>維護遞增棧：新數字比棧頂小且還有刪除額度時，彈棧頂（高位變小永遠更優 — 這就是字典序的貪心選擇性質）。掃完還有額度就從尾巴刪。</p></details>
@@ -18,19 +18,19 @@ st.erase(0, st.find_first_not_of('0'));      // 去前導零
 return st.empty() ? "0" : st;</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-316">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/remove-duplicate-letters/" target="_blank">LC 316 去除重複字母</a><span class="chip">字典序</span><span class="chip">單調棧</span><span class="chip">可行性檢查</span></div>
 <p>刪去重複字母使每個字母恰出現一次，且結果字典序最小。</p>
 <details><summary>思路</summary><p>單調棧 + <b>可行性檢查</b>：彈棧頂的條件除了「棧頂 &gt; 新字元」，還必須「棧頂字元在後面還會出現」（否則彈了就湊不齊了）。這是字典序貪心的完整形態：<i>貪 + 保證還能完成</i>。用剩餘計數陣列與 in-stack 標記各一個即可。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-321">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://leetcode.cn/problems/create-maximum-number/" target="_blank">LC 321 拼接最大數</a><span class="chip">字典序</span><span class="chip">單調棧</span><span class="chip">歸併</span></div>
 <p>從兩個陣列中共取 k 個數（各自保持相對順序），拼成最大的數。</p>
 <details><summary>思路</summary><p>三層貪心組合：枚舉從第一個陣列取 i 個 — 各自用單調棧取出「保留 i 個的最大子序列」（LC 402 的最大版）— 再<b>貪心歸併</b>兩個序列（比較整段字典序決定下一個取誰，注意相等時要往後比，故歸併是 O(n²) 最壞）。展示「字典序貪心可作為零件組裝」的層次感。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="misc-03">
 <div class="p-head"><span class="stars s3">★★★</span><span class="p-title">字典序最小拓撲序</span><span class="chip">字典序</span><span class="chip">圖</span><span class="chip">堆</span></div>
 <details><summary>思路</summary><p>Kahn 演算法中把普通 queue 換成小根堆：每次在所有入度 0 的點中取編號最小者。正確性：第一位可以是任何目前入度 0 的點，取最小者是字典序的貪心選擇性質；取走後子問題同構。⚠ 對比陷阱：「字典序最小拓撲序」≠「每個點盡量早出現」— HDU 4857 反向建圖才是後者，辨識題意的細微差異是這型題的坑。</p></details>
 </div>

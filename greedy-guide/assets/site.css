@@ -77,6 +77,15 @@ a:hover{text-decoration:underline}
 }
 .toolbtn:hover{color:var(--fg)}
 
+/* ── 登入狀態 ── */
+.authbox{margin:0 10px 12px; font-size:12px}
+.authbox-msg{color:var(--fg2); padding:4px 2px}
+.authbox-user{display:flex; align-items:center; justify-content:space-between; gap:6px}
+.authbox-email{
+  color:var(--fg2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;
+}
+.authbox .toolbtn{flex:0 0 auto}
+
 /* ── main (font-size & max-width driven by user settings) ── */
 main{
   flex:1; min-width:0; padding:36px 48px 80px; margin:0 auto;
@@ -135,7 +144,23 @@ b,strong{font-weight:700}
 .problem{
   background:var(--bg2); border:1px solid var(--line); border-radius:14px;
   padding:16px 20px; margin:16px 0; box-shadow:var(--shadow);
+  border-left:4px solid var(--line); transition:border-color .15s ease;
 }
+.problem.status-review{border-left-color:var(--s3)}
+.problem.status-done{border-left-color:var(--s1)}
+tr.status-review td:first-child{box-shadow:inset 3px 0 0 var(--s3)}
+tr.status-done td:first-child{box-shadow:inset 3px 0 0 var(--s1)}
+
+/* ── 練習進度控制（⬜ 尚未練習／🔶 需複習／✅ 已通過） ── */
+.progress-ctl{display:inline-flex; gap:2px; margin-left:auto}
+.p-head .progress-ctl{margin-left:auto}
+.progress-ctl button{
+  border:1px solid var(--line); background:var(--bg); border-radius:6px;
+  padding:1px 5px; font-size:.8125em; line-height:1.5; cursor:pointer; opacity:.45;
+}
+.progress-ctl button:hover{opacity:.8; border-color:var(--accent)}
+.progress-ctl button.active{opacity:1; border-color:var(--accent); background:var(--accent-soft)}
+.progress-cell{white-space:nowrap}
 .p-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px}
 .p-title{font-weight:700; font-size:1em}
 .problem details{

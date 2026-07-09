@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../assets/site.css">
 <script src="../../assets/site.js"></script>
+<script src="../../assets/firebase-config.js"></script>
+<script src="../../assets/progress.js"></script>
 </head>
 <body data-page="s03">
 <div class="layout">
@@ -17,6 +19,7 @@
   <div class="toolbtns">
     <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
   </div>
+  <div id="authBox" class="authbox"></div>
   <nav id="toc">
     <a class="lv1" data-page="index" href="../../index.html">🏠 首頁</a>
     <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
@@ -49,19 +52,19 @@
 <div class="callout proof"><b>🧾 推導模板</b>
 <p>設 i 在 j 前、其餘不動。因為只有 i、j 的完成時刻改變，比較兩種順序下這兩項的目標貢獻即可。得到形如 <code>f(i,j) ≤ f(j,i)</code> 的可傳遞關係後，直接 <code>sort</code>。<b>務必檢查關係可傳遞</b>（通常能改寫成單一實數鍵值比較，如 p/w、min(a,b) 分類）。</p></div>
 
-<div class="problem">
+<div class="problem" data-problem-id="misc-02">
 <div class="p-head"><span class="stars s3">★★★</span><span class="p-title">最小化加權完成時間（Smith's Rule）</span><span class="chip">排程</span><span class="chip">交換論證</span></div>
 <p>單機 n 個任務，任務 i 耗時 p_i、權 w_i，最小化 Σ w_i × C_i（C_i 為完成時刻）。對應：洛谷 P1248 加工生產調度前置、AtCoder 各 ABC 排程題。</p>
 <details><summary>推導</summary><p>相鄰交換 i、j：i 在前時兩者貢獻差為 <code>w_j·p_i − w_i·p_j</code>。令 i 在前不劣 ⇒ <code>p_i/w_i ≤ p_j/w_j</code>。所以按 <b>p/w 遞增</b>（性價比：短且重要優先）排序。特例 w 全等 → SJF 最短工時優先；p 全等 → 權大優先。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="luogu-p1248">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1248" target="_blank">洛谷 P1248 加工生產調度（Johnson's Rule）</a><span class="chip">排程</span><span class="chip">交換論證</span></div>
 <p>每個工件先過機器 A（耗時 a_i）再過機器 B（耗時 b_i），兩台機器各自序列處理，最小化總完工時間（makespan）。</p>
 <details><summary>思路</summary><p><b>Johnson's Rule</b>：<code>min(a_i, b_j) ≤ min(a_j, b_i)</code> 時 i 排 j 前。實作：把工件分兩組 — <code>a &lt; b</code> 的按 a 遞增排在前，<code>a ≥ b</code> 的按 b 遞減排在後。直覺：A 快 B 慢的先上（讓 B 早點有活幹且不斷流），A 慢 B 快的殿後（結尾時 B 不用等）。這是三機以上 NP-hard、兩機卻有優美貪心的經典分界。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="atcoder-dp-x">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_x" target="_blank">AtCoder DP Contest X - Tower</a><span class="chip">排程</span><span class="chip">交換論證</span><span class="chip">貪心+DP</span></div>
 <p>每個箱子有重量 w、承重 s、價值 v，疊塔使塔上每箱之上的總重 ≤ 其承重，最大化總價值。</p>
 <details><summary>提示</summary><p>價值使純貪心失效（要選子集）— 但「選定子集後的最佳疊放順序」可以先用交換論證定死，再對這個順序做背包 DP。</p></details>

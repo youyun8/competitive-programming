@@ -10,7 +10,7 @@
 <li>直接貪心能構造出反例、DP 狀態又太大時，優先想反悔堆。</li>
 </ul></div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-630">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/course-schedule-iii/" target="_blank">LC 630 課程表 III</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
 <p>第 i 門課耗時 d_i、截止 e_i，從時刻 0 開始連續上課，最多修幾門？</p>
 <details><summary>思路</summary><p>按<b>截止時間遞增</b>處理，維護大根堆（已選課程的耗時）與目前總耗時 T。每門課先選上（T += d）；若 T 超過截止時間，<b>反悔</b>：彈掉堆中耗時最大的課（撤銷最虧的決策）。正確性：交換論證 — 修課數相同時總耗時越小越好，彈最大者使 T 最小化，為未來保留最大餘裕。</p></details>
@@ -25,7 +25,7 @@ for (auto&amp; [d, e] : c) {
 return pq.size();</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-871">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-number-of-refueling-stops/" target="_blank">LC 871 最低加油次數</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
 <p>路上有加油站，車開到哪算哪，最少加幾次油到終點？</p>
 <details><summary>思路</summary><p>「路過先不加，把油量存入大根堆；油不夠時再反悔 — 取出堆中最大的油量視為當時加過」。次數相同時油越多越好，故每次補堆頂。這是把「在哪加油」的決策<b>延遲到必要時刻</b>的教科書範例。</p></details>
@@ -43,13 +43,13 @@ for (auto&amp; [pos, gas] : stations) {
 return cnt;</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="luogu-p4053">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4053" target="_blank">洛谷 P4053 [JSOI2007] 建築搶修</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
 <p>n 棟建築，修第 i 棟耗時 t_i、必須在 d_i 前修完，一次修一棟，最多修幾棟？（LC 630 的原型競賽題，USACO 2009 Work Scheduling 為「最大化報酬」變體）</p>
 <details><summary>思路</summary><p>同 LC 630 反悔堆。USACO Work Scheduling 變體：按期限處理、堆存<b>報酬最小</b>的已接工作，時間不夠且新工作報酬更高時換掉堆頂 — 反悔的對象從「耗時」變成「報酬」，體會反悔鍵值隨目標函數變化。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="cf-865d">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/865/D" target="_blank">CF 865D Buy Low Sell High</a><span class="chip">反悔貪心</span><span class="chip">堆</span><span class="chip">費用流思想</span></div>
 <p>已知未來 n 天股價，每天限買一股或賣一股或不動，最大化最終利潤（結束時不持股要求可自動滿足）。</p>
 <details><summary>思路</summary><p>經典<b>反悔交換</b>：每天把 p_i 推入小根堆；若 p_i &gt; 堆頂，利潤 += p_i − 堆頂，彈出堆頂，<b>再把 p_i 推回去一次</b>。第二次推入的 p_i 代表「反悔券」：若未來有更高價 p_j 用它成交，總效果 (p_i − p_x) + (p_j − p_i) = p_j − p_x，等價於當初直接在 x 買 j 賣 — 中間商 p_i 無縫退出。這正是模擬費用流中「殘量網路反向邊」的化身，是通往 2.11.5 的橋樑。</p></details>

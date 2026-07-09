@@ -183,18 +183,21 @@
       tb.innerHTML = "";
       var shown = 0;
       data.forEach(function (row) {
-        var name = row[0], src = row[1], url = row[2], st = row[3], tags = row[4], idea = row[5];
+        var name = row[0], src = row[1], url = row[2], st = row[3], tags = row[4], idea = row[5], id = row[6];
         if (state.stars.size && !state.stars.has(st)) return;
         if (state.tags.size && !Array.from(state.tags).some(function (t) { return tags.indexOf(t) !== -1; })) return;
         if (state.text && (name + src + idea + tags.join()).toLowerCase().indexOf(state.text) === -1) return;
         shown++;
         var tr = document.createElement("tr");
+        if (id) tr.dataset.problemId = id;
         var link = url ? '<a href="' + url + '" target="_blank" rel="noopener">' + name + "</a>" : "<b>" + name + "</b>";
         tr.innerHTML = "<td>" + link + "</td><td>" + src + "</td><td>" + starHTML(st) + "</td>" +
-          "<td>" + tags.map(function (t) { return '<span class="chip">' + t + "</span>"; }).join("") + "</td><td>" + idea + "</td>";
+          "<td>" + tags.map(function (t) { return '<span class="chip">' + t + "</span>"; }).join("") + "</td><td>" + idea + "</td>" +
+          '<td class="progress-cell"></td>';
         tb.appendChild(tr);
       });
       document.getElementById("ptbl-count").textContent = "顯示 " + shown + " / " + data.length + " 題";
+      if (window.GreedyProgress) window.GreedyProgress.paint();
     }
     var totalEl = document.getElementById("ptbl-total");
     if (totalEl) totalEl.textContent = data.length;

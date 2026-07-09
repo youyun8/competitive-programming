@@ -3,7 +3,7 @@
 <div class="callout idea"><b>💡 核心想法</b>
 <p>貪心策略本身簡單，但每一步的決策需要「快速找到／更新某個極值或空位」— 瓶頸在資料結構：並查集跳過已佔用位置、BIT/線段樹維護區間資訊、multiset 支援任意刪除。</p></div>
 
-<div class="problem">
+<div class="problem" data-problem-id="misc-05">
 <div class="p-head"><span class="stars s4">★★★★</span><span class="p-title">截止期限任務調度（Job Sequencing）+ 並查集</span><span class="chip">DSU</span><span class="chip">排程</span></div>
 <p>每個任務一單位時間、截止 d_i、報酬 p_i，最大化總報酬。</p>
 <details><summary>思路</summary><p>按報酬遞減排序，每個任務安排在「≤ d_i 的最晚空閒時槽」（越晚越不擋別人）。找最晚空槽用<b>並查集</b>：<code>find(d)</code> 返回 ≤ d 的最晚空槽，佔用後 <code>fa[t] = t−1</code>，均攤近 O(1)。正確性可用擬陣描述：「可行任務子集」構成 transversal matroid，按權降序能加就加必最優 — 2.11.1 的具體實例。</p></details>
@@ -18,13 +18,13 @@ for (auto&amp; j : jobs) {
 }</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="luogu-p1250">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1250" target="_blank">洛谷 P1250 種樹</a><span class="chip">區間</span><span class="chip">差分約束→貪心</span></div>
 <p>區間 [l_i, r_i] 內至少要種 t_i 棵樹，每個位置至多一棵，求最少總棵數。</p>
 <details><summary>思路</summary><p>按<b>右端點遞增</b>排序，每個約束不足時<b>從右端點往左</b>補種（種得越右，越可能被後面的區間重複利用）。交換論證：把任何解中較左的樹右移到區間右端，不影響當前約束、只會幫助後續。加速：BIT 查區間和 + 並查集找「最右空位」。同型進階：洛谷 P2894、CF 志願者/餵牛系列。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="cf-1526c2">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1526/C2" target="_blank">CF 1526C2 Potions（multiset/堆反悔）</a><span class="chip">反悔貪心</span><span class="chip">multiset</span></div>
 <p>從左到右喝藥水（可跳過），生命值不得為負，最多喝幾瓶？</p>
 <details><summary>思路</summary><p>全喝，血量為負時反悔吐掉「已喝中最毒的一瓶」（小根堆取最小負值）。與 LC 630 同構 — 反悔貪心配上不同容器（heap / multiset）反覆出現在 CF Div2 C/D，是性價比最高的訓練題型之一。</p></details>
