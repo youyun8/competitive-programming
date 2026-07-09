@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>證明方法實戰模板 — 貪心演算法完全指南</title>
+<meta name="description" content="交換論證五步驟、領先論證模板，以及對拍驗證器範例碼">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+</head>
+<body data-page="proofs">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../index.html">🧭 貪心演算法<span>完全指南</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="strategies/02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="strategies/03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="strategies/04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="strategies/05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="strategies/06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="strategies/07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="strategies/08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="strategies/09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="strategies/10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="problems" href="problems.html">5. 題目總表（可篩選）</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2><span class="sec-no">4</span>證明方法實戰模板</h2>
+
+<h3 id="s4-1">4.1 交換論證五步驟模板</h3>
+<div class="callout proof"><b>🧾 模板</b>
+<ol>
+<li><b>設</b>：設 OPT 為任一最優解，G 為貪心解，且 OPT ≠ G。</li>
+<li><b>找</b>：找出第一個分歧點 —— OPT 與 G 第一個不同的決策（或 OPT 中第一對「違反貪心排序鍵」的相鄰元素）。</li>
+<li><b>換</b>：把 OPT 在該處的選擇換成 G 的選擇（或交換那對相鄰元素），得到 OPT′。</li>
+<li><b>證</b>：證明 OPT′ 仍可行、且目標值不比 OPT 差。← 全部的工作量在這一步。</li>
+<li><b>推</b>：交換有限次後 OPT 變成 G 且始終不變差 ⇒ G 最優。∎</li>
+</ol></div>
+<p><b>完整範例（活動選擇）</b>：設 OPT 第一個活動為 j，G 第一個為 g（結束最早）。因 end(g) ≤ end(j)，把 OPT 中 j 換成 g：g 結束更早，不與 OPT 其餘活動衝突 ⇒ OPT′ 可行且數量相同。之後對子問題歸納。∎</p>
+
+<h3 id="s4-2">4.2 領先論證模板</h3>
+<div class="callout proof"><b>🧾 模板</b>
+<p>定義「進度量」m(·)（如：前 i 個選擇後的結束時間 / 剩餘資源）。歸納證明：對每個 i，貪心解的 m(G, i) <b>不劣於</b>任何解的 m(S, i)。步步領先 ⇒ 若 S 可行/達到 k，G 也能。適用於「貪心與對手逐步並排比較」自然的問題（活動選擇、跳躍遊戲、分發餅乾）。</p></div>
+
+<h3 id="s4-3">4.3 對拍驗證器（競賽現場 5 分鐘保命工具）</h3>
+<p>寫不出證明時，用小資料窮舉對拍。以下 Python 模板可套用到大多數「選擇型」問題：</p>
+<pre><code class="lang-py">import random
+from itertools import combinations
+
+def brute(items):                       # 暴力：窮舉所有子集
+    best = 0
+    for k in range(len(items) + 1):
+        for sub in combinations(items, k):
+            if feasible(sub):
+                best = max(best, value(sub))
+    return best
+
+def greedy(items):
+    ...                                  # 你的貪心
+
+for test in range(300):
+    n = random.randint(1, 8)             # 小到暴力能跑，大到能觸發結構
+    items = [(random.randint(1, 10), random.randint(1, 10)) for _ in range(n)]
+    if brute(items) != greedy(items):
+        print("WA on:", items)           # 得到最小反例，人腦分析它
+        break
+else:
+    print("300 tests passed")</code></pre>
+<p class="small">技巧：值域開小（1–10）更容易撞出反例；找到反例後手動最小化它，反例會告訴你貪心錯在哪一類結構。</p>
+
+<div class="pagenav">
+<a class="prev" href="pitfalls.html"><span class="dir">← 上一節</span>3. 經典「假貪心」陷阱</a>
+<a class="next" href="problems.html"><span class="dir">下一節 →</span>5. 題目總表（可篩選）</a>
+</div>
+<footer class="site-footer">
+  <p>貪心演算法完全指南 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

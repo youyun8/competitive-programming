@@ -1,0 +1,25 @@
+<h2>2.8 圖上貪心</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>MST 與 Dijkstra 本質上都是貪心，正確性由兩條圖論性質保證：<b>Cut Property</b>（跨越任意割的最小邊必在某棵 MST 中）與<b>非負權下最近未定點的距離已收斂</b>。把它們當作貪心來理解，才能在變體題中正確遷移。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">Kruskal / Prim 與 Cut & Cycle Property</span><span class="chip">圖</span><span class="chip">MST</span><span class="chip">交換論證</span></div>
+<details><summary>思路</summary><p><b>Cut Property</b> 的交換論證：設跨割最小邊 e ∉ MST T，把 e 加入 T 形成環，環上必有另一條跨割邊 f，換掉（w(f) ≥ w(e)）得不劣的生成樹 — 標準 exchange argument。<b>Cycle Property</b>（環上最大邊必不在 MST）是對偶。變體遷移：最小瓶頸生成樹 = MST（Cut Property 直接推）；「最大化路徑最小邊」= 在最大生成樹上走；Kruskal 重構樹處理「≤k 邊權連通性」詢問。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">Dijkstra 的貪心正確性邊界</span><span class="chip">圖</span><span class="chip">最短路</span></div>
+<details><summary>思路</summary><p>歸納不變量：每次從堆中取出的最近未確定點 u，其 dist 已是最短 — 因為任何經過「未確定區」的替代路徑，其前綴已 ≥ dist[u]（<b>非負權</b>在此處使用）。負權邊破壞這條歸納 ⇒ 貪心失效（見第 3 章）。同樣的貪心框架換目標可解：最大化路徑最小值（「瓶頸 Dijkstra」）、乘積最短路（取 log）。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4180" target="_blank">洛谷 P4180 [BJWC2010] 嚴格次小生成樹</a><span class="chip">圖</span><span class="chip">MST</span><span class="chip">倍增</span></div>
+<details><summary>思路</summary><p>結論（由交換性質保證）：次小生成樹與 MST 恰差一條邊。枚舉每條非樹邊 (u,v,w)，替換樹上 u→v 路徑中的最大邊（嚴格次小需同時維護路徑最大與嚴格次大值，用倍增）。「MST 家族題 = Cut/Cycle Property 的花式應用」的代表。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/888/G" target="_blank">CF 888G Xor-MST（Boruvka）</a><span class="chip">圖</span><span class="chip">MST</span><span class="chip">01-Trie</span></div>
+<p>完全圖，邊權 = a_u XOR a_v，求 MST。n ≤ 2×10⁵，邊數 O(n²) 不可枚舉。</p>
+<details><summary>思路</summary><p><b>Boruvka</b>：每輪為每個連通塊找最小出邊、批量合併，輪數 O(log n)。「找最小 XOR 出邊」用 01-Trie 完成。Boruvka 的價值正在於此類<b>隱式完全圖</b>（邊權由函數定義）：每輪的「找最小出邊」換成資料結構查詢。分治視角：按最高位把點分兩半，跨半只需一條最小 XOR 邊。</p></details>
+</div>

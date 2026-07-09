@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.3 交換論證排程（Scheduling by Exchange Argument） — 貪心演算法完全指南</title>
+<meta name="description" content="Smith's Rule、Johnson's Rule 與交換論證+DP 的組合套路">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/site.js"></script>
+</head>
+<body data-page="s03">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../index.html">🧭 貪心演算法<span>完全指南</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="../proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="problems" href="../problems.html">5. 題目總表（可篩選）</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.3 交換論證排程（Scheduling by Exchange Argument）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>單機/多機排程問題的統一解法：假設最優序列中相鄰兩個任務 i、j 交換，寫出兩種順序的目標值，令「i 在前不劣」解出不等式 — 這個不等式就是排序鍵。</p></div>
+
+<div class="callout proof"><b>🧾 推導模板</b>
+<p>設 i 在 j 前、其餘不動。因為只有 i、j 的完成時刻改變，比較兩種順序下這兩項的目標貢獻即可。得到形如 <code>f(i,j) ≤ f(j,i)</code> 的可傳遞關係後，直接 <code>sort</code>。<b>務必檢查關係可傳遞</b>（通常能改寫成單一實數鍵值比較，如 p/w、min(a,b) 分類）。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">最小化加權完成時間（Smith's Rule）</span><span class="chip">排程</span><span class="chip">交換論證</span></div>
+<p>單機 n 個任務，任務 i 耗時 p_i、權 w_i，最小化 Σ w_i × C_i（C_i 為完成時刻）。對應：洛谷 P1248 加工生產調度前置、AtCoder 各 ABC 排程題。</p>
+<details><summary>推導</summary><p>相鄰交換 i、j：i 在前時兩者貢獻差為 <code>w_j·p_i − w_i·p_j</code>。令 i 在前不劣 ⇒ <code>p_i/w_i ≤ p_j/w_j</code>。所以按 <b>p/w 遞增</b>（性價比：短且重要優先）排序。特例 w 全等 → SJF 最短工時優先；p 全等 → 權大優先。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1248" target="_blank">洛谷 P1248 加工生產調度（Johnson's Rule）</a><span class="chip">排程</span><span class="chip">交換論證</span></div>
+<p>每個工件先過機器 A（耗時 a_i）再過機器 B（耗時 b_i），兩台機器各自序列處理，最小化總完工時間（makespan）。</p>
+<details><summary>思路</summary><p><b>Johnson's Rule</b>：<code>min(a_i, b_j) ≤ min(a_j, b_i)</code> 時 i 排 j 前。實作：把工件分兩組 — <code>a &lt; b</code> 的按 a 遞增排在前，<code>a ≥ b</code> 的按 b 遞減排在後。直覺：A 快 B 慢的先上（讓 B 早點有活幹且不斷流），A 慢 B 快的殿後（結尾時 B 不用等）。這是三機以上 NP-hard、兩機卻有優美貪心的經典分界。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_x" target="_blank">AtCoder DP Contest X - Tower</a><span class="chip">排程</span><span class="chip">交換論證</span><span class="chip">貪心+DP</span></div>
+<p>每個箱子有重量 w、承重 s、價值 v，疊塔使塔上每箱之上的總重 ≤ 其承重，最大化總價值。</p>
+<details><summary>提示</summary><p>價值使純貪心失效（要選子集）— 但「選定子集後的最佳疊放順序」可以先用交換論證定死，再對這個順序做背包 DP。</p></details>
+<details><summary>思路</summary><p>相鄰交換：i 疊在 j 下方可行性更寬 ⟺ <code>w_i + s_i ≥ w_j + s_j</code>。按 <b>w+s 遞增</b>排序（小的在上/先考慮），然後 <code>dp[承重餘量] = 最大價值</code> 做 0/1 背包。這是「<b>交換論證定順序 + DP 選子集</b>」的代表套路，競賽出現率極高（同型：CF 開會安排、洛谷 P1417 烹調方案）。</p></details>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="02-intervals.html"><span class="dir">← 上一節</span>2.2 區間問題全家桶</a>
+<a class="next" href="04-regret.html"><span class="dir">下一節 →</span>2.4 反悔貪心</a>
+</div>
+<footer class="site-footer">
+  <p>貪心演算法完全指南 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

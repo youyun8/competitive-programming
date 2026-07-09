@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.11 專家專題 — 貪心演算法完全指南</title>
+<meta name="description" content="擬陣與 Rado–Edmonds 定理、slope trick、模擬費用流">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/site.js"></script>
+</head>
+<body data-page="s11">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../index.html">🧭 貪心演算法<span>完全指南</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="../proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="problems" href="../problems.html">5. 題目總表（可篩選）</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.11 專家專題 <span class="stars s5">★★★★★</span></h2>
+
+<h3 id="s2-11-1">2.11.1 擬陣（Matroid）：貪心正確性的統一理論</h3>
+<p>擬陣 <code>M = (E, I)</code>：元素全集 E 與「獨立集」族 I，滿足（1）遺傳性：獨立集的子集獨立；（2）交換公理：|A| &lt; |B| 且皆獨立 ⇒ 存在 x ∈ B\A 使 A∪{x} 獨立。</p>
+<div class="callout proof"><b>🧾 Rado–Edmonds 定理</b>
+<p>在擬陣上「按權重降序、能加就加」的貪心必得最大權基；反之，若一個獨立系統對<b>所有</b>權重函數貪心都正確，它必是擬陣。— 這給了「貪心何時必然正確」的完整刻畫。</p></div>
+<ul>
+<li><b>圖形擬陣</b>（無環邊集）→ Kruskal 正確性。</li>
+<li><b>分割擬陣 / 橫貫擬陣</b> → Job Sequencing（2.9）按報酬降序能排就排的正確性。</li>
+<li><b>擬陣交</b>：兩個擬陣的公共獨立集最大化（如彩色生成樹 = 圖形擬陣 ∩ 分割擬陣），有多項式演算法（增廣路），但已超出貪心 — 知道邊界在哪本身就是專家素養。CF 話題題：CF 1284G。</li>
+</ul>
+
+<h3 id="s2-11-2">2.11.2 Slope Trick：凸函數 DP 的貪心壓縮</h3>
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/713/C" target="_blank">CF 713C Sonya and Problem Wihtout a Legend</a><span class="chip">slope trick</span><span class="chip">堆</span></div>
+<p>每次操作 ±1，把序列改成嚴格遞增，最小總操作數。</p>
+<details><summary>提示</summary><p>嚴格遞增先做變換 <code>a_i −= i</code> 化為非嚴格。定義 <code>f_i(x)</code> = 前 i 項、第 i 項改為 ≤ x 時的最小代價 — 它是關於 x 的凸的分段線性函數。</p></details>
+<details><summary>思路</summary><p>轉移 <code>f_i(x) = min_{y≤x} [f_{i−1}(y)] + |a_i − x|</code>。凸函數的「前綴 min」= 砍掉右半上升段；「+|a−x|」= 左右各加一個斜率轉折點。<b>用大根堆存左半段的斜率轉折點集合</b>：每步 push a_i 兩次、若堆頂 &gt; a_i 則答案累加 <code>top − a_i</code> 並彈出替換。整套操作把 O(n·V) 的 DP 壓成 O(n log n) 貪心。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;long long&gt; L;    // 凸函數左半段斜率轉折點
+long long ans = 0;
+for (int i = 0; i &lt; n; i++) {
+    long long x = a[i] - i;      // 嚴格遞增 → 非嚴格
+    L.push(x);
+    if (L.top() &gt; x) {           // 出現下降段，付出代價抹平
+        ans += L.top() - x;
+        L.pop(); L.push(x);
+    }
+}</code></pre></details>
+</div>
+<p>進階應用：APIO 2016 烟花表演（樹上 slope trick，用可並堆合併子樹的凸函數）、ABC 217H。辨識特徵：<b>代價為絕對值/分段線性、狀態值域大、DP 關於值域是凸的</b>。</p>
+
+<h3 id="s2-11-3">2.11.3 交換論證 × DP 的一般化</h3>
+<p>2.3 的「Tower」模式推廣：當問題 =「選子集 + 定順序」時，先用相鄰交換論證證明<b>存在最優解按某鍵有序</b>，把順序維度消掉，再對排序後的序列 DP。訓練重點是推導鍵值的代數功力：把「i 在 j 前可行/更優」的條件化成 <code>g(i) ≤ g(j)</code> 的形式。同型：洛谷 P1417 烹調方案（鍵 b_i·c_j 交叉比較）、CF 1203F。</p>
+
+<h3 id="s2-11-4">2.11.4 對抗式貪心（博弈中的貪心）</h3>
+<p>輪流行動的博弈裡，「雙方都貪心拿當前最大」在<b>可加性目標</b>下常是最優（如 CF 談判分糖果：排序後輪流取），證明用策略交換。但存在後手結構（取走影響未來選項）時貪心失效需要博弈 DP — 分辨兩者的試金石：<b>你的選擇會不會改變對手未來選項的「相對」價值</b>。例：LC 1690、CF 1539E。</p>
+
+<h3 id="s2-11-5">2.11.5 反悔貪心 ⇄ 模擬費用流</h3>
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P6122" target="_blank">洛谷 P6122 [NOI Online #1] 隊長的技能 / CF 802O April Fools' Problem</a><span class="chip">模擬費用流</span><span class="chip">反悔貪心</span><span class="chip">二分</span></div>
+<p>CF 802O：n 天中選 k 天準備（費 a_i）、k 天列印（費 b_j），準備日 ≤ 對應列印日，最小總費。</p>
+<details><summary>思路</summary><p>費用流建模顯然但跑不動（n ≤ 5×10⁵）。<b>模擬費用流</b>：逐天掃描，遇 b_j 時與「堆中最小的未配對 a」成交；成交後把 <code>−(a_i)+b_j</code> 類型的「反悔券」推回堆，允許未來更便宜的 a 替換掉這次的 a、或更貴的 b 被換掉 — 每一張反悔券精確對應殘量網路的一條反向邊。k 的限制用 <b>wqs 二分</b>（帶懲罰的拉格朗日鬆弛）處理。反悔貪心（2.4）是本技術的單反向邊特例；掌握「彈出成交 → 推回反悔券」的對應，即可自行推導新題的模擬費用流。</p></details>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="10-binary-search.html"><span class="dir">← 上一節</span>2.10 貪心 × 二分答案</a>
+<a class="next" href="../pitfalls.html"><span class="dir">下一節 →</span>3. 經典「假貪心」陷阱</a>
+</div>
+<footer class="site-footer">
+  <p>貪心演算法完全指南 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>
