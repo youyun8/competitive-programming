@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學習路線圖 — 貪心演算法完全指南</title>
+<meta name="description" content="四階段學習計畫，每階段附代表題與畢業檢定">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+</head>
+<body data-page="roadmap">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../index.html">🧭 貪心演算法<span>完全指南</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="strategies/02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="strategies/03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="strategies/04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="strategies/05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="strategies/06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="strategies/07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="strategies/08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="strategies/09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="strategies/10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="problems" href="problems.html">5. 題目總表（可篩選）</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2><span class="sec-no">6</span>學習路線圖</h2>
+
+<div class="stage">
+<h3>第一階段 <span class="stars s1">★</span>–<span class="stars s2">★★</span>：建立排序直覺（約 2 週）</h3>
+<p><b>目標</b>：看到題目能在 1 分鐘內說出「按什麼排序、為什麼」。</p>
+<ul>
+<li>排序貪心：LC 455、排隊接水、部分背包、LC 179、LC 881</li>
+<li>區間入門：LC 435、LC 452、POJ 1328</li>
+<li>堆入門：洛谷 P1090 合併果子、LC 122</li>
+</ul>
+<p class="small">✅ 畢業檢定：獨立完成 LC 402 移掉 K 位數字，並能口頭說明為什麼彈棧是對的。</p>
+</div>
+
+<div class="stage">
+<h3>第二階段 <span class="stars s3">★★★</span>：掌握三大進階武器（約 3–4 週）</h3>
+<p><b>目標</b>：反悔貪心、字典序貪心、二分+貪心三套框架能獨立套用；學會寫對拍。</p>
+<ul>
+<li>反悔貪心：LC 630 → LC 871 → CF 1526C2</li>
+<li>字典序：LC 316、字典序最小拓撲序</li>
+<li>二分+貪心：跳石頭（P2678）、Aggressive Cows</li>
+<li>區間進階：LC 253、LC 45 / 1024；數學：LC 462、LC 135、LC 343</li>
+<li>證明基本功：用交換論證完整證明 LC 435 與 Smith's Rule（寫下來！）</li>
+</ul>
+<p class="small">✅ 畢業檢定：CF Div2 C 難度的陌生貪心題，40 分鐘內 AC 或給出反例轉 DP。</p>
+</div>
+
+<div class="stage">
+<h3>第三階段 <span class="stars s4">★★★★</span>：競賽級組合技（約 1–2 月）</h3>
+<p><b>目標</b>：多策略組合 — 交換論證定序 + DP、貪心掛資料結構、非顯然反悔鍵。</p>
+<ul>
+<li>交換論證排程：國王遊戲（P1080）、Johnson's Rule（P1248）、AtCoder DP X</li>
+<li>反悔進階：建築搶修（P4053）、Work Scheduling（P2949）、CF 865D</li>
+<li>貪心×資料結構：Job Sequencing + DSU、種樹（P1250）、荷馬史詩（P2168）</li>
+<li>圖上貪心：次小生成樹（P4180）、瓶頸生成樹應用</li>
+<li>二分進階：CF 1486D、糖果傳遞（P2512）</li>
+</ul>
+<p class="small">✅ 畢業檢定：獨立推導一道沒見過的排程題的排序鍵並證明可傳遞性。</p>
+</div>
+
+<div class="stage">
+<h3>第四階段 <span class="stars s5">★★★★★</span>：專家專題（長期）</h3>
+<p><b>目標</b>：把貪心放進更大的理論框架 — 凸性、擬陣、網路流對偶。</p>
+<ul>
+<li>Slope trick：CF 713C → APIO 2016 烟花表演（可並堆版）</li>
+<li>隱式圖 MST：CF 888G Xor-MST（Boruvka + 01-Trie）</li>
+<li>模擬費用流：CF 865D 重讀（用殘量網路語言重述）→ CF 802O + wqs 二分</li>
+<li>理論：讀懂 Rado–Edmonds 定理的雙向證明；瞭解擬陣交的增廣路演算法（CF 1284G）</li>
+<li>01 分數規劃：POJ 2728 Desert King</li>
+</ul>
+<p class="small">✅ 畢業檢定：對一道新的「配對/選擇」難題，能先建出費用流模型、再把它化簡成堆貪心。</p>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="problems.html"><span class="dir">← 上一節</span>5. 題目總表（可篩選）</a>
+</div>
+<footer class="site-footer">
+  <p>貪心演算法完全指南 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

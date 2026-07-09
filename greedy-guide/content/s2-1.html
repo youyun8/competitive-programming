@@ -1,0 +1,86 @@
+<h2>2.1 排序貪心（Sort &amp; Sweep）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>找到正確的<b>排序鍵</b>，排序後從頭到尾線性掃描，每一步的決策變得顯然。80% 的貪心題第一步都是排序 — 問題只剩「按什麼排」。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>元素之間的「處理順序」影響答案，但單一元素的貢獻可獨立衡量。</li>
+<li>存在一個單調的「性價比」「緊迫度」或「結束時間」可比較。</li>
+<li>排序鍵的推導方法：對任兩個相鄰元素寫出「先 A 後 B」與「先 B 後 A」的成本，令前者 ≤ 後者，解出比較式 — 這就是相鄰交換論證。</li>
+</ul></div>
+
+<h3>2.1.1 單鍵排序</h3>
+
+<div class="problem">
+<div class="p-head"><span class="stars s1">★</span><span class="p-title">部分背包 Fractional Knapsack</span><span class="chip">排序</span><span class="chip">性價比</span></div>
+<p>物品可切割，容量 W，最大化總價值。</p>
+<details><summary>思路</summary>
+<p>按「單位重量價值 v/w」由大到小排序，依序裝滿，最後一件裝部分。與 0/1 背包的對比是理解貪心邊界的第一課：<b>可分割</b>使得「先拿性價比最高的」永遠不會後悔 — 交換論證中把最優解裡任何一單位重量換成更高性價比的都不變差。0/1 背包不可分割，交換會破壞容量可行性，貪心失效（見第 3 章反例）。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(items.begin(), items.end(), [](auto&amp; a, auto&amp; b){
+    return a.v * b.w &gt; b.v * a.w;   // v/w 大者在前，交叉相乘避免浮點
+});
+double ans = 0, cap = W;
+for (auto&amp; [w, v] : items) {
+    double take = min(cap, (double)w);
+    ans += take * v / w;
+    cap -= take;
+    if (cap == 0) break;
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/assign-cookies/" target="_blank">LC 455 分發餅乾</a><span class="chip">排序</span><span class="chip">雙指針</span></div>
+<p>每個孩子有胃口 g[i]，每塊餅乾大小 s[j]，一塊只能給一人，最多滿足幾個孩子？</p>
+<details><summary>思路</summary><p>兩邊都排序，用<b>最小的能滿足的餅乾</b>去餵胃口最小的孩子（雙指針）。證明（領先論證）：任何最優方案中，把餵給最小孩子的餅乾換成「最小的可行餅乾」，剩餘餅乾集合只會更「寬鬆」，不會變差。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="http://poj.org/problem?id=1328" target="_blank">POJ 1328 Radar Installation</a><span class="chip">排序</span><span class="chip">區間選點</span></div>
+<p>海島要被 x 軸上的雷達（半徑 d）覆蓋，求最少雷達數。</p>
+<details><summary>提示</summary><p>把「島」轉化成「雷達可以放置的 x 軸區間」— 幾何問題化為區間選點問題。</p></details>
+<details><summary>思路</summary><p>每個島對應區間 <code>[x−√(d²−y²), x+√(d²−y²)]</code>。問題變成：最少的點刺穿所有區間。按<b>右端點</b>排序，維護目前雷達位置；若下一個區間左端點 &gt; 雷達位置，則在其右端點放新雷達。這是 2.2 區間家族的「區間選點」模型。</p></details>
+</div>
+
+<h3>2.1.2 自訂比較函數（用交換論證推導 comparator）</h3>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/largest-number/" target="_blank">LC 179 最大數</a><span class="chip">排序</span><span class="chip">交換論證</span></div>
+<p>把一組非負整數串接成最大的數。</p>
+<details><summary>思路</summary><p>比較兩個字串 a、b：若 <code>a+b &gt; b+a</code>（字串串接後字典序）則 a 排前面。正確性：相鄰交換論證 — 任意相鄰逆序對交換後結果變大，故完全排序後最大。<b>陷阱</b>：必須驗證這個比較關係是嚴格弱序（可證其可傳遞，因 a+b&gt;b+a ⟺ 把字串視為 k 進位數後 a/(10^|a|−1) &gt; b/(10^|b|−1)，是一個實數鍵值），否則 <code>std::sort</code> 是 UB。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(strs.begin(), strs.end(), [](const string&amp; a, const string&amp; b){
+    return a + b &gt; b + a;
+});
+string ans = accumulate(strs.begin(), strs.end(), string());
+return ans[0] == '0' ? "0" : ans;   // 全零特判</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1080" target="_blank">洛谷 P1080 國王遊戲</a><span class="chip">排序</span><span class="chip">交換論證</span><span class="chip">高精度</span></div>
+<p>n 位大臣每人左手 a、右手 b。大臣獲得的金幣 = 排在他前面所有人左手乘積 ÷ 他自己的右手。安排順序使獲得最多金幣的大臣拿的金幣最少。</p>
+<details><summary>提示</summary><p>對相鄰兩位大臣 i、j，分別寫出「i 在前」與「j 在前」時兩人獎金的最大值，比較之。</p></details>
+<details><summary>思路</summary><p>相鄰交換論證得排序鍵：按 <code>a×b</code> 遞增排序。設前綴乘積為 S，i 在 j 前時兩人的較大值是 <code>max(S/b_i, S·a_i/b_j)</code>；交換後為 <code>max(S/b_j, S·a_j/b_i)</code>。通分比較可得 <code>a_i·b_i ≤ a_j·b_j</code> 時 i 在前不劣。注意本題需高精度乘除。同型題：洛谷 P1842 奶牛玩雜技（按 w+s 排序）、UVa 10026 Shoemaker's Problem。</p></details>
+</div>
+
+<h3>2.1.3 雙指針配對</h3>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/boats-to-save-people/" target="_blank">LC 881 救生艇</a><span class="chip">排序</span><span class="chip">雙指針</span></div>
+<p>每艘船限乘 2 人、限重 limit，最少幾艘船載走所有人？</p>
+<details><summary>思路</summary><p>排序後<b>最重配最輕</b>：若最重 + 最輕 ≤ limit 則同船，否則最重者單獨一船。交換論證：最重的人反正要一艘船，讓他帶走「還能帶的人中任意一個」都不會比帶最輕的更好 — 因為最輕的人與任何人都相容，留下他最保值。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(p.begin(), p.end());
+int i = 0, j = p.size() - 1, boats = 0;
+while (i &lt;= j) {
+    if (p[i] + p[j] &lt;= limit) i++;
+    j--; boats++;
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="http://poj.org/problem?id=2287" target="_blank">POJ 2287 田忌賽馬</a><span class="chip">排序</span><span class="chip">雙指針</span><span class="chip">博弈</span></div>
+<p>田忌與齊王各 n 匹馬，贏一場 +200、輸 −200、平 0，田忌知道齊王出馬順序（由強到弱），求最大收益。</p>
+<details><summary>思路</summary><p>雙方馬按速度排序後貪心：若田忌目前最快 &gt; 齊王最快，直接贏；若最慢 &gt; 齊王最慢，贏下這場；否則用<b>最慢的馬去消耗齊王最快的馬</b>（打不贏就墊）。正確性用交換論證逐 case 驗證，或退而用區間 DP <code>O(n²)</code> 保底 — 這題是「貪心可行但 case 多，DP 更穩」的典型例子。</p></details>
+</div>
