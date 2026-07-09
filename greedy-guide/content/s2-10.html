@@ -9,7 +9,7 @@
 <li>驗證一個候選答案，比直接構造最優答案容易得多。</li>
 </ul></div>
 
-<div class="problem">
+<div class="problem" data-problem-id="luogu-p2678">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2678" target="_blank">洛谷 P2678 [NOIP2015] 跳石頭</a><span class="chip">二分+貪心</span></div>
 <p>移走至多 M 塊石頭，最大化相鄰石頭最短跳躍距離。（= POJ 2456 Aggressive Cows）</p>
 <details><summary>思路</summary><p>二分最短距離 x；check：從起點掃過去，與上一塊保留石頭距離 &lt; x 的就移走，數移走數是否 ≤ M。check 的貪心正確性：碰到近的就移，絕不提前移遠的 — 領先論證。</p></details>
@@ -29,13 +29,13 @@ while (lo &lt;= hi) {
 }</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="cf-1486d">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1486/D" target="_blank">CF 1486D Max Median</a><span class="chip">二分+貪心</span><span class="chip">中位數</span></div>
 <p>找長度 ≥ k 的子陣列，最大化其中位數。</p>
 <details><summary>思路</summary><p>二分中位數 x，把 ≥ x 記 +1、&lt; x 記 −1：「存在長 ≥ k 子陣列中位數 ≥ x」⟺「存在長 ≥ k 子陣列和 &gt; 0」，前綴和 + 前綴最小值 O(n) 判定。<b>「二分 + ±1 轉化」是中位數最值題的萬能鑰匙</b>（同型：POJ 3579、各類「第 k 大最大化」）。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="poj-2728">
 <div class="p-head"><span class="stars s5">★★★★★</span><span class="p-title">01 分數規劃（最優比率生成樹/環）</span><span class="chip">二分+貪心</span><span class="chip">分數規劃</span></div>
 <p>最大化 Σa_i·x_i / Σb_i·x_i（選擇 x ∈ 可行集）。例：POJ 2728 最優比率生成樹、洛谷 P3199 最小圈。</p>
 <details><summary>思路</summary><p>二分比率 λ，判定「是否存在解使 Σ(a_i − λ·b_i)x_i ≥ 0」— 每個元素的權重變為 <code>a − λb</code>，判定問題退化成普通的最優化（做一次 MST／找負環／取前 k 大），可用貪心或標準演算法。Dinkelbach 迭代可加速。<b>參數化思想的巔峰：把非線性目標「線性化」後餵給貪心。</b></p></details>

@@ -11,7 +11,7 @@
 </ul>
 
 <h3 id="s2-11-2">2.11.2 Slope Trick：凸函數 DP 的貪心壓縮</h3>
-<div class="problem">
+<div class="problem" data-problem-id="cf-713c">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/713/C" target="_blank">CF 713C Sonya and Problem Wihtout a Legend</a><span class="chip">slope trick</span><span class="chip">堆</span></div>
 <p>每次操作 ±1，把序列改成嚴格遞增，最小總操作數。</p>
 <details><summary>提示</summary><p>嚴格遞增先做變換 <code>a_i −= i</code> 化為非嚴格。定義 <code>f_i(x)</code> = 前 i 項、第 i 項改為 ≤ x 時的最小代價 — 它是關於 x 的凸的分段線性函數。</p></details>
@@ -37,7 +37,7 @@ for (int i = 0; i &lt; n; i++) {
 <p>輪流行動的博弈裡，「雙方都貪心拿當前最大」在<b>可加性目標</b>下常是最優（如 CF 談判分糖果：排序後輪流取），證明用策略交換。但存在後手結構（取走影響未來選項）時貪心失效需要博弈 DP — 分辨兩者的試金石：<b>你的選擇會不會改變對手未來選項的「相對」價值</b>。例：LC 1690、CF 1539E。</p>
 
 <h3 id="s2-11-5">2.11.5 反悔貪心 ⇄ 模擬費用流</h3>
-<div class="problem">
+<div class="problem" data-problem-id="cf-802o">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P6122" target="_blank">洛谷 P6122 [NOI Online #1] 隊長的技能 / CF 802O April Fools' Problem</a><span class="chip">模擬費用流</span><span class="chip">反悔貪心</span><span class="chip">二分</span></div>
 <p>CF 802O：n 天中選 k 天準備（費 a_i）、k 天列印（費 b_j），準備日 ≤ 對應列印日，最小總費。</p>
 <details><summary>思路</summary><p>費用流建模顯然但跑不動（n ≤ 5×10⁵）。<b>模擬費用流</b>：逐天掃描，遇 b_j 時與「堆中最小的未配對 a」成交；成交後把 <code>−(a_i)+b_j</code> 類型的「反悔券」推回堆，允許未來更便宜的 a 替換掉這次的 a、或更貴的 b 被換掉 — 每一張反悔券精確對應殘量網路的一條反向邊。k 的限制用 <b>wqs 二分</b>（帶懲罰的拉格朗日鬆弛）處理。反悔貪心（2.4）是本技術的單反向邊特例；掌握「彈出成交 → 推回反悔券」的對應，即可自行推導新題的模擬費用流。</p></details>

@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../assets/site.css">
 <script src="../assets/site.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/progress.js"></script>
 </head>
 <body data-page="problems">
 <div class="layout">
@@ -17,6 +19,7 @@
   <div class="toolbtns">
     <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
   </div>
+  <div id="authBox" class="authbox"></div>
   <nav id="toc">
     <a class="lv1" data-page="index" href="../index.html">🏠 首頁</a>
     <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
@@ -43,6 +46,10 @@
 <main>
 <h2><span class="sec-no">5</span>題目總表（可篩選）</h2>
 <p>共 <b id="ptbl-total"></b> 題。點擊星級與標籤可篩選（可複選），輸入關鍵字可搜尋題名與想法。</p>
+<p id="progress-summary" class="small"></p>
+
+<div class="callout when"><b>📶 練習進度同步</b>
+<p>每題右側可標記「尚未練習 ⬜ / 需複習 🔶 / 已通過 ✅」。登入後（見側欄）進度會同步到雲端，換裝置登入同一帳號會看到相同紀錄；未登入時進度只存在目前瀏覽器。</p></div>
 
 <div class="filterbar">
   <input id="f-text" type="search" placeholder="🔍 搜尋題名 / 來源 / 關鍵想法…">
@@ -52,7 +59,7 @@
 </div>
 
 <div class="tbl-wrap"><table id="ptbl">
-  <thead><tr><th>題目</th><th>來源</th><th>難度</th><th>標籤</th><th>關鍵想法</th></tr></thead>
+  <thead><tr><th>題目</th><th>來源</th><th>難度</th><th>標籤</th><th>關鍵想法</th><th>進度</th></tr></thead>
   <tbody></tbody>
 </table></div>
 

@@ -12,7 +12,7 @@
 
 <h3>2.1.1 單鍵排序</h3>
 
-<div class="problem">
+<div class="problem" data-problem-id="misc-01">
 <div class="p-head"><span class="stars s1">★</span><span class="p-title">部分背包 Fractional Knapsack</span><span class="chip">排序</span><span class="chip">性價比</span></div>
 <p>物品可切割，容量 W，最大化總價值。</p>
 <details><summary>思路</summary>
@@ -30,13 +30,13 @@ for (auto&amp; [w, v] : items) {
 }</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-455">
 <div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/assign-cookies/" target="_blank">LC 455 分發餅乾</a><span class="chip">排序</span><span class="chip">雙指針</span></div>
 <p>每個孩子有胃口 g[i]，每塊餅乾大小 s[j]，一塊只能給一人，最多滿足幾個孩子？</p>
 <details><summary>思路</summary><p>兩邊都排序，用<b>最小的能滿足的餅乾</b>去餵胃口最小的孩子（雙指針）。證明（領先論證）：任何最優方案中，把餵給最小孩子的餅乾換成「最小的可行餅乾」，剩餘餅乾集合只會更「寬鬆」，不會變差。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="poj-1328">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="http://poj.org/problem?id=1328" target="_blank">POJ 1328 Radar Installation</a><span class="chip">排序</span><span class="chip">區間選點</span></div>
 <p>海島要被 x 軸上的雷達（半徑 d）覆蓋，求最少雷達數。</p>
 <details><summary>提示</summary><p>把「島」轉化成「雷達可以放置的 x 軸區間」— 幾何問題化為區間選點問題。</p></details>
@@ -45,7 +45,7 @@ for (auto&amp; [w, v] : items) {
 
 <h3>2.1.2 自訂比較函數（用交換論證推導 comparator）</h3>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-179">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/largest-number/" target="_blank">LC 179 最大數</a><span class="chip">排序</span><span class="chip">交換論證</span></div>
 <p>把一組非負整數串接成最大的數。</p>
 <details><summary>思路</summary><p>比較兩個字串 a、b：若 <code>a+b &gt; b+a</code>（字串串接後字典序）則 a 排前面。正確性：相鄰交換論證 — 任意相鄰逆序對交換後結果變大，故完全排序後最大。<b>陷阱</b>：必須驗證這個比較關係是嚴格弱序（可證其可傳遞，因 a+b&gt;b+a ⟺ 把字串視為 k 進位數後 a/(10^|a|−1) &gt; b/(10^|b|−1)，是一個實數鍵值），否則 <code>std::sort</code> 是 UB。</p></details>
@@ -57,7 +57,7 @@ string ans = accumulate(strs.begin(), strs.end(), string());
 return ans[0] == '0' ? "0" : ans;   // 全零特判</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="luogu-p1080">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1080" target="_blank">洛谷 P1080 國王遊戲</a><span class="chip">排序</span><span class="chip">交換論證</span><span class="chip">高精度</span></div>
 <p>n 位大臣每人左手 a、右手 b。大臣獲得的金幣 = 排在他前面所有人左手乘積 ÷ 他自己的右手。安排順序使獲得最多金幣的大臣拿的金幣最少。</p>
 <details><summary>提示</summary><p>對相鄰兩位大臣 i、j，分別寫出「i 在前」與「j 在前」時兩人獎金的最大值，比較之。</p></details>
@@ -66,7 +66,7 @@ return ans[0] == '0' ? "0" : ans;   // 全零特判</code></pre></details>
 
 <h3>2.1.3 雙指針配對</h3>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-881">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/boats-to-save-people/" target="_blank">LC 881 救生艇</a><span class="chip">排序</span><span class="chip">雙指針</span></div>
 <p>每艘船限乘 2 人、限重 limit，最少幾艘船載走所有人？</p>
 <details><summary>思路</summary><p>排序後<b>最重配最輕</b>：若最重 + 最輕 ≤ limit 則同船，否則最重者單獨一船。交換論證：最重的人反正要一艘船，讓他帶走「還能帶的人中任意一個」都不會比帶最輕的更好 — 因為最輕的人與任何人都相容，留下他最保值。</p></details>
@@ -79,7 +79,7 @@ while (i &lt;= j) {
 }</code></pre></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="poj-2287">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="http://poj.org/problem?id=2287" target="_blank">POJ 2287 田忌賽馬</a><span class="chip">排序</span><span class="chip">雙指針</span><span class="chip">博弈</span></div>
 <p>田忌與齊王各 n 匹馬，贏一場 +200、輸 −200、平 0，田忌知道齊王出馬順序（由強到弱），求最大收益。</p>
 <details><summary>思路</summary><p>雙方馬按速度排序後貪心：若田忌目前最快 &gt; 齊王最快，直接贏；若最慢 &gt; 齊王最慢，贏下這場；否則用<b>最慢的馬去消耗齊王最快的馬</b>（打不贏就墊）。正確性用交換論證逐 case 驗證，或退而用區間 DP <code>O(n²)</code> 保底 — 這題是「貪心可行但 case 多，DP 更穩」的典型例子。</p></details>

@@ -197,6 +197,8 @@ def render_page(page, body_html):
     p = page["path"]
     css = rel(p, "assets/site.css")
     js = rel(p, "assets/site.js")
+    firebase_cfg = rel(p, "assets/firebase-config.js")
+    progress_js = rel(p, "assets/progress.js")
     extra_script = ""
     if page["id"] == "problems":
         data_js = rel(p, "assets/problems-data.js")
@@ -215,6 +217,8 @@ def render_page(page, body_html):
 <link rel="icon" href="{favicon}">
 <link rel="stylesheet" href="{css}">
 <script src="{js}"></script>
+<script src="{firebase_cfg}"></script>
+<script src="{progress_js}"></script>
 </head>
 <body data-page="{pid}">
 <div class="layout">
@@ -224,6 +228,7 @@ def render_page(page, body_html):
   <div class="toolbtns">
     <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
   </div>
+  <div id="authBox" class="authbox"></div>
   <nav id="toc">
     {nav}
   </nav>
@@ -245,6 +250,7 @@ def render_page(page, body_html):
 </html>
 """.format(
         title=full_title, desc=page["desc"], favicon=FAVICON, css=css, js=js,
+        firebase_cfg=firebase_cfg, progress_js=progress_js,
         pid=page["id"], home=rel(p, "index.html"), nav=render_nav(p, page["id"]),
         body=body_html, pagenav=pagenav, settings=SETTINGS_PANEL, extra_script=extra_script,
     )

@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../assets/site.css">
 <script src="../../assets/site.js"></script>
+<script src="../../assets/firebase-config.js"></script>
+<script src="../../assets/progress.js"></script>
 </head>
 <body data-page="s07">
 <div class="layout">
@@ -17,6 +19,7 @@
   <div class="toolbtns">
     <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
   </div>
+  <div id="authBox" class="authbox"></div>
   <nav id="toc">
     <a class="lv1" data-page="index" href="../../index.html">🏠 首頁</a>
     <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
@@ -46,29 +49,29 @@
 <div class="callout idea"><b>💡 核心想法</b>
 <p>決策由一條不等式或極值性質一錘定音：排序不等式、中位數最小化絕對偏差、均值不等式。證明手法是<b>調整法</b> — 對任何解做微小擾動，證明往某方向調整必不劣，推到極端即最優。</p></div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-462">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-moves-to-equal-array-elements-ii/" target="_blank">LC 462 最小操作次數使陣列相等 II</a><span class="chip">中位數</span><span class="chip">調整法</span></div>
 <p>每次 ±1，使全部相等的最小步數 = Σ|a_i − x| 的最小值。</p>
 <details><summary>思路</summary><p>x 取<b>中位數</b>。調整法證明：設 x 左側有 L 個點、右側有 R 個，x 右移一單位成本變化 L − R — 只要 L &lt; R 就該右移，平衡點即中位數。倉庫選址、士兵站隊（洛谷 P1889，二維可分離：x、y 各自取中位數，x 座標需先排序後減去下標再取中位數）都是此模型。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="luogu-p2512">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2512" target="_blank">洛谷 P2512 [HAOI2008] 糖果傳遞（環形均分紙牌）</a><span class="chip">中位數</span><span class="chip">前綴和</span></div>
 <p>環上 n 人傳糖果使人人相等，傳一顆代價 1，最小總代價。</p>
 <details><summary>思路</summary><p>設 x_i 為 i 傳給 i−1 的淨流量，列方程消元後答案 = <code>Σ|x_1 − c_i|</code>，其中 c_i 是可預先算出的前綴常數 — 問題化為「數軸上選點最小化絕對值和」，x_1 取 c 的<b>中位數</b>。線性版（均分紙牌，洛谷 P1031）直接前綴和貪心。展示「代數變形 → 化歸為中位數模型」的威力。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="misc-06">
 <div class="p-head"><span class="stars s3">★★★</span><span class="p-title">硬幣問題：什麼時候找零貪心是對的</span><span class="chip">數學</span><span class="chip">反例意識</span></div>
 <details><summary>思路</summary><p>「每次拿最大面額」只對 <b>canonical coin system</b> 正確（如 1/5/10/50 與各國流通幣制 — 這是設計出來的），對 {1,3,4} 湊 6 就錯（貪心 4+1+1 三枚，最優 3+3 兩枚）。判定一般幣制是否 canonical 可用 Kozen–Zaks 定理：最小反例必出現在小範圍內，可 O(面額²) 檢查。<b>競賽守則：面額任意給的找零題，一律 DP。</b></p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="lc-343">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/integer-break/" target="_blank">LC 343 整數拆分（均值不等式）</a><span class="chip">數學</span></div>
 <details><summary>思路</summary><p>拆成盡量多的 3（餘 1 時改一個 3+1 → 2+2）。由均值不等式，固定段數時各段相等最優；比較 e 附近的整數，3 的冪勝出。數學貪心常見終局：<b>答案結構被不等式限定成幾種 case，逐一比較</b>。</p></details>
 </div>
 
-<div class="problem">
+<div class="problem" data-problem-id="misc-07">
 <div class="p-head"><span class="stars s3">★★★</span><span class="p-title">排序不等式應用：僱傭計畫 / 加權匹配</span><span class="chip">數學</span><span class="chip">排序不等式</span></div>
 <details><summary>思路</summary><p>排序不等式：兩序列同序點積最大、反序最小。應用如「n 個工人 n 件事，效率×難度求和最小」→ 效率大配難度小（反序）。與 2.1.2 的 comparator 推導殊途同歸，但直接引用不等式可跳過推導。</p></details>
 </div>
