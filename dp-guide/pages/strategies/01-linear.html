@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.1 線性 DP（入門三件套與 LIS 家族） — DP 上分攻略</title>
+<meta name="description" content="「前 i 個」與「以 i 結尾」兩種視角，從爬樓梯到 LIS 二維偏序">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%88</text></svg>">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/site.js"></script>
+<script src="../../assets/firebase-config.js"></script>
+<script src="../../assets/progress.js"></script>
+</head>
+<body data-page="s01">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../index.html">📈 DP 上分攻略<span>動態規劃 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-linear.html">2.1 線性 DP</a>
+    <a class="lv2" data-page="s02" href="02-grid.html">2.2 網格與座標 DP</a>
+    <a class="lv2" data-page="s03" href="03-knapsack.html">2.3 背包全家桶</a>
+    <a class="lv2" data-page="s04" href="04-interval.html">2.4 區間 DP</a>
+    <a class="lv2" data-page="s05" href="05-two-sequences.html">2.5 雙序列 DP</a>
+    <a class="lv2" data-page="s06" href="06-state-machine.html">2.6 狀態機 DP</a>
+    <a class="lv2" data-page="s07" href="07-bitmask.html">2.7 位元狀壓 DP</a>
+    <a class="lv2" data-page="s08" href="08-tree.html">2.8 樹上 DP</a>
+    <a class="lv2" data-page="s09" href="09-digit.html">2.9 數位 DP</a>
+    <a class="lv2" data-page="s10" href="10-counting-expectation.html">2.10 計數與期望 DP</a>
+    <a class="lv2" data-page="s11" href="11-graph-game.html">2.11 圖上與博弈 DP</a>
+    <a class="lv2" data-page="s12" href="12-optimization.html">2.12 DP 優化技術</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與除錯</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 狀態設計方法論</a>
+    <a class="lv1" data-page="problems" href="../problems.html">5. 題目總表（可篩選）</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.1 線性 DP（入門三件套與 LIS 家族）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>狀態沿著序列一維推進。兩種最常用的視角：<b>「前 i 個的答案」</b>（答案在 dp[n]）與<b>「以 i 結尾的答案」</b>（答案是所有 dp[i] 取 max）。分不清用哪個時，看轉移是否需要「最後一個元素是誰」——需要就用「以 i 結尾」。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>輸入是一條序列，決策按下標從左到右進行，做完第 i 個不會回頭改前面。</li>
+<li>每一步只有常數種選擇（選/不選、接/不接）。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="lc-70">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/climbing-stairs/" target="_blank">LC 70 爬樓梯</a><span class="chip">線性</span></div>
+<p>每次爬 1 或 2 階，爬到 n 階有幾種走法？</p>
+<details><summary>思路</summary><p>dp[i] = 到第 i 階的走法數。最後一步要嘛從 i−1 跨 1 階、要嘛從 i−2 跨 2 階：<b>dp[i] = dp[i−1] + dp[i−2]</b>——就是斐波那契。這題示範了轉移方程的萬用推導法：<b>枚舉最後一步</b>。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">int a = 1, b = 1;                  // dp[0], dp[1]
+for (int i = 2; i &lt;= n; i++) { int c = a + b; a = b; b = c; }
+return b;                          // 滾動到只剩兩個變數</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="lc-198">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/house-robber/" target="_blank">LC 198 打家劫舍</a><span class="chip">線性</span><span class="chip">選/不選</span></div>
+<p>不能偷相鄰兩家，最大化偷竊總額。</p>
+<details><summary>思路</summary><p>dp[i] = 只考慮前 i 家的最大收益。第 i 家<b>不偷</b>：dp[i−1]；<b>偷</b>：dp[i−2] + a[i]。取 max。「選/不選」是線性 DP 最基本的決策形式，環形版 LC 213 拆成「不偷第 1 家」與「不偷最後一家」兩條鏈各做一次。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">int prev2 = 0, prev1 = 0;
+for (int x : nums) { int cur = max(prev1, prev2 + x); prev2 = prev1; prev1 = cur; }
+return prev1;</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="lc-53">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/maximum-subarray/" target="_blank">LC 53 最大子陣列和（Kadane）</a><span class="chip">線性</span><span class="chip">以 i 結尾</span></div>
+<p>找和最大的連續子陣列。</p>
+<details><summary>思路</summary><p>「以 i 結尾」視角的代表作：dp[i] = 以 a[i] 結尾的最大子段和 = <b>max(dp[i−1], 0) + a[i]</b>（前綴是負的就丟掉重開）。答案 = max 全部 dp[i]。環形版 LC 918：答案是「普通最大子段和」或「總和 − 最小子段和」二者取大。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">int cur = 0, best = INT_MIN;
+for (int x : nums) { cur = max(cur, 0) + x; best = max(best, cur); }
+return best;</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="lc-300">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/longest-increasing-subsequence/" target="_blank">LC 300 最長遞增子序列（LIS）</a><span class="chip">線性</span><span class="chip">LIS</span><span class="chip">二分</span></div>
+<p>求最長嚴格遞增子序列長度。</p>
+<details><summary>思路</summary><p>O(n²)：dp[i] = 以 i 結尾的 LIS = max{dp[j]} + 1（j &lt; i 且 a[j] &lt; a[i]）。O(n log n)：維護陣列 g，g[k] = 「長度 k+1 的遞增子序列的<b>最小可能結尾</b>」——g 單調遞增，每個 a[i] 用 lower_bound 替換第一個 ≥ 它的位置。這是「DP + 貪心維護決策集合」的第一課，也是 BIT 優化轉移（<a href="12-optimization.html">2.12.8</a>）的入門素材。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">vector&lt;int&gt; g;
+for (int x : nums) {
+    auto it = lower_bound(g.begin(), g.end(), x);   // 非嚴格遞增改 upper_bound
+    if (it == g.end()) g.push_back(x); else *it = x;
+}
+return g.size();</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1020">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1020" target="_blank">洛谷 P1020 導彈攔截</a><span class="chip">LIS</span><span class="chip">Dilworth</span></div>
+<p>第一問：一套系統最多攔幾發（最長不上升子序列）；第二問：最少幾套系統攔完所有導彈。</p>
+<details><summary>思路</summary><p>第二問是 <b>Dilworth 定理</b>：把序列劃分成最少的不上升鏈，等於最長<b>嚴格上升</b>子序列的長度。兩問都用 O(n log n) 的 g 陣列寫法。這題把「LIS 不只是求長度，還是覆蓋/劃分的對偶」講透了。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1091">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1091" target="_blank">洛谷 P1091 合唱隊形</a><span class="chip">LIS</span></div>
+<p>留下一個先升後降的子序列，最少踢掉幾人？</p>
+<details><summary>思路</summary><p>對每個 i 求「以 i 結尾的 LIS」f[i] 與「以 i 開頭的最長下降子序列」g[i]（反著做一次 LIS），答案 = n − max(f[i] + g[i] − 1)。<b>正反各掃一遍再拼接</b>是線性 DP 的常用組合技。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-354">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/russian-doll-envelopes/" target="_blank">LC 354 俄羅斯套娃信封</a><span class="chip">LIS</span><span class="chip">排序鍵設計</span></div>
+<p>信封 (w, h) 嚴格雙維遞增才能嵌套，最多套幾層？</p>
+<details><summary>思路</summary><p>二維偏序化一維：按 <b>w 遞增、w 相同時 h 遞減</b>排序，再對 h 做 LIS。h 遞減保證同 w 的信封不會互相接龍——排序鍵設計錯（h 也遞增）是本題最經典的 WA。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-455a">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/455/A" target="_blank">CF 455A Boredom</a><span class="chip">線性</span><span class="chip">值域當狀態</span></div>
+<p>取走一個值為 v 的元素得 v 分，但所有 v−1、v+1 的元素被刪除，最大得分？</p>
+<details><summary>思路</summary><p>對<b>值域</b>而非下標做 DP：cnt[v] = 值 v 的出現次數，dp[v] = max(dp[v−1], dp[v−2] + v·cnt[v])——變成值域上的打家劫舍。<b>「對什麼做 DP」本身就是設計決策</b>：下標、值域、時間軸都可以是階段。</p></details>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="../theory.html"><span class="dir">← 上一節</span>1. 理論基礎</a>
+<a class="next" href="02-grid.html"><span class="dir">下一節 →</span>2.2 網格與座標 DP</a>
+</div>
+<footer class="site-footer">
+  <p>DP 上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。姊妹站：<a href="../../../index.html">貪心演算法完全指南</a>。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

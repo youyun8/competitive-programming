@@ -1,0 +1,47 @@
+<h2>2.11 圖上 DP 與博弈 DP</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>DP 要求依賴關係無環。圖上做 DP 的三條路：① 圖本身是 <b>DAG</b> → 拓撲序即計算順序；② 有環 → <b>SCC 縮點</b>成 DAG，或改用最短路演算法（鬆弛 = 帶環的 DP）；③ 博弈 → 狀態=「局面＋輪到誰」，從終局倒推勝負/最優值。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「按依賴關係求最長鏈/方案數」→ DAG DP；「k 次特權」→ 分層圖。</li>
+<li>雙人輪流、最優策略、問勝負或最大差值 → 博弈 DP。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="atcoder-dp-g">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_g" target="_blank">AtCoder DP G - Longest Path</a><span class="chip">DAG</span></div>
+<p>DAG 的最長路徑長度。</p>
+<details><summary>思路</summary><p>dp[v] = 以 v 結尾的最長路 = max(dp[u]) + 1（u→v 有邊）。記憶化搜尋不用手排拓撲序，天然正確。<b>「最長遞增子序列」其實就是這題</b>——LIS 的 DAG 觀點。方案數版把 max 換 +。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3387">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3387" target="_blank">洛谷 P3387 縮點（SCC + DP）</a><span class="chip">DAG</span><span class="chip">SCC</span></div>
+<p>有向圖選一條路徑（點可重經過），最大化路徑點權和。</p>
+<details><summary>思路</summary><p>環上的點要拿全拿 → <b>Tarjan 縮點</b>，每個 SCC 的權值 = 成員和，縮完是 DAG，再按拓撲序 dp[v] = w[v] + max(dp[u])。「先把環壓掉再 DP」是有環圖問題的第一反應。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4568">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4568" target="_blank">洛谷 P4568 飛行路線（分層圖）</a><span class="chip">分層圖</span><span class="chip">最短路</span></div>
+<p>最多 k 條邊可免費，求最短路（k ≤ 10）。</p>
+<details><summary>思路</summary><p>狀態加維：dist[v][j] = 到 v 用了 j 次免費的最短距離。實作成 k+1 層圖（層內原邊、層間免費邊）跑 Dijkstra。<b>最短路本質是「無法排序狀態」的 DP，Dijkstra 的貪心出隊就是它的計算順序</b>；「有限次特權」類問題（免費/翻倍/穿牆）一律狀態加維。</p></details>
+</div>
+
+<div class="problem" data-problem-id="atcoder-dp-k">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_k" target="_blank">AtCoder DP K - Stones</a><span class="chip">博弈</span></div>
+<p>石堆剩 k 顆，每步取集合 A 中的數量，取不了者輸。誰贏？</p>
+<details><summary>思路</summary><p>勝負態遞推：<b>win[k] = 存在 a ∈ A 使 win[k−a] 為輸</b>（能把對手推入必敗態就必勝）。所有公平組合博弈的 DP 原型；推廣到多堆就是 SG 函數與 Nim 的異或定理（本站點到為止，深入請開博弈論專題）。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">for (int k = 1; k &lt;= K; k++)
+    for (int a : A)
+        if (a &lt;= k &amp;&amp; !win[k - a]) { win[k] = true; break; }</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="atcoder-dp-l">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_l" target="_blank">AtCoder DP L - Deque</a><span class="chip">博弈</span><span class="chip">區間</span></div>
+<p>輪流從序列兩端取數，雙方都最大化「自己 − 對方」，求最終差值。</p>
+<details><summary>思路</summary><p>差值視角把兩個人合成一個目標：dp[l][r] = 當前玩家在 [l,r] 上能取得的最大<b>淨差</b> = max(a[l] − dp[l+1][r], a[r] − dp[l][r−1])——對手的最優淨差取負就是我的損失。LC 486 預測贏家同構。<b>「相對分差」讓 minimax 塌縮成單一 max，是博弈 DP 最重要的一步化簡。</b></p></details>
+</div>
+
+<div class="callout when"><b>🧭 延伸</b>
+<p>多堆獨立博弈的合成 → SG 函數（Grundy 值 = mex of 後繼），全局 SG = 各堆 SG 異或。SG 值的計算本身就是一個記憶化 DP——你已經會了，缺的只是定理。</p></div>

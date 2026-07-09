@@ -1,0 +1,62 @@
+<h2><span class="sec-no">4</span>狀態設計實戰方法論</h2>
+
+<h3>4.1 從暴力遞迴到 DP 的機械化流程</h3>
+<p>不會做的 DP 題，永遠從<b>暴力遞迴</b>開始——狀態設計不是靈感，是重構：</p>
+<ol>
+  <li><b>寫暴力</b>：定義 solve(完整描述目前局面) 回傳答案，枚舉當下所有決策遞迴。</li>
+  <li><b>削參數</b>：檢查每個參數——未來用不到的刪掉；能由其他參數導出的刪掉（交錯字串裡 C 的下標 = i + j）。</li>
+  <li><b>找重疊</b>：剩下的參數組合會不會重複出現？會 → 加 memo，DP 完成。</li>
+  <li><b>需要時改遞推</b>：要滾動陣列或轉移優化時，把記憶化搜尋翻成 for 迴圈。</li>
+</ol>
+
+<div class="callout idea"><b>💡 示範一：打家劫舍</b>
+<p>暴力：solve(i, 上一家偷了嗎)。削參數：「上一家偷了嗎」只影響「這一家能不能偷」，可以併進轉移（dp[i−2] + a[i] vs dp[i−1]）——參數剩一個 i，重疊顯然，完工。</p></div>
+
+<div class="callout idea"><b>💡 示範二：戳氣球</b>
+<p>暴力：solve(剩餘氣球集合)——指數狀態，卡住。<b>換枚舉對象</b>：不枚舉「第一個戳誰」而枚舉「最後一個戳誰」，剩餘集合永遠是連續區間 → 參數變 (l, r)，狀態 O(n²)。卡在狀態爆炸時，先怀疑「枚舉的方向」而不是硬壓縮。</p></div>
+
+<h3>4.2 狀態設計四視角</h3>
+<div class="tbl-wrap"><table>
+<tr><th>視角</th><th>觸發訊號</th><th>代表</th></tr>
+<tr><td><b>前 i 個</b>（前綴）</td><td>決策從左到右、答案只問總體</td><td>背包、股票、編輯距離</td></tr>
+<tr><td><b>以 i 結尾</b></td><td>轉移需要知道「最後一個是誰/在哪」</td><td>LIS、Kadane、值域 DP</td></tr>
+<tr><td><b>區間 [l, r]</b></td><td>操作發生在相鄰元素之間、子區間獨立</td><td>石子合併、戳氣球、博弈取數</td></tr>
+<tr><td><b>集合 S</b></td><td>n ≤ 20、順序任意、每個元素用一次</td><td>TSP、配對計數、集合覆蓋</td></tr>
+</table></div>
+<p>再各加一組常用「附加維」：處理到第幾行＋輪廓（棋盤）、目前節點＋子樹已合併（樹）、匹配到模式串第幾位（自動機）、用了幾次特權（分層）。</p>
+
+<h3>4.3 降維與資訊壓縮技巧清單</h3>
+<ul>
+  <li><b>滾動陣列</b>：只依賴上一排 → 兩排交替；0/1 背包型 → 原地倒序。</li>
+  <li><b>導出量不進狀態</b>：能由其他維算出的（i+j = 常數、j = k − i）刪掉一維。</li>
+  <li><b>相對量代替絕對量</b>：排列計數記「相對名次」（AT DP T）；差值代替兩個絕對位置。</li>
+  <li><b>對稱性合併</b>：等價元素只記個數不記身分（Sushi 的 dp[a][b][c]）。</li>
+  <li><b>值域與下標互換</b>：價值範圍小、重量範圍大 → dp[價值] = 最小重量（經典逆轉）。</li>
+  <li><b>模一個共同量</b>：整除類條件只需 mod lcm（CF 55D 的 2520）。</li>
+  <li><b>凸性/單調性外包</b>：整個函數當 DP 值，用堆/平衡樹維護（slope trick）。</li>
+</ul>
+
+<h3>4.4 對拍驗證器（Python）</h3>
+<p>DP 最幸福的一點：<b>暴力遞迴天然就是正確性基準</b>。方程一寫完就對拍，別等大測資 WA。</p>
+<pre><code class="lang-py">import random
+
+def brute(a):                       # 暴力：不記憶化的遞迴 = 規格書
+    n = len(a)
+    def go(i):
+        if i &lt; 0: return 0
+        return max(go(i - 1), go(i - 2) + a[i])
+    return go(n - 1)
+
+def fast(a):                        # 待驗證的 DP
+    p2 = p1 = 0
+    for x in a:
+        p2, p1 = p1, max(p1, p2 + x)
+    return p1
+
+for t in range(100000):
+    a = [random.randint(-5, 20) for _ in range(random.randint(0, 8))]
+    if brute(a) != fast(a):
+        print("WA!", a, brute(a), fast(a)); break
+else:
+    print("100000 tests passed")</code></pre>
+<p class="small">要點：測資<b>小而刁</b>（長度 0–8、含負數/零/重複）比大測資更會抓 bug；找到反例後把它縮到最小再除錯。</p>
