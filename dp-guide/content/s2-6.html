@@ -1,0 +1,54 @@
+<h2>2.6 狀態機 DP</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>把「目前處於哪種<b>模式</b>」顯式列成有限狀態機：dp[i][state]，轉移方程就是自動機的邊。適合「同一時刻你只能處於少數幾種身分」的問題——持股/空手、健康/冷凍期、匹配到模式串第幾位。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>決策合法性取決於「目前身分」：買了才能賣、冷凍期不能買。</li>
+<li>能畫出一張節點 ≤ 10 個的狀態轉移圖。</li>
+<li>模式是「匹配進度」時，自動機可以是 KMP/AC 自動機（見 2.6.4）。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="lc-122">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/" target="_blank">LC 121/122 股票 I・II</a><span class="chip">狀態機</span></div>
+<p>單筆交易（121）／不限次數（122）的最大利潤。</p>
+<details><summary>思路</summary><p>兩個狀態：hold（持股）、free（空手）。<b>hold[i] = max(hold[i−1], free[i−1] − p[i])，free[i] = max(free[i−1], hold[i−1] + p[i])</b>。121 只是把買入時的 free[i−1] 換成 0（只准一筆）。整個股票系列共用這張兩節點狀態機，差別只在邊上的限制。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">int hold = INT_MIN, free_ = 0;
+for (int p : prices) {
+    hold  = max(hold, free_ - p);
+    free_ = max(free_, hold + p);
+}
+return free_;</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="lc-309">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/" target="_blank">LC 309 股票含冷凍期</a><span class="chip">狀態機</span></div>
+<p>賣出後隔天不能買。</p>
+<details><summary>思路</summary><p>狀態機加一個節點：hold / free（可買）/ cooldown（剛賣）。cooldown[i] = hold[i−1] + p[i]；free[i] = max(free[i−1], cooldown[i−1])。<b>規則變了就改圖，不用重新發明方程</b>——狀態機 DP 的可維護性就在這裡。含手續費的 LC 714 只是在賣出邊扣 fee。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-188">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/" target="_blank">LC 188 股票 IV（至多 k 筆）</a><span class="chip">狀態機</span><span class="chip">wqs 預告</span></div>
+<p>至多完成 k 筆交易。</p>
+<details><summary>思路</summary><p>交易次數進狀態：dp[i][j][hold]，j ≤ k。k 很大時 k ≥ n/2 直接退化成 LC 122。更漂亮的是 <b>wqs 二分</b>：給每筆交易加罰款 λ，去掉次數維後二分 λ 使最優交易數恰為 k（<a href="#s2-12">2.12.6</a>）——「恰好 k 個」約束的通用消去術。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2569">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2569" target="_blank">洛谷 P2569 股票交易（SCOI2010）</a><span class="chip">狀態機</span><span class="chip">單調佇列</span></div>
+<p>每天有買/賣的價格與數量上限，交易間隔至少 W 天，最大化最終獲利。</p>
+<details><summary>思路</summary><p>dp[i][j] = 第 i 天持股 j 的最大現金。從第 i−W−1 天轉移：買入 dp[i][j] = max(dp[i−W−1][k] + (k−j)·買價)（k &lt; j）。把式子整理成「與 k 有關的部分 + 與 j 有關的部分」，對 k 的 max 用<b>單調佇列</b>維護——狀態機 × 轉移優化的標準組合技（<a href="#s2-12">2.12.2</a>）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-935">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/knight-dialer/" target="_blank">LC 935 騎士撥號器</a><span class="chip">狀態機</span><span class="chip">矩陣冪預告</span></div>
+<p>騎士在電話鍵盤上跳 n−1 步，能撥出幾種號碼？</p>
+<details><summary>思路</summary><p>把鍵盤當自動機：dp[i][v] = 第 i 步停在鍵 v 的方案數 = Σ dp[i−1][u]（u 可跳到 v）。<b>轉移矩陣固定 → n 到 10¹⁸ 時直接上矩陣快速冪</b>（<a href="#s2-12">2.12.7</a>）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3193">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3193" target="_blank">洛谷 P3193 GT 考試（KMP + 矩陣冪）</a><span class="chip">狀態機</span><span class="chip">KMP 自動機</span><span class="chip">矩陣冪</span></div>
+<p>長 n（≤ 10⁹）的數字串，不含長 m（≤ 20）的禁止串 X 的方案數。</p>
+<details><summary>思路</summary><p>狀態 = <b>「目前匹配到 X 的第幾位」</b>（KMP 自動機節點，共 m 個）。dp[i][j] → dp[i+1][j']：對每個追加數字，用 KMP 失配函數算出新匹配位置 j'，禁止走到 j'=m。轉移矩陣 m×m 與 i 無關 → 矩陣快速冪 O(m³ log n)。<b>字串自動機（KMP/AC 自動機）× DP × 矩陣冪</b>是計數硬題的黃金三件套。</p></details>
+</div>

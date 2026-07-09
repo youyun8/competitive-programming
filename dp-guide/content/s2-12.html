@@ -1,0 +1,116 @@
+<h2>2.12 DP 優化技術（競賽分水嶺）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>方程對了但 TLE，瓶頸幾乎都在「枚舉決策點」。優化的本質只有一句話：<b>把對決策的線性枚舉，換成資料結構查詢或數學性質的直接定位</b>。先把轉移整理成 dp[i] = min/max over j of { 只與 j 有關 } + { 只與 i 有關 } +（也許）{ i·j 交叉項 }，再對號入座：</p>
+<div class="tbl-wrap"><table>
+<tr><th>轉移形態</th><th>工具</th><th>複雜度變化</th></tr>
+<tr><td>決策 j 在滑動窗口內、無交叉項</td><td>單調佇列（2.12.2）</td><td>O(n²) → O(n)</td></tr>
+<tr><td>有 i·j 交叉項（形如 −2·s_i·s_j）</td><td>斜率優化 / Li Chao（2.12.3）</td><td>O(n²) → O(n)／O(n log n)</td></tr>
+<tr><td>決策點隨 i 單調（區間合併類）</td><td>Knuth / 決策單調性（2.12.4–5）</td><td>O(n³) → O(n²)；O(kn²) → O(kn log n)</td></tr>
+<tr><td>「恰好選 k 個」＋答案關於 k 凸</td><td>wqs 二分（2.12.6）</td><td>去掉一整維</td></tr>
+<tr><td>轉移是固定線性遞推、n 超大</td><td>矩陣快速冪（2.12.7）</td><td>O(n) → O(k³ log n)</td></tr>
+<tr><td>決策 j 需滿足偏序（值域約束）</td><td>BIT/線段樹（2.12.8）</td><td>O(n²) → O(n log n)</td></tr>
+<tr><td>bool 可行性 / 集合可達性</td><td>bitset（2.12.9）</td><td>除以 64</td></tr>
+</table></div></div>
+
+<h3>2.12.1 前綴和優化</h3>
+<div class="problem" data-problem-id="atcoder-dp-m">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_m" target="_blank">AtCoder DP M - Candies</a><span class="chip">前綴和優化</span><span class="chip">計數</span></div>
+<p>n 個小孩分 K 顆糖，第 i 個最多拿 a_i 顆，方案數。</p>
+<details><summary>思路</summary><p>dp[i][j] = 前 i 人分掉 j 顆 = Σ dp[i−1][j−t]（0 ≤ t ≤ a_i）——<b>轉移是一段連續區間的和</b>，維護上一排的前綴和即可 O(1) 轉移，O(nK) 總複雜度。最便宜也最常用的優化，永遠先想它。</p></details>
+</div>
+
+<h3>2.12.2 單調佇列優化</h3>
+<div class="problem" data-problem-id="luogu-p1725">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1725" target="_blank">洛谷 P1725 琪露諾</a><span class="chip">單調佇列</span></div>
+<p>從格子 i 只能跳到 [i+L, i+R]，最大化途經權值和。</p>
+<details><summary>思路</summary><p>dp[i] = max(dp[j]) + a[i]，j ∈ [i−R, i−L]——決策窗口隨 i 平移，<b>單調遞減佇列</b>維護窗口最大值：隊尾比新值差就彈掉（它永遠不會再當最大），隊首過期就出隊。攤還 O(1)。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">deque&lt;int&gt; q;                       // 存下標，dp 值遞減
+for (int i = L; i &lt;= n; i++) {
+    int j = i - L;                   // j 進入窗口
+    while (!q.empty() &amp;&amp; dp[q.back()] &lt;= dp[j]) q.pop_back();
+    q.push_back(j);
+    while (q.front() &lt; i - R) q.pop_front();
+    dp[i] = dp[q.front()] + a[i];
+}</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3572">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3572" target="_blank">洛谷 P3572 [POI2014] Little Bird</a><span class="chip">單調佇列</span></div>
+<p>小鳥每次前跳 ≤ k 格，跳到不低於目前的樹會累 1 點，最小化疲勞。</p>
+<details><summary>思路</summary><p>窗口 min 版，加了「同疲勞值時比樹高」的次級比較——單調佇列的比較器可以是多鍵的。<b>多重背包的單調佇列優化</b>（按余數分組後就是窗口 max）同屬此類，寶物篩選（P1776）可用它壓到 O(nW)。</p></details>
+</div>
+
+<h3>2.12.3 斜率優化（Convex Hull Trick）</h3>
+<div class="problem" data-problem-id="luogu-p3195">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3195" target="_blank">洛谷 P3195 玩具裝箱（HNOI2008）</a><span class="chip">斜率優化</span></div>
+<p>序列切段，每段代價 (len + c)²，最小化總代價。</p>
+<details><summary>思路</summary><p>設 f_i = dp[i]、x_j = s_j（前綴函數），展開得 <b>f_i = min_j { −2·A_i·x_j + (x_j² + f_j) } + 只含 i 的項</b>——把每個決策 j 看成直線 y = −2x_j·t + (x_j²+f_j)，查詢點 t = A_i。A_i 與 x_j 都單調時：維護下凸殼，隊首兩線比較即可彈出過期最優，攤還 O(n)。<b>推導三步：展開 → 分離 i/j → 交叉項當斜率</b>。不單調時改用 Li Chao 線段樹或 CDQ 分治插線，O(n log n)。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">// 維護下凸殼（斜率遞增），X(j), Y(j) 為決策 j 的座標
+auto slope = [&amp;](int a, int b) {
+    return (double)(Y(b) - Y(a)) / (X(b) - X(a));
+};
+int h = 0, t = 0; q[t++] = 0;
+for (int i = 1; i &lt;= n; i++) {
+    while (t - h &gt;= 2 &amp;&amp; slope(q[h], q[h+1]) &lt;= K(i)) h++;   // 查詢斜率遞增：隊首彈出
+    dp[i] = calc(i, q[h]);
+    while (t - h &gt;= 2 &amp;&amp; slope(q[t-2], q[t-1]) &gt;= slope(q[t-1], i)) t--; // 維護凸性
+    q[t++] = i;
+}</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3628">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3628" target="_blank">洛谷 P3628 特別行動隊（APIO 2010）</a><span class="chip">斜率優化</span></div>
+<p>切段代價是二次函數 a·x² + b·x + c（a &lt; 0），最大化總和。</p>
+<details><summary>思路</summary><p>玩具裝箱的孿生題，但求 max → 維護<b>上凸殼</b>、不等號全反。做完這兩題，斜率優化的「推式子 → 定凸殼方向 → 定隊首/隊尾操作」流程就固化了。</p></details>
+</div>
+
+<h3>2.12.4 四邊形不等式（Knuth 優化）</h3>
+<div class="problem" data-problem-id="poj-1160">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="http://poj.org/problem?id=1160" target="_blank">POJ 1160 Post Office（IOI 2000）</a><span class="chip">Knuth</span><span class="chip">區間</span></div>
+<p>直線上 n 個村莊建 m 個郵局，最小化總距離。</p>
+<details><summary>思路</summary><p>dp[i][j] = 前 i 村建 j 局。代價 w(l,r)（區間到中位數的距離和）滿足<b>四邊形不等式 w(a,c)+w(b,d) ≤ w(a,d)+w(b,c)</b> → 決策點單調 opt[i][j−1] ≤ opt[i][j] ≤ opt[i+1][j]，枚舉範圍夾住後總量攤還 O(n²)。石子合併同理從 O(n³) 降到 O(n²)。<b>實戰驗證法：先寫暴力打出 opt 表，肉眼確認單調再上優化。</b></p></details>
+</div>
+
+<h3>2.12.5 分治優化（Divide &amp; Conquer Optimization）</h3>
+<div class="problem" data-problem-id="cf-321e">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/321/E" target="_blank">CF 321E Ciel and Gondolas</a><span class="chip">分治優化</span></div>
+<p>n 人依序分成 k 組，組內兩兩「不熟度」和最小化（n ≤ 4000, k ≤ 800）。</p>
+<details><summary>思路</summary><p>層轉移 dp[j][i] = min dp[j−1][t] + w(t+1, i)，決策單調但不方便夾邊界時用<b>分治</b>：solve(l, r, optl, optr) 對中點 mid 暴力找最優決策 opt(mid)，再遞迴兩半並收窄決策範圍——每層 O(n·(範圍)) 總計 O(kn log n)。w 用 2D 前綴和 O(1) 查。比 Knuth 更好寫、適用面更廣，是 CF 難題的常客。</p></details>
+</div>
+
+<h3>2.12.6 wqs 二分（Aliens Trick）</h3>
+<div class="problem" data-problem-id="lc-188">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/" target="_blank">LC 188 重做：恰好 k 筆交易</a><span class="chip">wqs 二分</span></div>
+<p>把「至多/恰好 k 筆」的次數維整個消掉。</p>
+<details><summary>思路</summary><p>答案 g(k) 關於 k 是<b>凸函數</b>時：給每筆交易加罰款 λ，解無次數限制的問題（O(n) 狀態機），最優交易數隨 λ 增大而減少 → <b>二分 λ 使交易數恰為 k</b>，答案 = 帶罰款最優值 + k·λ。幾何直觀：用斜率 λ 的直線去切凸函數。難點在凸性證明與「相同值取交易數最多/最少」的邊界處理。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4383">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4383" target="_blank">洛谷 P4383 林克卡特樹（八省聯考 2018）</a><span class="chip">wqs 二分</span><span class="chip">樹上</span></div>
+<p>樹上刪 k 條邊再連 k 條 0 權邊，最大化直徑——等價於選 k+1 條點不相交路徑權和最大。</p>
+<details><summary>思路</summary><p>「選恰好 k+1 條路徑」凸 → wqs 二分罰款，內層變成無約束的樹形 DP（每點三態：不在路徑/是端點/在中間）。<b>wqs × 樹形 DP 是 NOI 級標配組合</b>；IOI 2016 Aliens 是同名出處。</p></details>
+</div>
+
+<h3>2.12.7 矩陣快速冪加速線性遞推</h3>
+<div class="problem" data-problem-id="luogu-p1962">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1962" target="_blank">洛谷 P1962 斐波那契數列（n ≤ 2⁶³）</a><span class="chip">矩陣冪</span></div>
+<p>求 F(n) mod 10⁹+7，n 大到不能遞推。</p>
+<details><summary>思路</summary><p>轉移與 i 無關的線性遞推 → 寫成向量 × 固定矩陣，快速冪 O(k³ log n)。<b>判別式：dp[i] 是 dp[i−1..i−k] 的固定線性組合（常數 ≤ 幾十）</b>。GT 考試（<a href="#s2-6">2.6.4</a>）= KMP 自動機 + 本技術。騎士撥號器 n 變大也是它。</p></details>
+</div>
+
+<h3>2.12.8 資料結構優化轉移</h3>
+<div class="problem" data-problem-id="cf-597c">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/597/C" target="_blank">CF 597C Subsequences</a><span class="chip">BIT 優化</span><span class="chip">計數</span></div>
+<p>數長度 k+1 的遞增子序列個數（n ≤ 10⁵, k ≤ 10）。</p>
+<details><summary>思路</summary><p>dp[i][t] = 以 i 結尾長 t 的方案數 = Σ dp[j][t−1]（j &lt; i 且 a[j] &lt; a[i]）——「下標在前、值更小」的偏序求和，<b>對每層 t 開一個 BIT 按值域求前綴和</b>，O(nk log n)。LIS 的 O(n log n) BIT 寫法（前綴 max）是同一招的最值版。</p></details>
+</div>
+
+<h3>2.12.9 bitset 壓位</h3>
+<div class="callout idea"><b>💡 模式</b>
+<p>可行性背包 <code>dp |= dp &lt;&lt; w</code>：一行完成一件物品的全部轉移，O(nW/64)。字串類（LCS 的 bitset 演算法）、傳遞閉包、可達性 DP 同理。<b>當 dp 值只有 0/1 且轉移是平移/或/與，就想 bitset</b>——它經常把「明顯超時」的 O(n²) 直接壓進時限。</p>
+<pre><code class="lang-cpp">bitset&lt;100001&gt; can; can[0] = 1;
+for (int w : items) can |= can &lt;&lt; w;    // 可行性 0/1 背包
+</code></pre></div>

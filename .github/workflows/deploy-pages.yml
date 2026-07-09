@@ -1,10 +1,10 @@
-name: Deploy greedy guide to GitHub Pages
+name: Deploy guides to GitHub Pages
 
 on:
   push:
     branches:
       - main
-      - claude/greedy-algorithm-guide-36aywl  # 合併進 main 後可移除此行
+      - claude/dp-strategy-classification-y43q9r  # 合併進 main 後可移除此行
   workflow_dispatch:
 
 permissions:
@@ -26,6 +26,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Assemble site  # 貪心指南在根目錄（維持既有網址），DP 上分攻略在 /dp/
+        run: |
+          mkdir -p _site
+          cp -r greedy-guide/. _site/
+          mkdir -p _site/dp
+          cp -r dp-guide/. _site/dp/
+          rm -rf _site/content _site/build.py _site/OUTLINE.md
+          rm -rf _site/dp/content _site/dp/build.py _site/dp/OUTLINE.md
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -34,7 +43,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: greedy-guide
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
