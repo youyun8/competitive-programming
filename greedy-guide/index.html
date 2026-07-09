@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>貪心演算法完全指南 — 從入門到競賽專家</title>
+<style>
+:root{
+  --bg:#f7f8fa; --bg2:#ffffff; --fg:#1a2233; --fg2:#5a6478; --line:#e3e7ee;
+  --accent:#0f766e; --accent2:#0d9488; --accent-soft:#ccfbf1;
+  --code-bg:#0f172a; --code-fg:#e2e8f0;
+  --s1:#16a34a; --s2:#65a30d; --s3:#d97706; --s4:#dc2626; --s5:#9333ea;
+  --callout-idea:#ecfdf5; --callout-idea-b:#10b981;
+  --callout-when:#eff6ff; --callout-when-b:#3b82f6;
+  --callout-warn:#fef2f2; --callout-warn-b:#ef4444;
+  --callout-proof:#faf5ff; --callout-proof-b:#a855f7;
+  --chip-bg:#eef2f7; --chip-fg:#3b4a63;
+  --shadow:0 1px 3px rgba(15,23,42,.08);
+}
+:root[data-theme="dark"]{
+  --bg:#0b1120; --bg2:#111a2e; --fg:#e2e8f0; --fg2:#94a3b8; --line:#243049;
+  --accent:#2dd4bf; --accent2:#14b8a6; --accent-soft:#134e4a;
+  --code-bg:#0a0f1d; --code-fg:#dbe4f0;
+  --callout-idea:#0c2b22; --callout-idea-b:#10b981;
+  --callout-when:#0e2036; --callout-when-b:#3b82f6;
+  --callout-warn:#2d1214; --callout-warn-b:#ef4444;
+  --callout-proof:#231234; --callout-proof-b:#a855f7;
+  --chip-bg:#1c2740; --chip-fg:#b7c3d9;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme]){
+    --bg:#0b1120; --bg2:#111a2e; --fg:#e2e8f0; --fg2:#94a3b8; --line:#243049;
+    --accent:#2dd4bf; --accent2:#14b8a6; --accent-soft:#134e4a;
+    --code-bg:#0a0f1d; --code-fg:#dbe4f0;
+    --callout-idea:#0c2b22; --callout-idea-b:#10b981;
+    --callout-when:#0e2036; --callout-when-b:#3b82f6;
+    --callout-warn:#2d1214; --callout-warn-b:#ef4444;
+    --callout-proof:#231234; --callout-proof-b:#a855f7;
+    --chip-bg:#1c2740; --chip-fg:#b7c3d9;
+    --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.75; font-size:16px;
+}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+.layout{display:flex; min-height:100vh}
+
+/* ── sidebar ─────────────────────────── */
+#sidebar{
+  width:280px; flex-shrink:0; background:var(--bg2); border-right:1px solid var(--line);
+  position:sticky; top:0; height:100vh; overflow-y:auto; padding:20px 14px 40px;
+}
+#sidebar .logo{font-weight:800; font-size:17px; padding:4px 10px 14px; letter-spacing:.5px}
+#sidebar .logo span{color:var(--accent)}
+#sidebar nav a{
+  display:block; padding:5px 10px; margin:1px 0; border-radius:8px;
+  color:var(--fg2); font-size:13.5px;
+}
+#sidebar nav a:hover{background:var(--chip-bg); color:var(--fg); text-decoration:none}
+#sidebar nav a.lv1{font-weight:700; color:var(--fg); margin-top:10px; font-size:14px}
+#sidebar nav a.lv2{padding-left:22px}
+#sidebar nav a.active{background:var(--accent-soft); color:var(--accent)}
+#menuBtn{
+  display:none; position:fixed; z-index:60; bottom:18px; right:18px;
+  width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
+  background:var(--accent); color:#fff; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.3);
+}
+#themeBtn{
+  border:1px solid var(--line); background:var(--bg2); color:var(--fg2);
+  border-radius:8px; padding:4px 12px; cursor:pointer; font-size:13px; margin:2px 10px 8px;
+}
+#themeBtn:hover{color:var(--fg)}
+
+/* ── main ────────────────────────────── */
+main{flex:1; min-width:0; padding:36px 48px 120px; max-width:960px; margin:0 auto}
+.hero{
+  border-radius:18px; padding:38px 36px; margin-bottom:36px; color:#fff;
+  background:linear-gradient(135deg,#0f766e 0%,#0d9488 45%,#115e59 100%);
+}
+.hero h1{margin:0 0 10px; font-size:30px; line-height:1.3}
+.hero p{margin:6px 0; opacity:.92; max-width:640px}
+.hero .badges{margin-top:16px; display:flex; gap:8px; flex-wrap:wrap}
+.hero .badges span{
+  background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3);
+  border-radius:999px; padding:3px 14px; font-size:13px;
+}
+h2{
+  font-size:23px; margin:56px 0 14px; padding-bottom:8px;
+  border-bottom:2px solid var(--line); scroll-margin-top:20px;
+}
+h2 .sec-no{color:var(--accent); margin-right:8px}
+h3{font-size:18px; margin:34px 0 10px; scroll-margin-top:20px}
+h3 .stars{font-size:13px; vertical-align:2px; margin-left:8px}
+h4{font-size:15.5px; margin:24px 0 8px}
+p{margin:10px 0}
+ul,ol{padding-left:26px; margin:8px 0}
+li{margin:4px 0}
+section{scroll-margin-top:16px}
+b,strong{font-weight:700}
+.small{font-size:13.5px; color:var(--fg2)}
+
+/* callouts */
+.callout{border-radius:12px; padding:14px 18px; margin:14px 0; border-left:4px solid}
+.callout>b:first-child{display:block; margin-bottom:4px; font-size:14px; letter-spacing:1px}
+.callout.idea{background:var(--callout-idea); border-color:var(--callout-idea-b)}
+.callout.when{background:var(--callout-when); border-color:var(--callout-when-b)}
+.callout.warn{background:var(--callout-warn); border-color:var(--callout-warn-b)}
+.callout.proof{background:var(--callout-proof); border-color:var(--callout-proof-b)}
+.callout p:last-child,.callout ul:last-child{margin-bottom:2px}
+
+/* stars & chips */
+.stars{font-weight:700; letter-spacing:1px; white-space:nowrap}
+.stars.s1{color:var(--s1)} .stars.s2{color:var(--s2)} .stars.s3{color:var(--s3)}
+.stars.s4{color:var(--s4)} .stars.s5{color:var(--s5)}
+.chip{
+  display:inline-block; background:var(--chip-bg); color:var(--chip-fg);
+  border-radius:999px; padding:1px 11px; font-size:12px; margin:0 3px 3px 0; white-space:nowrap;
+}
+.chip.clickable{cursor:pointer; user-select:none}
+.chip.on{background:var(--accent); color:#fff}
+
+/* problem card */
+.problem{
+  background:var(--bg2); border:1px solid var(--line); border-radius:14px;
+  padding:16px 20px; margin:16px 0; box-shadow:var(--shadow);
+}
+.p-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px}
+.p-title{font-weight:700; font-size:16px}
+.problem details{
+  margin:8px 0; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+}
+.problem summary{
+  cursor:pointer; padding:7px 14px; font-size:13.5px; font-weight:600; color:var(--fg2);
+  background:var(--chip-bg); user-select:none; list-style:none;
+}
+.problem summary::before{content:"▸ "; color:var(--accent)}
+.problem details[open] summary::before{content:"▾ "}
+.problem details>*:not(summary){margin-left:14px; margin-right:14px}
+.problem details>pre{margin:10px 14px}
+
+/* code */
+pre{
+  background:var(--code-bg); color:var(--code-fg); border-radius:12px;
+  padding:14px 18px; overflow-x:auto; font-size:13.5px; line-height:1.6;
+  margin:14px 0;
+}
+code{font-family:"JetBrains Mono","Cascadia Code",Consolas,"Courier New",monospace}
+p code,li code,td code{
+  background:var(--chip-bg); border-radius:5px; padding:1px 6px; font-size:.9em; color:var(--fg);
+}
+.tok-kw{color:#f472b6} .tok-str{color:#a5d6a7} .tok-com{color:#64748b;font-style:italic}
+.tok-num{color:#fbbf24} .tok-fn{color:#7dd3fc} .tok-pre{color:#c4b5fd}
+
+/* tables */
+.tbl-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; margin:14px 0}
+table{border-collapse:collapse; width:100%; font-size:14px; background:var(--bg2)}
+th,td{border-bottom:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top}
+th{background:var(--chip-bg); font-size:13px; white-space:nowrap; position:sticky; top:0}
+tr:last-child td{border-bottom:none}
+
+/* problem-table filter bar */
+.filterbar{
+  background:var(--bg2); border:1px solid var(--line); border-radius:12px;
+  padding:12px 16px; margin:14px 0; display:flex; flex-direction:column; gap:8px;
+}
+.filterbar input{
+  background:var(--bg); border:1px solid var(--line); color:var(--fg);
+  border-radius:8px; padding:7px 12px; font-size:14px; width:100%;
+}
+.filterbar .row{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.filterbar .lbl{font-size:12.5px; color:var(--fg2); margin-right:4px; white-space:nowrap}
+#ptbl-count{font-size:13px; color:var(--fg2)}
+
+/* roadmap */
+.stage{
+  background:var(--bg2); border:1px solid var(--line); border-left:5px solid var(--accent);
+  border-radius:12px; padding:16px 22px; margin:16px 0; box-shadow:var(--shadow);
+}
+.stage h3{margin-top:0}
+
+footer{margin-top:80px; padding-top:20px; border-top:1px solid var(--line); color:var(--fg2); font-size:13px}
+
+@media (max-width: 900px){
+  #sidebar{
+    position:fixed; z-index:50; left:0; top:0; transform:translateX(-100%);
+    transition:transform .25s ease; box-shadow:4px 0 24px rgba(0,0,0,.25);
+  }
+  #sidebar.open{transform:translateX(0)}
+  #menuBtn{display:block}
+  main{padding:20px 18px 100px}
+  .hero{padding:26px 22px}
+  .hero h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo">🧭 貪心演算法<span>完全指南</span></div>
+  <button id="themeBtn">🌓 切換主題</button>
+  <nav id="toc">
+    <a class="lv1" href="#s0">0. 導讀與使用方式</a>
+    <a class="lv1" href="#s1">1. 理論基礎</a>
+    <a class="lv2" href="#s1-3">1.3 四大證明技巧</a>
+    <a class="lv2" href="#s1-4">1.4 如何懷疑一個貪心</a>
+    <a class="lv1" href="#s2">2. 策略分類</a>
+    <a class="lv2" href="#s2-1">2.1 排序貪心</a>
+    <a class="lv2" href="#s2-2">2.2 區間問題全家桶</a>
+    <a class="lv2" href="#s2-3">2.3 交換論證排程</a>
+    <a class="lv2" href="#s2-4">2.4 反悔貪心</a>
+    <a class="lv2" href="#s2-5">2.5 堆積貪心</a>
+    <a class="lv2" href="#s2-6">2.6 字典序貪心</a>
+    <a class="lv2" href="#s2-7">2.7 數學貪心與調整法</a>
+    <a class="lv2" href="#s2-8">2.8 圖上貪心</a>
+    <a class="lv2" href="#s2-9">2.9 貪心 × 資料結構</a>
+    <a class="lv2" href="#s2-10">2.10 貪心 × 二分答案</a>
+    <a class="lv2" href="#s2-11">2.11 專家專題</a>
+    <a class="lv1" href="#s3">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" href="#s4">4. 證明方法實戰模板</a>
+    <a class="lv1" href="#s5">5. 題目總表（可篩選）</a>
+    <a class="lv1" href="#s6">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+
+<div class="hero">
+  <h1>貪心演算法完全指南</h1>
+  <p>系統化的策略分類 × 嚴謹的正確性證明 × 60+ 道精選例題，從第一道排序貪心一路打到 slope trick 與模擬費用流。</p>
+  <div class="badges">
+    <span>★ 入門 → ★★★★★ 專家</span>
+    <span>11 大策略分類</span>
+    <span>LeetCode / Codeforces / AtCoder / 洛谷 / USACO</span>
+  </div>
+</div>
+
+<!-- ═══════════════ 0 導讀 ═══════════════ -->
+<section id="s0">
+<h2><span class="sec-no">0</span>導讀與使用方式</h2>
+
+<p><b>貪心演算法（Greedy Algorithm）</b>：在每一個決策點，只根據「當下看起來最好」的準則做選擇，不回頭、不全域搜尋，期望最終累積成全域最優解。</p>
+
+<p>用決策樹的視角比較三種範式：</p>
+<ul>
+  <li><b>暴力搜尋</b>：走遍整棵決策樹 — 永遠正確，但通常指數時間。</li>
+  <li><b>動態規劃</b>：發現大量子樹等價（重疊子問題），把樹壓縮成 DAG — 多項式時間。</li>
+  <li><b>貪心</b>：證明「在每個節點只需走一條特定的邊」— 整棵樹退化成一條鏈，往往 <code>O(n log n)</code>（排序主導）甚至 <code>O(n)</code>。</li>
+</ul>
+
+<div class="callout warn"><b>⚠ 貪心最大的風險</b>
+<p>它「看起來對」的機率遠高於「真的對」的機率。競賽中錯誤貪心是 WA 的最大來源之一。因此本指南把<b>正確性證明</b>與<b>反例構造</b>放在與策略同等重要的位置 — 見第 1、3、4 章。</p></div>
+
+<h3>難度分級</h3>
+<div class="tbl-wrap"><table>
+<tr><th>星級</th><th>定位</th><th>大約對應</th></tr>
+<tr><td><span class="stars s1">★</span></td><td>入門：一眼看出排序鍵</td><td>LeetCode Easy／洛谷 紅題</td></tr>
+<tr><td><span class="stars s2">★★</span></td><td>基礎：經典模型直接套用</td><td>LeetCode Medium／CF 1200 以下</td></tr>
+<tr><td><span class="stars s3">★★★</span></td><td>進階：需要一步轉化或簡單證明</td><td>LeetCode Hard 邊緣／CF 1400–1800／NOIP 普及</td></tr>
+<tr><td><span class="stars s4">★★★★</span></td><td>競賽：多策略組合、非顯然交換論證</td><td>CF 1900–2300／NOIP 提高／USACO Gold</td></tr>
+<tr><td><span class="stars s5">★★★★★</span></td><td>專家：slope trick、擬陣、模擬費用流</td><td>CF 2400+／NOI／APIO／ICPC 區域賽難題</td></tr>
+</table></div>
+
+<h3>使用建議</h3>
+<ol>
+  <li>先讀第 1 章建立「什麼時候貪心是對的」的直覺與證明語言。</li>
+  <li>依序（或挑選）閱讀第 2 章的 11 個策略分類，每類先想例題再展開「提示 → 思路 → 程式碼」。</li>
+  <li>第 3 章的反面教材務必要讀 — 知道貪心什麼時候<b>錯</b>，比知道它什麼時候對更值錢。</li>
+  <li>用第 5 章總表按標籤與星級刷題，按第 6 章路線圖檢核階段目標。</li>
+</ol>
+</section>
+
+<!-- ═══════════════ 1 理論 ═══════════════ -->
+<section id="s1">
+<h2><span class="sec-no">1</span>理論基礎：什麼時候貪心是對的</h2>
+
+<p>一個問題能用貪心正確求解，教科書上的標準條件是以下兩個性質同時成立：</p>
+
+<h3 id="s1-1">1.1 貪心選擇性質（Greedy Choice Property）</h3>
+<p>存在一個<b>全域最優解包含第一步的貪心選擇</b>。換句話說：不管最優解長什麼樣，我們總能把它「改造」成第一步就採用貪心選擇、而且不變差的解。這個「改造」正是交換論證的核心動作。</p>
+
+<h3 id="s1-2">1.2 最優子結構（Optimal Substructure）</h3>
+<p>做完第一步貪心選擇後，剩下的子問題的最優解，拼上這一步，就是原問題的最優解。DP 也需要這條；貪心額外需要的是上面那條「第一步就能貪」。</p>
+
+<div class="callout idea"><b>💡 實戰翻譯</b>
+<p>競賽裡你不會真的寫證明，但你腦中應該完成這個 30 秒檢查：「假設神給我一個最優解，它第一步和我的貪心不一樣 — 我能不能把它換成我的選擇而不變差？」若你能在腦中完成這個交換且理由紮實，貪心大概率是對的；若你發現交換會牽動後面一連串東西且理不清，請立刻警戒（考慮 DP 或反悔貪心）。</p></div>
+
+<h3 id="s1-3">1.3 四大證明技巧</h3>
+
+<h4>① 交換論證（Exchange Argument）— 使用率 80%</h4>
+<p>假設最優解 <code>OPT</code> 與貪心解 <code>G</code> 不同，找到第一個不同處，把 <code>OPT</code> 中的元素換成 <code>G</code> 的選擇，證明交換後仍是可行解且目標值不變差。重複交換，<code>OPT</code> 被逐步改造成 <code>G</code>，故 <code>G</code> 最優。排序類貪心則常用<b>相鄰交換</b>版本：證明任意相鄰逆序對交換後不變差 ⇒ 排序後最優（類似冒泡排序的正確性）。完整五步驟模板見 <a href="#s4">第 4 章</a>。</p>
+
+<h4>② 領先論證（Greedy Stays Ahead）</h4>
+<p>用歸納法證明：貪心解在每一步都「不落後」於任何解 — 例如活動選擇中，貪心選的第 <code>i</code> 個活動結束時間 ≤ 任何解的第 <code>i</code> 個活動結束時間。步步領先 ⇒ 最終不劣。</p>
+
+<h4>③ 反證法與極端原理</h4>
+<p>假設貪心不是最優，取「第一個出錯的位置」或「差異最小的最優解」等極端對象，推出矛盾。常與前兩者混用。</p>
+
+<h4>④ 擬陣（Matroid）— 專家級</h4>
+<p>若問題的可行解族構成擬陣（遺傳性 + 交換公理），則<b>按權重由大到小、能加就加</b>的貪心必然得到最大權基（Rado–Edmonds 定理）。Kruskal 正確性的最深刻解釋。詳見 <a href="#s2-11">2.11</a>。</p>
+
+<h3 id="s1-4">1.4 如何「懷疑」一個貪心：反例構造的系統方法</h3>
+<ul>
+  <li><b>小資料窮舉對拍</b>：寫一個 <code>O(2^n)</code> 或 <code>O(n!)</code> 暴力，隨機生成 n ≤ 8 的小測資對拍 200 次 — 5 分鐘寫完，能擋掉 95% 的錯誤貪心。模板見 <a href="#s4-3">4.3</a>。</li>
+  <li><b>攻擊排序鍵</b>：構造兩個元素，讓你的排序鍵認為 A 優於 B，但實際上先選 B 更好（利用「後效性」— A 的選擇影響了未來）。</li>
+  <li><b>攻擊邊界</b>：全部相等、極大極小混搭、恰好卡滿容量。</li>
+  <li><b>經典警訊</b>：目標函數含權重（帶權區間排程）、資源不可分割（0/1 背包）、非 canonical 硬幣系統 — 見 <a href="#s3">第 3 章</a>。</li>
+</ul>
+</section>
+
+<!-- ═══════════════ 2 策略分類 ═══════════════ -->
+<section id="s2">
+<h2><span class="sec-no">2</span>策略分類</h2>
+<p>以下 11 個分類按「思維模式」劃分：每類都有固定的<b>核心想法</b>、<b>適用特徵</b>（如何辨識）、<b>證明要點</b>與例題。競賽中辨識題型 → 對應到分類 → 套用該類的思考框架，是最高效的解題路徑。</p>
+<!-- ── 2.1 排序貪心 ── -->
+<section id="s2-1">
+<h3>2.1 排序貪心（Sort &amp; Sweep）</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>找到正確的<b>排序鍵</b>，排序後從頭到尾線性掃描，每一步的決策變得顯然。80% 的貪心題第一步都是排序 — 問題只剩「按什麼排」。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>元素之間的「處理順序」影響答案，但單一元素的貢獻可獨立衡量。</li>
+<li>存在一個單調的「性價比」「緊迫度」或「結束時間」可比較。</li>
+<li>排序鍵的推導方法：對任兩個相鄰元素寫出「先 A 後 B」與「先 B 後 A」的成本，令前者 ≤ 後者，解出比較式 — 這就是相鄰交換論證。</li>
+</ul></div>
+
+<h4>2.1.1 單鍵排序</h4>
+
+<div class="problem">
+<div class="p-head"><span class="stars s1">★</span><span class="p-title">部分背包 Fractional Knapsack</span><span class="chip">排序</span><span class="chip">性價比</span></div>
+<p>物品可切割，容量 W，最大化總價值。</p>
+<details><summary>思路</summary>
+<p>按「單位重量價值 v/w」由大到小排序，依序裝滿，最後一件裝部分。與 0/1 背包的對比是理解貪心邊界的第一課：<b>可分割</b>使得「先拿性價比最高的」永遠不會後悔 — 交換論證中把最優解裡任何一單位重量換成更高性價比的都不變差。0/1 背包不可分割，交換會破壞容量可行性，貪心失效（見第 3 章反例）。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(items.begin(), items.end(), [](auto&amp; a, auto&amp; b){
+    return a.v * b.w &gt; b.v * a.w;   // v/w 大者在前，交叉相乘避免浮點
+});
+double ans = 0, cap = W;
+for (auto&amp; [w, v] : items) {
+    double take = min(cap, (double)w);
+    ans += take * v / w;
+    cap -= take;
+    if (cap == 0) break;
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/assign-cookies/" target="_blank">LC 455 分發餅乾</a><span class="chip">排序</span><span class="chip">雙指針</span></div>
+<p>每個孩子有胃口 g[i]，每塊餅乾大小 s[j]，一塊只能給一人，最多滿足幾個孩子？</p>
+<details><summary>思路</summary><p>兩邊都排序，用<b>最小的能滿足的餅乾</b>去餵胃口最小的孩子（雙指針）。證明（領先論證）：任何最優方案中，把餵給最小孩子的餅乾換成「最小的可行餅乾」，剩餘餅乾集合只會更「寬鬆」，不會變差。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="http://poj.org/problem?id=1328" target="_blank">POJ 1328 Radar Installation</a><span class="chip">排序</span><span class="chip">區間選點</span></div>
+<p>海島要被 x 軸上的雷達（半徑 d）覆蓋，求最少雷達數。</p>
+<details><summary>提示</summary><p>把「島」轉化成「雷達可以放置的 x 軸區間」— 幾何問題化為區間選點問題。</p></details>
+<details><summary>思路</summary><p>每個島對應區間 <code>[x−√(d²−y²), x+√(d²−y²)]</code>。問題變成：最少的點刺穿所有區間。按<b>右端點</b>排序，維護目前雷達位置；若下一個區間左端點 &gt; 雷達位置，則在其右端點放新雷達。這是 2.2 區間家族的「區間選點」模型。</p></details>
+</div>
+
+<h4>2.1.2 自訂比較函數（用交換論證推導 comparator）</h4>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/largest-number/" target="_blank">LC 179 最大數</a><span class="chip">排序</span><span class="chip">交換論證</span></div>
+<p>把一組非負整數串接成最大的數。</p>
+<details><summary>思路</summary><p>比較兩個字串 a、b：若 <code>a+b &gt; b+a</code>（字串串接後字典序）則 a 排前面。正確性：相鄰交換論證 — 任意相鄰逆序對交換後結果變大，故完全排序後最大。<b>陷阱</b>：必須驗證這個比較關係是嚴格弱序（可證其可傳遞，因 a+b&gt;b+a ⟺ 把字串視為 k 進位數後 a/(10^|a|−1) &gt; b/(10^|b|−1)，是一個實數鍵值），否則 <code>std::sort</code> 是 UB。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(strs.begin(), strs.end(), [](const string&amp; a, const string&amp; b){
+    return a + b &gt; b + a;
+});
+string ans = accumulate(strs.begin(), strs.end(), string());
+return ans[0] == '0' ? "0" : ans;   // 全零特判</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1080" target="_blank">洛谷 P1080 國王遊戲</a><span class="chip">排序</span><span class="chip">交換論證</span><span class="chip">高精度</span></div>
+<p>n 位大臣每人左手 a、右手 b。大臣獲得的金幣 = 排在他前面所有人左手乘積 ÷ 他自己的右手。安排順序使獲得最多金幣的大臣拿的金幣最少。</p>
+<details><summary>提示</summary><p>對相鄰兩位大臣 i、j，分別寫出「i 在前」與「j 在前」時兩人獎金的最大值，比較之。</p></details>
+<details><summary>思路</summary><p>相鄰交換論證得排序鍵：按 <code>a×b</code> 遞增排序。設前綴乘積為 S，i 在 j 前時兩人的較大值是 <code>max(S/b_i, S·a_i/b_j)</code>；交換後為 <code>max(S/b_j, S·a_j/b_i)</code>。通分比較可得 <code>a_i·b_i ≤ a_j·b_j</code> 時 i 在前不劣。注意本題需高精度乘除。同型題：洛谷 P1842 奶牛玩雜技（按 w+s 排序）、UVa 10026 Shoemaker's Problem。</p></details>
+</div>
+
+<h4>2.1.3 雙指針配對</h4>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/boats-to-save-people/" target="_blank">LC 881 救生艇</a><span class="chip">排序</span><span class="chip">雙指針</span></div>
+<p>每艘船限乘 2 人、限重 limit，最少幾艘船載走所有人？</p>
+<details><summary>思路</summary><p>排序後<b>最重配最輕</b>：若最重 + 最輕 ≤ limit 則同船，否則最重者單獨一船。交換論證：最重的人反正要一艘船，讓他帶走「還能帶的人中任意一個」都不會比帶最輕的更好 — 因為最輕的人與任何人都相容，留下他最保值。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(p.begin(), p.end());
+int i = 0, j = p.size() - 1, boats = 0;
+while (i &lt;= j) {
+    if (p[i] + p[j] &lt;= limit) i++;
+    j--; boats++;
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="http://poj.org/problem?id=2287" target="_blank">POJ 2287 田忌賽馬</a><span class="chip">排序</span><span class="chip">雙指針</span><span class="chip">博弈</span></div>
+<p>田忌與齊王各 n 匹馬，贏一場 +200、輸 −200、平 0，田忌知道齊王出馬順序（由強到弱），求最大收益。</p>
+<details><summary>思路</summary><p>雙方馬按速度排序後貪心：若田忌目前最快 &gt; 齊王最快，直接贏；若最慢 &gt; 齊王最慢，贏下這場；否則用<b>最慢的馬去消耗齊王最快的馬</b>（打不贏就墊）。正確性用交換論證逐 case 驗證，或退而用區間 DP <code>O(n²)</code> 保底 — 這題是「貪心可行但 case 多，DP 更穩」的典型例子。</p></details>
+</div>
+</section>
+
+<!-- ── 2.2 區間問題 ── -->
+<section id="s2-2">
+<h3>2.2 區間問題全家桶（Interval Scheduling Family）</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>區間貪心的一切糾結都在「按左端點還是右端點排」。記住對應關係：<b>選最多不重疊 → 右端點</b>；<b>完全覆蓋 → 左端點</b>；<b>算最少資源 → 掃描線/小根堆</b>。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>輸入是一堆 <code>[l, r]</code>，或能轉化成區間（如 POJ 1328 的幾何轉化、「站點+半徑」轉化）。</li>
+<li>目標是「最多選幾個 / 最少用幾個 / 最少資源數 / 能否覆蓋」。</li>
+<li>⚠ 若區間<b>帶權</b>且目標是權和 — 貪心失效，轉 DP（見 2.2.5）。</li>
+</ul></div>
+
+<h4>2.2.1 不重疊區間最多選幾個（活動選擇）— 按右端點排</h4>
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/non-overlapping-intervals/" target="_blank">LC 435 無重疊區間</a><span class="chip">區間</span><span class="chip">右端點排序</span></div>
+<p>移除最少的區間，使其餘互不重疊 ⟺ 選出最多互不重疊的區間。</p>
+<details><summary>思路</summary><p>按<b>右端點遞增</b>排序，能選就選（左端點 ≥ 上一個選中的右端點）。證明用領先論證：貪心第 k 個選中區間的右端點 ≤ 任意解第 k 個的右端點（歸納），所以任何解能塞下的，貪心都塞得下。<b>為什麼不是左端點</b>：一個很早開始但很長的區間會堵死後面 — 反例 <code>[1,100],[2,3],[4,5]</code>。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; a, auto&amp; b){ return a[1] &lt; b[1]; });
+int keep = 0; long long lastEnd = LLONG_MIN;
+for (auto&amp; v : iv)
+    if (v[0] &gt;= lastEnd) { keep++; lastEnd = v[1]; }
+return iv.size() - keep;</code></pre></details>
+</div>
+
+<h4>2.2.2 完全覆蓋最少段數 — 按左端點排 + 貪心延伸</h4>
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/video-stitching/" target="_blank">LC 1024 視頻拼接</a><span class="chip">區間</span><span class="chip">左端點排序</span><span class="chip">覆蓋</span></div>
+<p>用最少段影片覆蓋 [0, T]。同型：LC 45 跳躍遊戲 II、LC 1326 灌溉花園。</p>
+<details><summary>思路</summary><p>按左端點排序。維護目前已覆蓋到 <code>cur</code>；在所有左端點 ≤ <code>cur</code> 的區間中，選<b>右端點最遠</b>的一段接上（這一步是貪心選擇性質：反正都要有一段跨過 cur，選伸最遠的不會變差），<code>cur</code> 跳到該右端點。跳躍遊戲 II 是同一個模型的陣列形式，可 O(n) 一次掃描。</p></details>
+<details><summary>程式碼（C++，跳躍遊戲 II 形式）</summary>
+<pre><code class="lang-cpp">int jumps = 0, curEnd = 0, farthest = 0;
+for (int i = 0; i + 1 &lt; n; i++) {
+    farthest = max(farthest, i + nums[i]);
+    if (i == curEnd) { jumps++; curEnd = farthest; }  // 必須起跳
+}</code></pre></details>
+</div>
+
+<h4>2.2.3 最少資源數（區間分組）— 掃描線 / 小根堆</h4>
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/meeting-rooms-ii/" target="_blank">LC 253 會議室 II</a><span class="chip">區間</span><span class="chip">堆</span><span class="chip">掃描線</span></div>
+<p>最少需要幾間會議室容納所有會議？同型：洛谷 P2887、CF 手機基地台類。</p>
+<details><summary>思路</summary><p>兩種等價視角：<b>掃描線</b> — 把開始 +1、結束 −1 排成事件，答案是前綴和最大值（= 最大同時重疊數，這是下界，也構造性地可達）；<b>小根堆</b> — 按開始時間排序，堆存每間房目前的結束時間，新會議若能接最早空出的房就接，否則開新房。</p></details>
+<details><summary>程式碼（C++，小根堆）</summary>
+<pre><code class="lang-cpp">sort(iv.begin(), iv.end());
+priority_queue&lt;int, vector&lt;int&gt;, greater&lt;&gt;&gt; rooms; // 各房結束時間
+for (auto&amp; [s, e] : iv) {
+    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= s) rooms.pop();
+    rooms.push(e);
+}
+return rooms.size();</code></pre></details>
+</div>
+
+<h4>2.2.4 區間選點 / 最少箭射氣球</h4>
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/" target="_blank">LC 452 用最少數量的箭引爆氣球</a><span class="chip">區間</span><span class="chip">右端點排序</span></div>
+<details><summary>思路</summary><p>「最少的點使每個區間至少含一點」— 與活動選擇對偶。按右端點排序，箭射在目前區間的右端點（能捅穿的最晚位置，捅到最多後續區間），左端點超過箭位置就補新箭。答案 = 最多不相交區間數（LP 對偶的離散體現）。</p></details>
+</div>
+
+<h4>2.2.5 邊界討論：帶權區間 → 貪心失效 → DP</h4>
+<p>當每個區間帶權 w、目標最大化選中權和：交換論證失敗 — 「結束早」與「權大」不可比。此時按右端點排序後做 <code>dp[i] = max(dp[i−1], w_i + dp[prev(i)])</code>（prev 用二分找），<code>O(n log n)</code>。<b>辨識訓練</b>：看到區間題先問「有沒有權重」，這一問決定貪心/DP 的分岔。</p>
+</section>
+
+<!-- ── 2.3 交換論證排程 ── -->
+<section id="s2-3">
+<h3>2.3 交換論證排程（Scheduling by Exchange Argument）</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>單機/多機排程問題的統一解法：假設最優序列中相鄰兩個任務 i、j 交換，寫出兩種順序的目標值，令「i 在前不劣」解出不等式 — 這個不等式就是排序鍵。</p></div>
+
+<div class="callout proof"><b>🧾 推導模板</b>
+<p>設 i 在 j 前、其餘不動。因為只有 i、j 的完成時刻改變，比較兩種順序下這兩項的目標貢獻即可。得到形如 <code>f(i,j) ≤ f(j,i)</code> 的可傳遞關係後，直接 <code>sort</code>。<b>務必檢查關係可傳遞</b>（通常能改寫成單一實數鍵值比較，如 p/w、min(a,b) 分類）。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">最小化加權完成時間（Smith's Rule）</span><span class="chip">排程</span><span class="chip">交換論證</span></div>
+<p>單機 n 個任務，任務 i 耗時 p_i、權 w_i，最小化 Σ w_i × C_i（C_i 為完成時刻）。對應：洛谷 P1248 加工生產調度前置、AtCoder 各 ABC 排程題。</p>
+<details><summary>推導</summary><p>相鄰交換 i、j：i 在前時兩者貢獻差為 <code>w_j·p_i − w_i·p_j</code>。令 i 在前不劣 ⇒ <code>p_i/w_i ≤ p_j/w_j</code>。所以按 <b>p/w 遞增</b>（性價比：短且重要優先）排序。特例 w 全等 → SJF 最短工時優先；p 全等 → 權大優先。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1248" target="_blank">洛谷 P1248 加工生產調度（Johnson's Rule）</a><span class="chip">排程</span><span class="chip">交換論證</span></div>
+<p>每個工件先過機器 A（耗時 a_i）再過機器 B（耗時 b_i），兩台機器各自序列處理，最小化總完工時間（makespan）。</p>
+<details><summary>思路</summary><p><b>Johnson's Rule</b>：<code>min(a_i, b_j) ≤ min(a_j, b_i)</code> 時 i 排 j 前。實作：把工件分兩組 — <code>a &lt; b</code> 的按 a 遞增排在前，<code>a ≥ b</code> 的按 b 遞減排在後。直覺：A 快 B 慢的先上（讓 B 早點有活幹且不斷流），A 慢 B 快的殿後（結尾時 B 不用等）。這是三機以上 NP-hard、兩機卻有優美貪心的經典分界。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_x" target="_blank">AtCoder DP Contest X - Tower</a><span class="chip">排程</span><span class="chip">交換論證</span><span class="chip">貪心+DP</span></div>
+<p>每個箱子有重量 w、承重 s、價值 v，疊塔使塔上每箱之上的總重 ≤ 其承重，最大化總價值。</p>
+<details><summary>提示</summary><p>價值使純貪心失效（要選子集）— 但「選定子集後的最佳疊放順序」可以先用交換論證定死，再對這個順序做背包 DP。</p></details>
+<details><summary>思路</summary><p>相鄰交換：i 疊在 j 下方可行性更寬 ⟺ <code>w_i + s_i ≥ w_j + s_j</code>。按 <b>w+s 遞增</b>排序（小的在上/先考慮），然後 <code>dp[承重餘量] = 最大價值</code> 做 0/1 背包。這是「<b>交換論證定順序 + DP 選子集</b>」的代表套路，競賽出現率極高（同型：CF 開會安排、洛谷 P1417 烹調方案）。</p></details>
+</div>
+</section>
+
+<!-- ── 2.4 反悔貪心 ── -->
+<section id="s2-4">
+<h3>2.4 反悔貪心（Regret Greedy）</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>普通貪心不敢貪（怕後悔）的地方，反悔貪心<b>先貪了再說</b>，同時把「撤銷這次選擇的代價」丟進堆裡；未來遇到更好的選項時，彈出堆頂完成撤銷。等價於在時間軸上動態維護「目前最優的選擇集合」。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>依時間/期限順序處理，選擇之間互相排擠（容量、期限、次數限制）。</li>
+<li>「不選白不選、選錯可退貨」— 撤銷一個已選項不影響其他已選項的可行性。</li>
+<li>直接貪心能構造出反例、DP 狀態又太大時，優先想反悔堆。</li>
+</ul></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/course-schedule-iii/" target="_blank">LC 630 課程表 III</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
+<p>第 i 門課耗時 d_i、截止 e_i，從時刻 0 開始連續上課，最多修幾門？</p>
+<details><summary>思路</summary><p>按<b>截止時間遞增</b>處理，維護大根堆（已選課程的耗時）與目前總耗時 T。每門課先選上（T += d）；若 T 超過截止時間，<b>反悔</b>：彈掉堆中耗時最大的課（撤銷最虧的決策）。正確性：交換論證 — 修課數相同時總耗時越小越好，彈最大者使 T 最小化，為未來保留最大餘裕。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(c.begin(), c.end(), [](auto&amp; a, auto&amp; b){ return a[1] &lt; b[1]; });
+priority_queue&lt;int&gt; pq;           // 已選課程的耗時，大根堆
+long long T = 0;
+for (auto&amp; [d, e] : c) {
+    T += d; pq.push(d);
+    if (T &gt; e) { T -= pq.top(); pq.pop(); }   // 反悔：踢掉最耗時的
+}
+return pq.size();</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-number-of-refueling-stops/" target="_blank">LC 871 最低加油次數</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
+<p>路上有加油站，車開到哪算哪，最少加幾次油到終點？</p>
+<details><summary>思路</summary><p>「路過先不加，把油量存入大根堆；油不夠時再反悔 — 取出堆中最大的油量視為當時加過」。次數相同時油越多越好，故每次補堆頂。這是把「在哪加油」的決策<b>延遲到必要時刻</b>的教科書範例。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;int&gt; pq;
+long long fuel = startFuel; int cnt = 0, i = 0;
+stations.push_back({target, 0});
+for (auto&amp; [pos, gas] : stations) {
+    while (fuel &lt; pos) {                 // 到不了，反悔補油
+        if (pq.empty()) return -1;
+        fuel += pq.top(); pq.pop(); cnt++;
+    }
+    pq.push(gas);
+}
+return cnt;</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4053" target="_blank">洛谷 P4053 [JSOI2007] 建築搶修</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
+<p>n 棟建築，修第 i 棟耗時 t_i、必須在 d_i 前修完，一次修一棟，最多修幾棟？（LC 630 的原型競賽題，USACO 2009 Work Scheduling 為「最大化報酬」變體）</p>
+<details><summary>思路</summary><p>同 LC 630 反悔堆。USACO Work Scheduling 變體：按期限處理、堆存<b>報酬最小</b>的已接工作，時間不夠且新工作報酬更高時換掉堆頂 — 反悔的對象從「耗時」變成「報酬」，體會反悔鍵值隨目標函數變化。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/865/D" target="_blank">CF 865D Buy Low Sell High</a><span class="chip">反悔貪心</span><span class="chip">堆</span><span class="chip">費用流思想</span></div>
+<p>已知未來 n 天股價，每天限買一股或賣一股或不動，最大化最終利潤（結束時不持股要求可自動滿足）。</p>
+<details><summary>思路</summary><p>經典<b>反悔交換</b>：每天把 p_i 推入小根堆；若 p_i &gt; 堆頂，利潤 += p_i − 堆頂，彈出堆頂，<b>再把 p_i 推回去一次</b>。第二次推入的 p_i 代表「反悔券」：若未來有更高價 p_j 用它成交，總效果 (p_i − p_x) + (p_j − p_i) = p_j − p_x，等價於當初直接在 x 買 j 賣 — 中間商 p_i 無縫退出。這正是模擬費用流中「殘量網路反向邊」的化身，是通往 2.11.5 的橋樑。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq;
+long long profit = 0;
+for (int i = 0; i &lt; n; i++) {
+    long long p; cin &gt;&gt; p;
+    if (!pq.empty() &amp;&amp; pq.top() &lt; p) {
+        profit += p - pq.top(); pq.pop();
+        pq.push(p);              // 反悔券：允許未來把這次交易升級
+    }
+    pq.push(p);
+}</code></pre></details>
+</div>
+</section>
+<!-- ── 2.5 堆積貪心 ── -->
+<section id="s2-5">
+<h3>2.5 堆積貪心（Priority-Queue Greedy）</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>貪心策略是「每一步取全域最小（或最大）的元素合併/處理」，且處理後會產生新元素回到候選池 — 用 heap 維護候選池，總複雜度 <code>O(n log n)</code>。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1090" target="_blank">洛谷 P1090 合併果子（Huffman）</a><span class="chip">堆</span><span class="chip">Huffman</span></div>
+<p>每次合併兩堆果子，代價為兩堆重量和，求合併成一堆的最小總代價。</p>
+<details><summary>思路</summary><p>每次取<b>最小的兩堆</b>合併 — 即 Huffman 樹構造。證明（交換論證）：最小的兩個元素必然可以是最優樹中深度最深的一對兄弟 — 若不是，把它們與最深處的元素交換，總代價（Σ 重量×深度）不增。合併次序對應樹形，貪心構造即最優前綴碼，這也是資訊理論中 Huffman 編碼最優性的來源。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq(w.begin(), w.end());
+long long cost = 0;
+while (pq.size() &gt; 1) {
+    long long a = pq.top(); pq.pop();
+    long long b = pq.top(); pq.pop();
+    cost += a + b; pq.push(a + b);
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2168" target="_blank">洛谷 P2168 [NOI2015] 荷馬史詩（k 叉 Huffman）</a><span class="chip">堆</span><span class="chip">Huffman</span><span class="chip">構造</span></div>
+<p>k 進位前綴編碼，最小化總長度，並在最小總長下最小化最長編碼。</p>
+<details><summary>思路</summary><p>k 叉 Huffman：每次合併 k 個最小的。<b>關鍵技巧</b>：若 <code>(n−1) mod (k−1) ≠ 0</code>，先補權值為 0 的虛擬節點湊齊，保證每次都能滿 k 合併（否則根附近會浪費短編碼）。第二關鍵字：堆中同權值時取「樹高最小」者合併，即可同時最小化最深深度。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/find-median-from-data-stream/" target="_blank">LC 295 數據流中位數（對頂堆）</a><span class="chip">堆</span><span class="chip">中位數</span></div>
+<details><summary>思路</summary><p>大根堆存小的一半、小根堆存大的一半，兩堆大小差 ≤ 1，中位數在堆頂。這個「對頂堆」結構是許多貪心題的載體（如 2.7 的中位數貪心需要動態中位數、slope trick 的可合併堆雛形）。滑動視窗版需要延遲刪除或 multiset。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1631" target="_blank">洛谷 P1631 序列合併（k 路歸併）</a><span class="chip">堆</span><span class="chip">多路歸併</span></div>
+<p>兩個長度 n 的遞增序列，n² 個和中最小的 n 個。</p>
+<details><summary>思路</summary><p>堆中放 <code>(a_i + b_1, i, 1)</code>，彈出 <code>(i, j)</code> 時推入 <code>(i, j+1)</code> — 把 n² 個候選組織成 n 條有序鏈做 k 路歸併。同型：LC 373、Super Ugly Number、CF「第 k 小的 XXX」系列。核心辨識：<b>候選集合呈笛卡兒積/指數大，但可以分層有序生成</b>。</p></details>
+</div>
+</section>
+
+<!-- ── 2.6 字典序貪心 ── -->
+<section id="s2-6">
+<h3>2.6 字典序貪心與單調堆疊構造</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>字典序目標自帶貪心性質：<b>第一位越小/大，後面全不用比</b>。所以逐位確定「當前位能放的最好字元」，配一個 O(1)/O(log) 的<b>可行性檢查</b>（剩餘資源夠不夠完成約束）。實作上大量以單調堆疊出現：新字元把棧頂「還有機會再來的較差字元」彈掉。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/remove-k-digits/" target="_blank">LC 402 移掉 K 位數字</a><span class="chip">字典序</span><span class="chip">單調棧</span></div>
+<p>刪 k 位使剩下的數最小。</p>
+<details><summary>思路</summary><p>維護遞增棧：新數字比棧頂小且還有刪除額度時，彈棧頂（高位變小永遠更優 — 這就是字典序的貪心選擇性質）。掃完還有額度就從尾巴刪。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">string st;
+for (char c : num) {
+    while (!st.empty() &amp;&amp; k &amp;&amp; st.back() &gt; c) { st.pop_back(); k--; }
+    st.push_back(c);
+}
+st.resize(st.size() - k);
+st.erase(0, st.find_first_not_of('0'));      // 去前導零
+return st.empty() ? "0" : st;</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/remove-duplicate-letters/" target="_blank">LC 316 去除重複字母</a><span class="chip">字典序</span><span class="chip">單調棧</span><span class="chip">可行性檢查</span></div>
+<p>刪去重複字母使每個字母恰出現一次，且結果字典序最小。</p>
+<details><summary>思路</summary><p>單調棧 + <b>可行性檢查</b>：彈棧頂的條件除了「棧頂 &gt; 新字元」，還必須「棧頂字元在後面還會出現」（否則彈了就湊不齊了）。這是字典序貪心的完整形態：<i>貪 + 保證還能完成</i>。用剩餘計數陣列與 in-stack 標記各一個即可。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://leetcode.cn/problems/create-maximum-number/" target="_blank">LC 321 拼接最大數</a><span class="chip">字典序</span><span class="chip">單調棧</span><span class="chip">歸併</span></div>
+<p>從兩個陣列中共取 k 個數（各自保持相對順序），拼成最大的數。</p>
+<details><summary>思路</summary><p>三層貪心組合：枚舉從第一個陣列取 i 個 — 各自用單調棧取出「保留 i 個的最大子序列」（LC 402 的最大版）— 再<b>貪心歸併</b>兩個序列（比較整段字典序決定下一個取誰，注意相等時要往後比，故歸併是 O(n²) 最壞）。展示「字典序貪心可作為零件組裝」的層次感。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">字典序最小拓撲序</span><span class="chip">字典序</span><span class="chip">圖</span><span class="chip">堆</span></div>
+<details><summary>思路</summary><p>Kahn 演算法中把普通 queue 換成小根堆：每次在所有入度 0 的點中取編號最小者。正確性：第一位可以是任何目前入度 0 的點，取最小者是字典序的貪心選擇性質；取走後子問題同構。⚠ 對比陷阱：「字典序最小拓撲序」≠「每個點盡量早出現」— HDU 4857 反向建圖才是後者，辨識題意的細微差異是這型題的坑。</p></details>
+</div>
+</section>
+
+<!-- ── 2.7 數學貪心 ── -->
+<section id="s2-7">
+<h3>2.7 數學貪心與調整法</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>決策由一條不等式或極值性質一錘定音：排序不等式、中位數最小化絕對偏差、均值不等式。證明手法是<b>調整法</b> — 對任何解做微小擾動，證明往某方向調整必不劣，推到極端即最優。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-moves-to-equal-array-elements-ii/" target="_blank">LC 462 最小操作次數使陣列相等 II</a><span class="chip">中位數</span><span class="chip">調整法</span></div>
+<p>每次 ±1，使全部相等的最小步數 = Σ|a_i − x| 的最小值。</p>
+<details><summary>思路</summary><p>x 取<b>中位數</b>。調整法證明：設 x 左側有 L 個點、右側有 R 個，x 右移一單位成本變化 L − R — 只要 L &lt; R 就該右移，平衡點即中位數。倉庫選址、士兵站隊（洛谷 P1889，二維可分離：x、y 各自取中位數，x 座標需先排序後減去下標再取中位數）都是此模型。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2512" target="_blank">洛谷 P2512 [HAOI2008] 糖果傳遞（環形均分紙牌）</a><span class="chip">中位數</span><span class="chip">前綴和</span></div>
+<p>環上 n 人傳糖果使人人相等，傳一顆代價 1，最小總代價。</p>
+<details><summary>思路</summary><p>設 x_i 為 i 傳給 i−1 的淨流量，列方程消元後答案 = <code>Σ|x_1 − c_i|</code>，其中 c_i 是可預先算出的前綴常數 — 問題化為「數軸上選點最小化絕對值和」，x_1 取 c 的<b>中位數</b>。線性版（均分紙牌，洛谷 P1031）直接前綴和貪心。展示「代數變形 → 化歸為中位數模型」的威力。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">硬幣問題：什麼時候找零貪心是對的</span><span class="chip">數學</span><span class="chip">反例意識</span></div>
+<details><summary>思路</summary><p>「每次拿最大面額」只對 <b>canonical coin system</b> 正確（如 1/5/10/50 與各國流通幣制 — 這是設計出來的），對 {1,3,4} 湊 6 就錯（貪心 4+1+1 三枚，最優 3+3 兩枚）。判定一般幣制是否 canonical 可用 Kozen–Zaks 定理：最小反例必出現在小範圍內，可 O(面額²) 檢查。<b>競賽守則：面額任意給的找零題，一律 DP。</b></p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/integer-break/" target="_blank">LC 343 整數拆分（均值不等式）</a><span class="chip">數學</span></div>
+<details><summary>思路</summary><p>拆成盡量多的 3（餘 1 時改一個 3+1 → 2+2）。由均值不等式，固定段數時各段相等最優；比較 e 附近的整數，3 的冪勝出。數學貪心常見終局：<b>答案結構被不等式限定成幾種 case，逐一比較</b>。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">排序不等式應用：僱傭計畫 / 加權匹配</span><span class="chip">數學</span><span class="chip">排序不等式</span></div>
+<details><summary>思路</summary><p>排序不等式：兩序列同序點積最大、反序最小。應用如「n 個工人 n 件事，效率×難度求和最小」→ 效率大配難度小（反序）。與 2.1.2 的 comparator 推導殊途同歸，但直接引用不等式可跳過推導。</p></details>
+</div>
+</section>
+
+<!-- ── 2.8 圖上貪心 ── -->
+<section id="s2-8">
+<h3>2.8 圖上貪心</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>MST 與 Dijkstra 本質上都是貪心，正確性由兩條圖論性質保證：<b>Cut Property</b>（跨越任意割的最小邊必在某棵 MST 中）與<b>非負權下最近未定點的距離已收斂</b>。把它們當作貪心來理解，才能在變體題中正確遷移。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">Kruskal / Prim 與 Cut & Cycle Property</span><span class="chip">圖</span><span class="chip">MST</span><span class="chip">交換論證</span></div>
+<details><summary>思路</summary><p><b>Cut Property</b> 的交換論證：設跨割最小邊 e ∉ MST T，把 e 加入 T 形成環，環上必有另一條跨割邊 f，換掉（w(f) ≥ w(e)）得不劣的生成樹 — 標準 exchange argument。<b>Cycle Property</b>（環上最大邊必不在 MST）是對偶。變體遷移：最小瓶頸生成樹 = MST（Cut Property 直接推）；「最大化路徑最小邊」= 在最大生成樹上走；Kruskal 重構樹處理「≤k 邊權連通性」詢問。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><span class="p-title">Dijkstra 的貪心正確性邊界</span><span class="chip">圖</span><span class="chip">最短路</span></div>
+<details><summary>思路</summary><p>歸納不變量：每次從堆中取出的最近未確定點 u，其 dist 已是最短 — 因為任何經過「未確定區」的替代路徑，其前綴已 ≥ dist[u]（<b>非負權</b>在此處使用）。負權邊破壞這條歸納 ⇒ 貪心失效（見第 3 章）。同樣的貪心框架換目標可解：最大化路徑最小值（「瓶頸 Dijkstra」）、乘積最短路（取 log）。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4180" target="_blank">洛谷 P4180 [BJWC2010] 嚴格次小生成樹</a><span class="chip">圖</span><span class="chip">MST</span><span class="chip">倍增</span></div>
+<details><summary>思路</summary><p>結論（由交換性質保證）：次小生成樹與 MST 恰差一條邊。枚舉每條非樹邊 (u,v,w)，替換樹上 u→v 路徑中的最大邊（嚴格次小需同時維護路徑最大與嚴格次大值，用倍增）。「MST 家族題 = Cut/Cycle Property 的花式應用」的代表。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/888/G" target="_blank">CF 888G Xor-MST（Boruvka）</a><span class="chip">圖</span><span class="chip">MST</span><span class="chip">01-Trie</span></div>
+<p>完全圖，邊權 = a_u XOR a_v，求 MST。n ≤ 2×10⁵，邊數 O(n²) 不可枚舉。</p>
+<details><summary>思路</summary><p><b>Boruvka</b>：每輪為每個連通塊找最小出邊、批量合併，輪數 O(log n)。「找最小 XOR 出邊」用 01-Trie 完成。Boruvka 的價值正在於此類<b>隱式完全圖</b>（邊權由函數定義）：每輪的「找最小出邊」換成資料結構查詢。分治視角：按最高位把點分兩半，跨半只需一條最小 XOR 邊。</p></details>
+</div>
+</section>
+<!-- ── 2.9 貪心×資料結構 ── -->
+<section id="s2-9">
+<h3>2.9 貪心 × 資料結構</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>貪心策略本身簡單，但每一步的決策需要「快速找到／更新某個極值或空位」— 瓶頸在資料結構：並查集跳過已佔用位置、BIT/線段樹維護區間資訊、multiset 支援任意刪除。</p></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><span class="p-title">截止期限任務調度（Job Sequencing）+ 並查集</span><span class="chip">DSU</span><span class="chip">排程</span></div>
+<p>每個任務一單位時間、截止 d_i、報酬 p_i，最大化總報酬。</p>
+<details><summary>思路</summary><p>按報酬遞減排序，每個任務安排在「≤ d_i 的最晚空閒時槽」（越晚越不擋別人）。找最晚空槽用<b>並查集</b>：<code>find(d)</code> 返回 ≤ d 的最晚空槽，佔用後 <code>fa[t] = t−1</code>，均攤近 O(1)。正確性可用擬陣描述：「可行任務子集」構成 transversal matroid，按權降序能加就加必最優 — 2.11.1 的具體實例。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(jobs.begin(), jobs.end(), [](auto&amp; a, auto&amp; b){ return a.p &gt; b.p; });
+vector&lt;int&gt; fa(maxD + 1); iota(fa.begin(), fa.end(), 0);
+function&lt;int(int)&gt; find = [&amp;](int x){ return fa[x]==x ? x : fa[x]=find(fa[x]); };
+long long ans = 0;
+for (auto&amp; j : jobs) {
+    int t = find(min(j.d, maxD));
+    if (t &gt; 0) { ans += j.p; fa[t] = t - 1; }   // 佔用時槽 t
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1250" target="_blank">洛谷 P1250 種樹</a><span class="chip">區間</span><span class="chip">差分約束→貪心</span></div>
+<p>區間 [l_i, r_i] 內至少要種 t_i 棵樹，每個位置至多一棵，求最少總棵數。</p>
+<details><summary>思路</summary><p>按<b>右端點遞增</b>排序，每個約束不足時<b>從右端點往左</b>補種（種得越右，越可能被後面的區間重複利用）。交換論證：把任何解中較左的樹右移到區間右端，不影響當前約束、只會幫助後續。加速：BIT 查區間和 + 並查集找「最右空位」。同型進階：洛谷 P2894、CF 志願者/餵牛系列。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1526/C2" target="_blank">CF 1526C2 Potions（multiset/堆反悔）</a><span class="chip">反悔貪心</span><span class="chip">multiset</span></div>
+<p>從左到右喝藥水（可跳過），生命值不得為負，最多喝幾瓶？</p>
+<details><summary>思路</summary><p>全喝，血量為負時反悔吐掉「已喝中最毒的一瓶」（小根堆取最小負值）。與 LC 630 同構 — 反悔貪心配上不同容器（heap / multiset）反覆出現在 CF Div2 C/D，是性價比最高的訓練題型之一。</p></details>
+</div>
+</section>
+
+<!-- ── 2.10 貪心×二分 ── -->
+<section id="s2-10">
+<h3>2.10 貪心 × 二分答案（參數化貪心）</h3>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>「最大化最小值 / 最小化最大值」的答案具單調性：二分答案 x，把最優化問題降級成判定問題「能否達成 x」— 而判定問題往往有顯然的貪心解。<b>貪心不必解決原題，只需服務 check。</b></p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>題面出現「最大的最小」「最小的最大」「至少/至多 k 次操作內」。</li>
+<li>驗證一個候選答案，比直接構造最優答案容易得多。</li>
+</ul></div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2678" target="_blank">洛谷 P2678 [NOIP2015] 跳石頭</a><span class="chip">二分+貪心</span></div>
+<p>移走至多 M 塊石頭，最大化相鄰石頭最短跳躍距離。（= POJ 2456 Aggressive Cows）</p>
+<details><summary>思路</summary><p>二分最短距離 x；check：從起點掃過去，與上一塊保留石頭距離 &lt; x 的就移走，數移走數是否 ≤ M。check 的貪心正確性：碰到近的就移，絕不提前移遠的 — 領先論證。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">auto ok = [&amp;](long long x){
+    long long last = 0; int removed = 0;
+    for (int i = 1; i &lt;= n; i++)
+        if (d[i] - last &lt; x) removed++;      // 移走第 i 塊
+        else last = d[i];
+    if (L - last &lt; x) return false;          // 終點是牆，不可移
+    return removed &lt;= m;
+};
+long long lo = 0, hi = L, ans = 0;
+while (lo &lt;= hi) {
+    long long mid = (lo + hi) / 2;
+    if (ok(mid)) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+}</code></pre></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1486/D" target="_blank">CF 1486D Max Median</a><span class="chip">二分+貪心</span><span class="chip">中位數</span></div>
+<p>找長度 ≥ k 的子陣列，最大化其中位數。</p>
+<details><summary>思路</summary><p>二分中位數 x，把 ≥ x 記 +1、&lt; x 記 −1：「存在長 ≥ k 子陣列中位數 ≥ x」⟺「存在長 ≥ k 子陣列和 &gt; 0」，前綴和 + 前綴最小值 O(n) 判定。<b>「二分 + ±1 轉化」是中位數最值題的萬能鑰匙</b>（同型：POJ 3579、各類「第 k 大最大化」）。</p></details>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><span class="p-title">01 分數規劃（最優比率生成樹/環）</span><span class="chip">二分+貪心</span><span class="chip">分數規劃</span></div>
+<p>最大化 Σa_i·x_i / Σb_i·x_i（選擇 x ∈ 可行集）。例：POJ 2728 最優比率生成樹、洛谷 P3199 最小圈。</p>
+<details><summary>思路</summary><p>二分比率 λ，判定「是否存在解使 Σ(a_i − λ·b_i)x_i ≥ 0」— 每個元素的權重變為 <code>a − λb</code>，判定問題退化成普通的最優化（做一次 MST／找負環／取前 k 大），可用貪心或標準演算法。Dinkelbach 迭代可加速。<b>參數化思想的巔峰：把非線性目標「線性化」後餵給貪心。</b></p></details>
+</div>
+</section>
+
+<!-- ── 2.11 專家專題 ── -->
+<section id="s2-11">
+<h3>2.11 專家專題 <span class="stars s5">★★★★★</span></h3>
+
+<h4 id="s2-11-1">2.11.1 擬陣（Matroid）：貪心正確性的統一理論</h4>
+<p>擬陣 <code>M = (E, I)</code>：元素全集 E 與「獨立集」族 I，滿足（1）遺傳性：獨立集的子集獨立；（2）交換公理：|A| &lt; |B| 且皆獨立 ⇒ 存在 x ∈ B\A 使 A∪{x} 獨立。</p>
+<div class="callout proof"><b>🧾 Rado–Edmonds 定理</b>
+<p>在擬陣上「按權重降序、能加就加」的貪心必得最大權基；反之，若一個獨立系統對<b>所有</b>權重函數貪心都正確，它必是擬陣。— 這給了「貪心何時必然正確」的完整刻畫。</p></div>
+<ul>
+<li><b>圖形擬陣</b>（無環邊集）→ Kruskal 正確性。</li>
+<li><b>分割擬陣 / 橫貫擬陣</b> → Job Sequencing（2.9）按報酬降序能排就排的正確性。</li>
+<li><b>擬陣交</b>：兩個擬陣的公共獨立集最大化（如彩色生成樹 = 圖形擬陣 ∩ 分割擬陣），有多項式演算法（增廣路），但已超出貪心 — 知道邊界在哪本身就是專家素養。CF 話題題：CF 1284G。</li>
+</ul>
+
+<h4 id="s2-11-2">2.11.2 Slope Trick：凸函數 DP 的貪心壓縮</h4>
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/713/C" target="_blank">CF 713C Sonya and Problem Wihtout a Legend</a><span class="chip">slope trick</span><span class="chip">堆</span></div>
+<p>每次操作 ±1，把序列改成嚴格遞增，最小總操作數。</p>
+<details><summary>提示</summary><p>嚴格遞增先做變換 <code>a_i −= i</code> 化為非嚴格。定義 <code>f_i(x)</code> = 前 i 項、第 i 項改為 ≤ x 時的最小代價 — 它是關於 x 的凸的分段線性函數。</p></details>
+<details><summary>思路</summary><p>轉移 <code>f_i(x) = min_{y≤x} [f_{i−1}(y)] + |a_i − x|</code>。凸函數的「前綴 min」= 砍掉右半上升段；「+|a−x|」= 左右各加一個斜率轉折點。<b>用大根堆存左半段的斜率轉折點集合</b>：每步 push a_i 兩次、若堆頂 &gt; a_i 則答案累加 <code>top − a_i</code> 並彈出替換。整套操作把 O(n·V) 的 DP 壓成 O(n log n) 貪心。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;long long&gt; L;    // 凸函數左半段斜率轉折點
+long long ans = 0;
+for (int i = 0; i &lt; n; i++) {
+    long long x = a[i] - i;      // 嚴格遞增 → 非嚴格
+    L.push(x);
+    if (L.top() &gt; x) {           // 出現下降段，付出代價抹平
+        ans += L.top() - x;
+        L.pop(); L.push(x);
+    }
+}</code></pre></details>
+</div>
+<p>進階應用：APIO 2016 烟花表演（樹上 slope trick，用可並堆合併子樹的凸函數）、ABC 217H。辨識特徵：<b>代價為絕對值/分段線性、狀態值域大、DP 關於值域是凸的</b>。</p>
+
+<h4 id="s2-11-3">2.11.3 交換論證 × DP 的一般化</h4>
+<p>2.3 的「Tower」模式推廣：當問題 =「選子集 + 定順序」時，先用相鄰交換論證證明<b>存在最優解按某鍵有序</b>，把順序維度消掉，再對排序後的序列 DP。訓練重點是推導鍵值的代數功力：把「i 在 j 前可行/更優」的條件化成 <code>g(i) ≤ g(j)</code> 的形式。同型：洛谷 P1417 烹調方案（鍵 b_i·c_j 交叉比較）、CF 1203F。</p>
+
+<h4 id="s2-11-4">2.11.4 對抗式貪心（博弈中的貪心）</h4>
+<p>輪流行動的博弈裡，「雙方都貪心拿當前最大」在<b>可加性目標</b>下常是最優（如 CF 談判分糖果：排序後輪流取），證明用策略交換。但存在後手結構（取走影響未來選項）時貪心失效需要博弈 DP — 分辨兩者的試金石：<b>你的選擇會不會改變對手未來選項的「相對」價值</b>。例：LC 1690、CF 1539E。</p>
+
+<h4 id="s2-11-5">2.11.5 反悔貪心 ⇄ 模擬費用流</h4>
+<div class="problem">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P6122" target="_blank">洛谷 P6122 [NOI Online #1] 隊長的技能 / CF 802O April Fools' Problem</a><span class="chip">模擬費用流</span><span class="chip">反悔貪心</span><span class="chip">二分</span></div>
+<p>CF 802O：n 天中選 k 天準備（費 a_i）、k 天列印（費 b_j），準備日 ≤ 對應列印日，最小總費。</p>
+<details><summary>思路</summary><p>費用流建模顯然但跑不動（n ≤ 5×10⁵）。<b>模擬費用流</b>：逐天掃描，遇 b_j 時與「堆中最小的未配對 a」成交；成交後把 <code>−(a_i)+b_j</code> 類型的「反悔券」推回堆，允許未來更便宜的 a 替換掉這次的 a、或更貴的 b 被換掉 — 每一張反悔券精確對應殘量網路的一條反向邊。k 的限制用 <b>wqs 二分</b>（帶懲罰的拉格朗日鬆弛）處理。反悔貪心（2.4）是本技術的單反向邊特例；掌握「彈出成交 → 推回反悔券」的對應，即可自行推導新題的模擬費用流。</p></details>
+</div>
+</section>
+</section>
+
+<!-- ═══════════════ 3 假貪心陷阱 ═══════════════ -->
+<section id="s3">
+<h2><span class="sec-no">3</span>經典「假貪心」陷阱</h2>
+<p>每個陷阱都是一面鏡子：照出貪心成立所依賴的、平時看不見的前提。</p>
+
+<div class="problem">
+<div class="p-head"><span class="chip">陷阱 1</span><span class="p-title">0/1 背包按性價比貪心</span></div>
+<p><b>反例</b>：容量 10，物品 (重6, 值9)、(重5, 值7)、(重5, 值7)。性價比貪心先拿 1.5 的第一件，剩 4 裝不下 → 得 9；最優是兩件 1.4 的 → 14。</p>
+<p><b>為什麼失敗</b>：不可分割 ⇒ 交換「一單位重量」時會破壞容量可行性，交換論證的「交換後仍可行」這步斷裂。<b>正解</b>：背包 DP。部分背包（2.1.1）之所以能貪，正因可分割補上了這一步。</p>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="chip">陷阱 2</span><span class="p-title">非 canonical 硬幣系統找零</span></div>
+<p><b>反例</b>：面額 {1, 3, 4} 湊 6 — 貪心 4+1+1（3 枚），最優 3+3（2 枚）。</p>
+<p><b>為什麼失敗</b>：大面額不再「支配」小面額組合（4 不能被替換分析覆蓋 3+3 的情形）。<b>正解</b>：完全背包 DP；理論判定見 2.7 的 Kozen–Zaks。</p>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="chip">陷阱 3</span><span class="p-title">帶權區間排程按右端點貪心</span></div>
+<p><b>反例</b>：[1,10] 權 100 vs. [1,2],[3,4] 各權 1。按右端點貪心先選小區間 → 得 2；最優選大區間 → 100。</p>
+<p><b>為什麼失敗</b>：「結束早」與「權大」是不可比的兩個維度，任何單一排序鍵都會被另一維度的極端值擊穿。<b>正解</b>：排序 + 二分 + DP（2.2.5）。</p>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="chip">陷阱 4</span><span class="p-title">負權邊上跑 Dijkstra／用 Dijkstra 求最長路</span></div>
+<p><b>為什麼失敗</b>：Dijkstra 的歸納不變量「取出的點距離已收斂」依賴邊權非負（2.8）；最長路即使非負權也 NP-hard（一般圖），DAG 上才可 DP。<b>正解</b>：負權用 Bellman-Ford/SPFA；最長路在 DAG 上拓撲 DP。</p>
+</div>
+
+<div class="problem">
+<div class="p-head"><span class="chip">陷阱 5</span><span class="p-title">「交換相鄰論證」推出的 comparator 不滿足嚴格弱序</span></div>
+<p><b>症狀</b>：本地 AC、提交 RE/WA — <code>std::sort</code> 對不合法 comparator 是未定義行為。</p>
+<p><b>檢查法</b>：確認 <code>cmp(a,a)==false</code>、不可同時 <code>cmp(a,b)&amp;&amp;cmp(b,a)</code>、可傳遞。最保險的做法是把比較化成單一數值鍵（如 2.1.2 的 a+b vs b+a 其實是實數鍵）。含 0 或相等元素時特別容易翻車。</p>
+</div>
+</section>
+
+<!-- ═══════════════ 4 證明模板 ═══════════════ -->
+<section id="s4">
+<h2><span class="sec-no">4</span>證明方法實戰模板</h2>
+
+<h3 id="s4-1">4.1 交換論證五步驟模板</h3>
+<div class="callout proof"><b>🧾 模板</b>
+<ol>
+<li><b>設</b>：設 OPT 為任一最優解，G 為貪心解，且 OPT ≠ G。</li>
+<li><b>找</b>：找出第一個分歧點 —— OPT 與 G 第一個不同的決策（或 OPT 中第一對「違反貪心排序鍵」的相鄰元素）。</li>
+<li><b>換</b>：把 OPT 在該處的選擇換成 G 的選擇（或交換那對相鄰元素），得到 OPT′。</li>
+<li><b>證</b>：證明 OPT′ 仍可行、且目標值不比 OPT 差。← 全部的工作量在這一步。</li>
+<li><b>推</b>：交換有限次後 OPT 變成 G 且始終不變差 ⇒ G 最優。∎</li>
+</ol></div>
+<p><b>完整範例（活動選擇）</b>：設 OPT 第一個活動為 j，G 第一個為 g（結束最早）。因 end(g) ≤ end(j)，把 OPT 中 j 換成 g：g 結束更早，不與 OPT 其餘活動衝突 ⇒ OPT′ 可行且數量相同。之後對子問題歸納。∎</p>
+
+<h3 id="s4-2">4.2 領先論證模板</h3>
+<div class="callout proof"><b>🧾 模板</b>
+<p>定義「進度量」m(·)（如：前 i 個選擇後的結束時間 / 剩餘資源）。歸納證明：對每個 i，貪心解的 m(G, i) <b>不劣於</b>任何解的 m(S, i)。步步領先 ⇒ 若 S 可行/達到 k，G 也能。適用於「貪心與對手逐步並排比較」自然的問題（活動選擇、跳躍遊戲、分發餅乾）。</p></div>
+
+<h3 id="s4-3">4.3 對拍驗證器（競賽現場 5 分鐘保命工具）</h3>
+<p>寫不出證明時，用小資料窮舉對拍。以下 Python 模板可套用到大多數「選擇型」問題：</p>
+<pre><code class="lang-py">import random
+from itertools import combinations
+
+def brute(items):                       # 暴力：窮舉所有子集
+    best = 0
+    for k in range(len(items) + 1):
+        for sub in combinations(items, k):
+            if feasible(sub):
+                best = max(best, value(sub))
+    return best
+
+def greedy(items):
+    ...                                  # 你的貪心
+
+for test in range(300):
+    n = random.randint(1, 8)             # 小到暴力能跑，大到能觸發結構
+    items = [(random.randint(1, 10), random.randint(1, 10)) for _ in range(n)]
+    if brute(items) != greedy(items):
+        print("WA on:", items)           # 得到最小反例，人腦分析它
+        break
+else:
+    print("300 tests passed")</code></pre>
+<p class="small">技巧：值域開小（1–10）更容易撞出反例；找到反例後手動最小化它，反例會告訴你貪心錯在哪一類結構。</p>
+</section>
+<!-- ═══════════════ 5 題目總表 ═══════════════ -->
+<section id="s5">
+<h2><span class="sec-no">5</span>題目總表（可篩選）</h2>
+<p>共 <b id="ptbl-total"></b> 題。點擊星級與標籤可篩選（可複選），輸入關鍵字可搜尋題名與想法。</p>
+
+<div class="filterbar">
+  <input id="f-text" type="search" placeholder="🔍 搜尋題名 / 來源 / 關鍵想法…">
+  <div class="row"><span class="lbl">難度</span><span id="f-stars"></span></div>
+  <div class="row"><span class="lbl">標籤</span><span id="f-tags"></span></div>
+  <div class="row"><span id="ptbl-count"></span></div>
+</div>
+
+<div class="tbl-wrap"><table id="ptbl">
+  <thead><tr><th>題目</th><th>來源</th><th>難度</th><th>標籤</th><th>關鍵想法</th></tr></thead>
+  <tbody></tbody>
+</table></div>
+</section>
+
+<!-- ═══════════════ 6 路線圖 ═══════════════ -->
+<section id="s6">
+<h2><span class="sec-no">6</span>學習路線圖</h2>
+
+<div class="stage">
+<h3>第一階段 <span class="stars s1">★</span>–<span class="stars s2">★★</span>：建立排序直覺（約 2 週）</h3>
+<p><b>目標</b>：看到題目能在 1 分鐘內說出「按什麼排序、為什麼」。</p>
+<ul>
+<li>排序貪心：LC 455、排隊接水、部分背包、LC 179、LC 881</li>
+<li>區間入門：LC 435、LC 452、POJ 1328</li>
+<li>堆入門：洛谷 P1090 合併果子、LC 122</li>
+</ul>
+<p class="small">✅ 畢業檢定：獨立完成 LC 402 移掉 K 位數字，並能口頭說明為什麼彈棧是對的。</p>
+</div>
+
+<div class="stage">
+<h3>第二階段 <span class="stars s3">★★★</span>：掌握三大進階武器（約 3–4 週）</h3>
+<p><b>目標</b>：反悔貪心、字典序貪心、二分+貪心三套框架能獨立套用；學會寫對拍。</p>
+<ul>
+<li>反悔貪心：LC 630 → LC 871 → CF 1526C2</li>
+<li>字典序：LC 316、字典序最小拓撲序</li>
+<li>二分+貪心：跳石頭（P2678）、Aggressive Cows</li>
+<li>區間進階：LC 253、LC 45 / 1024；數學：LC 462、LC 135、LC 343</li>
+<li>證明基本功：用交換論證完整證明 LC 435 與 Smith's Rule（寫下來！）</li>
+</ul>
+<p class="small">✅ 畢業檢定：CF Div2 C 難度的陌生貪心題，40 分鐘內 AC 或給出反例轉 DP。</p>
+</div>
+
+<div class="stage">
+<h3>第三階段 <span class="stars s4">★★★★</span>：競賽級組合技（約 1–2 月）</h3>
+<p><b>目標</b>：多策略組合 — 交換論證定序 + DP、貪心掛資料結構、非顯然反悔鍵。</p>
+<ul>
+<li>交換論證排程：國王遊戲（P1080）、Johnson's Rule（P1248）、AtCoder DP X</li>
+<li>反悔進階：建築搶修（P4053）、Work Scheduling（P2949）、CF 865D</li>
+<li>貪心×資料結構：Job Sequencing + DSU、種樹（P1250）、荷馬史詩（P2168）</li>
+<li>圖上貪心：次小生成樹（P4180）、瓶頸生成樹應用</li>
+<li>二分進階：CF 1486D、糖果傳遞（P2512）</li>
+</ul>
+<p class="small">✅ 畢業檢定：獨立推導一道沒見過的排程題的排序鍵並證明可傳遞性。</p>
+</div>
+
+<div class="stage">
+<h3>第四階段 <span class="stars s5">★★★★★</span>：專家專題（長期）</h3>
+<p><b>目標</b>：把貪心放進更大的理論框架 — 凸性、擬陣、網路流對偶。</p>
+<ul>
+<li>Slope trick：CF 713C → APIO 2016 烟花表演（可並堆版）</li>
+<li>隱式圖 MST：CF 888G Xor-MST（Boruvka + 01-Trie）</li>
+<li>模擬費用流：CF 865D 重讀（用殘量網路語言重述）→ CF 802O + wqs 二分</li>
+<li>理論：讀懂 Rado–Edmonds 定理的雙向證明；瞭解擬陣交的增廣路演算法（CF 1284G）</li>
+<li>01 分數規劃：POJ 2728 Desert King</li>
+</ul>
+<p class="small">✅ 畢業檢定：對一道新的「配對/選擇」難題，能先建出費用流模型、再把它化簡成堆貪心。</p>
+</div>
+
+<footer>
+<p>貪心演算法完全指南 · 純靜態單頁 · 無外部依賴 · 深淺色主題自適應</p>
+<p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</section>
+</main>
+</div>
+
+<script>
+/* ═══ 題目資料 ═══ */
+const P = [
+ // [題名, 來源, URL, 星, 標籤, 關鍵想法]
+ ["LC 455 分發餅乾","LeetCode","https://leetcode.cn/problems/assign-cookies/",1,["排序","雙指針"],"雙排序後最小可行餅乾餵最小胃口"],
+ ["部分背包 Fractional Knapsack","經典","",1,["排序"],"按單位價值 v/w 遞減裝，可分割保證貪心正確"],
+ ["LC 860 檸檬水找零","LeetCode","https://leetcode.cn/problems/lemonade-change/",1,["模擬"],"找 15 元優先用 10+5，保留萬能的 5 元"],
+ ["LC 122 買賣股票的最佳時機 II","LeetCode","https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/",1,["數學"],"答案 = 所有相鄰正日差之和"],
+ ["洛谷 P1223 排隊接水","洛谷","https://www.luogu.com.cn/problem/P1223",1,["排序","排程"],"短作業優先（SJF），相鄰交換論證"],
+ ["LC 435 無重疊區間","LeetCode","https://leetcode.cn/problems/non-overlapping-intervals/",2,["區間"],"按右端點排序能選就選（活動選擇）"],
+ ["LC 452 最少箭射氣球","LeetCode","https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/",2,["區間"],"區間選點：右端點排序，箭射在右端點"],
+ ["LC 179 最大數","LeetCode","https://leetcode.cn/problems/largest-number/",2,["排序","交換論證"],"comparator：a+b > b+a，注意嚴格弱序"],
+ ["LC 881 救生艇","LeetCode","https://leetcode.cn/problems/boats-to-save-people/",2,["排序","雙指針"],"最重配最輕，配不上就單走"],
+ ["LC 402 移掉 K 位數字","LeetCode","https://leetcode.cn/problems/remove-k-digits/",2,["字典序","單調棧"],"遞增棧：新數字小就彈棧頂"],
+ ["洛谷 P1090 合併果子","洛谷","https://www.luogu.com.cn/problem/P1090",2,["堆","Huffman"],"每次合併最小兩堆 = Huffman 樹"],
+ ["LC 462 最少移動次數使陣列相等 II","LeetCode","https://leetcode.cn/problems/minimum-moves-to-equal-array-elements-ii/",2,["中位數"],"Σ|a−x| 最小 ⟺ x 取中位數"],
+ ["LC 343 整數拆分","LeetCode","https://leetcode.cn/problems/integer-break/",2,["數學"],"拆成盡量多的 3，餘 1 改成 2+2"],
+ ["POJ 1328 Radar Installation","POJ","http://poj.org/problem?id=1328",2,["區間","幾何轉化"],"島 → 可放雷達的 x 區間，化為區間選點"],
+ ["LC 45 跳躍遊戲 II","LeetCode","https://leetcode.cn/problems/jump-game-ii/",2,["區間","覆蓋"],"維護當前層可達最遠處，到邊界才起跳"],
+ ["LC 1024 視頻拼接","LeetCode","https://leetcode.cn/problems/video-stitching/",3,["區間","覆蓋"],"左端點排序，每步接右端點伸最遠的一段"],
+ ["LC 134 加油站","LeetCode","https://leetcode.cn/problems/gas-station/",2,["掃描","數學"],"總和非負必有解；油箱見負即換起點"],
+ ["洛谷 P1031 均分紙牌","洛谷","https://www.luogu.com.cn/problem/P1031",2,["前綴和"],"從左往右逐位結清，答案 = 非零前綴數"],
+ ["LC 630 課程表 III","LeetCode","https://leetcode.cn/problems/course-schedule-iii/",3,["反悔貪心","堆"],"按截止排序先選，超時彈掉最耗時的"],
+ ["LC 871 最低加油次數","LeetCode","https://leetcode.cn/problems/minimum-number-of-refueling-stops/",3,["反悔貪心","堆"],"路過先存油入堆，不夠時反悔取最大"],
+ ["洛谷 P1080 國王遊戲","洛谷","https://www.luogu.com.cn/problem/P1080",3,["排序","交換論證","高精度"],"相鄰交換 ⇒ 按 a×b 遞增排"],
+ ["洛谷 P1842 奶牛玩雜技","洛谷","https://www.luogu.com.cn/problem/P1842",3,["排序","交換論證"],"按 w+s 遞增，風險值交換論證"],
+ ["LC 253 會議室 II","LeetCode","https://leetcode.cn/problems/meeting-rooms-ii/",3,["區間","堆","掃描線"],"最大重疊數 = 答案；小根堆重用最早空房"],
+ ["LC 316 去除重複字母","LeetCode","https://leetcode.cn/problems/remove-duplicate-letters/",3,["字典序","單調棧"],"彈棧條件加上「後面還會出現」的可行性檢查"],
+ ["POJ 2287 田忌賽馬","POJ","http://poj.org/problem?id=2287",3,["排序","雙指針","博弈"],"打得贏就打，打不贏用最慢的墊"],
+ ["Smith's Rule 加權完成時間","經典","",3,["排程","交換論證"],"按 p/w 遞增：短且重要優先"],
+ ["LC 295 數據流中位數","LeetCode","https://leetcode.cn/problems/find-median-from-data-stream/",3,["堆","中位數"],"對頂堆維護動態中位數"],
+ ["洛谷 P1631 序列合併","洛谷","https://www.luogu.com.cn/problem/P1631",3,["堆","多路歸併"],"n² 個和組織成 n 條有序鏈 k 路歸併"],
+ ["洛谷 P2678 跳石頭","洛谷","https://www.luogu.com.cn/problem/P2678",3,["二分+貪心"],"二分最小距離，貪心數要移幾塊"],
+ ["POJ 2456 Aggressive Cows","POJ","http://poj.org/problem?id=2456",3,["二分+貪心"],"二分最小間距，貪心放牛"],
+ ["字典序最小拓撲序","經典","",3,["字典序","圖","堆"],"Kahn + 小根堆；注意與「盡量早」的區別"],
+ ["洛谷 P3366 最小生成樹","洛谷","https://www.luogu.com.cn/problem/P3366",3,["圖","MST"],"Kruskal：Cut Property 保證貪心正確"],
+ ["洛谷 P4779 Dijkstra 標準版","洛谷","https://www.luogu.com.cn/problem/P4779",3,["圖","最短路"],"非負權下最近未定點已收斂"],
+ ["CF 1526C2 Potions","Codeforces","https://codeforces.com/problemset/problem/1526/C2",3,["反悔貪心","堆"],"全喝，血負時吐掉最毒的一瓶"],
+ ["LC 406 根據身高重建隊列","LeetCode","https://leetcode.cn/problems/queue-reconstruction-by-height/",3,["排序","構造"],"高的先排，矮的按 k 插空不影響前者"],
+ ["LC 135 分發糖果","LeetCode","https://leetcode.cn/problems/candy/",3,["掃描","調整法"],"左右各掃一遍取 max，滿足雙向約束"],
+ ["USACO Work Scheduling (P2949)","洛谷","https://www.luogu.com.cn/problem/P2949",3,["反悔貪心","堆"],"報酬版反悔：時間不夠換掉最低報酬"],
+ ["洛谷 P1484 種樹（選 k 不相鄰）","洛谷","https://www.luogu.com.cn/problem/P1484",4,["反悔貪心","鏈表"],"選一個點後合併鄰居為反悔選項 l+r−x"],
+ ["洛谷 P1248 加工生產調度","洛谷","https://www.luogu.com.cn/problem/P1248",4,["排程","交換論證"],"Johnson's Rule：min(a,b) 分組排序"],
+ ["AtCoder DP X - Tower","AtCoder","https://atcoder.jp/contests/dp/tasks/dp_x",4,["交換論證","貪心+DP"],"按 w+s 排序定順序，再 0/1 背包"],
+ ["洛谷 P4053 建築搶修","洛谷","https://www.luogu.com.cn/problem/P4053",4,["反悔貪心","堆"],"LC 630 原型：超期彈最耗時"],
+ ["CF 865D Buy Low Sell High","Codeforces","https://codeforces.com/problemset/problem/865/D",4,["反悔貪心","堆","費用流思想"],"成交後推回反悔券 = 殘量反向邊"],
+ ["洛谷 P2168 荷馬史詩","洛谷","https://www.luogu.com.cn/problem/P2168",4,["堆","Huffman"],"k 叉 Huffman：補虛點湊滿 (n−1)%(k−1)"],
+ ["LC 321 拼接最大數","LeetCode","https://leetcode.cn/problems/create-maximum-number/",4,["字典序","單調棧","歸併"],"枚舉分配 + 單調棧取最大子序列 + 貪心歸併"],
+ ["洛谷 P2512 糖果傳遞","洛谷","https://www.luogu.com.cn/problem/P2512",4,["中位數","前綴和"],"環形均分 → Σ|x−c_i| → 中位數"],
+ ["Job Sequencing + DSU","經典","",4,["DSU","排程"],"報酬降序，DSU 找 ≤d 的最晚空槽"],
+ ["洛谷 P1250 種樹（區間約束）","洛谷","https://www.luogu.com.cn/problem/P1250",4,["區間","DSU"],"右端點排序，從右往左補種最保值"],
+ ["洛谷 P4180 嚴格次小生成樹","洛谷","https://www.luogu.com.cn/problem/P4180",4,["圖","MST","倍增"],"枚舉非樹邊換掉路徑最大/嚴格次大邊"],
+ ["CF 1486D Max Median","Codeforces","https://codeforces.com/problemset/problem/1486/D",4,["二分+貪心","中位數"],"二分 x 後 ±1 轉化，找正和子陣列"],
+ ["洛谷 P1417 烹調方案","洛谷","https://www.luogu.com.cn/problem/P1417",4,["交換論證","貪心+DP"],"交叉比較 b·c 定序後做背包"],
+ ["CF 1203F1 Complete the Projects","Codeforces","https://codeforces.com/problemset/problem/1203/F1",4,["交換論證","貪心+DP"],"加分的按門檻升序；扣分的交換論證+DP"],
+ ["洛谷 P1889 士兵站隊","洛谷","https://www.luogu.com.cn/problem/P1889",3,["中位數"],"y 取中位數；x 減下標後取中位數"],
+ ["CF 713C 嚴格遞增最小代價","Codeforces","https://codeforces.com/problemset/problem/713/C",5,["slope trick","堆"],"a_i−=i 後大根堆維護凸函數左端斜率"],
+ ["APIO 2016 烟花表演 (P3642)","洛谷","https://www.luogu.com.cn/problem/P3642",5,["slope trick","可並堆"],"樹上凸函數用左偏樹合併"],
+ ["CF 888G Xor-MST","Codeforces","https://codeforces.com/problemset/problem/888/G",5,["圖","MST","01-Trie"],"Boruvka 每輪用 Trie 找最小 XOR 出邊"],
+ ["CF 802O April Fools' Problem","Codeforces","https://codeforces.com/problemset/problem/802/O",5,["模擬費用流","反悔貪心","wqs二分"],"堆模擬增廣 + wqs 二分處理恰好 k"],
+ ["CF 1284G Seollal","Codeforces","https://codeforces.com/problemset/problem/1284/G",5,["擬陣"],"圖形擬陣 ∩ 分割擬陣的擬陣交增廣"],
+ ["POJ 2728 Desert King","POJ","http://poj.org/problem?id=2728",5,["二分+貪心","分數規劃","MST"],"01 分數規劃：二分 λ 後跑 Prim"],
+];
+
+/* ═══ 工具 ═══ */
+const $ = s => document.querySelector(s);
+const starHTML = n => `<span class="stars s${n}">${"★".repeat(n)}</span>`;
+
+/* ═══ 題目總表渲染與篩選 ═══ */
+const state = { text: "", stars: new Set(), tags: new Set() };
+const ALLTAGS = [...new Set(P.flatMap(r => r[4]))];
+
+function chip(label, onToggle){
+  const el = document.createElement("span");
+  el.className = "chip clickable"; el.textContent = label;
+  el.onclick = () => { el.classList.toggle("on"); onToggle(el.classList.contains("on")); render(); };
+  return el;
+}
+for (let s = 1; s <= 5; s++)
+  $("#f-stars").appendChild(chip("★".repeat(s), on => on ? state.stars.add(s) : state.stars.delete(s)));
+for (const t of ALLTAGS)
+  $("#f-tags").appendChild(chip(t, on => on ? state.tags.add(t) : state.tags.delete(t)));
+$("#f-text").addEventListener("input", e => { state.text = e.target.value.trim().toLowerCase(); render(); });
+
+function render(){
+  const tb = $("#ptbl tbody"); tb.innerHTML = "";
+  let shown = 0;
+  for (const [name, src, url, st, tags, idea] of P){
+    if (state.stars.size && !state.stars.has(st)) continue;
+    if (state.tags.size && ![...state.tags].some(t => tags.includes(t))) continue;
+    if (state.text && !(name + src + idea + tags.join()).toLowerCase().includes(state.text)) continue;
+    shown++;
+    const tr = document.createElement("tr");
+    const link = url ? `<a href="${url}" target="_blank" rel="noopener">${name}</a>` : `<b>${name}</b>`;
+    tr.innerHTML = `<td>${link}</td><td>${src}</td><td>${starHTML(st)}</td>` +
+      `<td>${tags.map(t => `<span class="chip">${t}</span>`).join("")}</td><td>${idea}</td>`;
+    tb.appendChild(tr);
+  }
+  $("#ptbl-count").textContent = `顯示 ${shown} / ${P.length} 題`;
+}
+$("#ptbl-total").textContent = P.length;
+render();
+
+/* ═══ 主題切換 ═══ */
+const root = document.documentElement;
+const saved = localStorage.getItem("greedy-theme");
+if (saved) root.dataset.theme = saved;
+$("#themeBtn").onclick = () => {
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const cur = root.dataset.theme || (dark ? "dark" : "light");
+  const next = cur === "dark" ? "light" : "dark";
+  root.dataset.theme = next;
+  localStorage.setItem("greedy-theme", next);
+};
+
+/* ═══ 手機側欄 ═══ */
+const sb = $("#sidebar");
+$("#menuBtn").onclick = () => sb.classList.toggle("open");
+sb.addEventListener("click", e => { if (e.target.tagName === "A") sb.classList.remove("open"); });
+
+/* ═══ 目錄捲動高亮 ═══ */
+const tocLinks = [...document.querySelectorAll("#toc a")];
+const secOf = Object.fromEntries(tocLinks.map(a => [a.getAttribute("href").slice(1), a]));
+const io = new IntersectionObserver(es => {
+  for (const e of es) if (e.isIntersecting){
+    tocLinks.forEach(a => a.classList.remove("active"));
+    const a = secOf[e.target.id]; if (a) a.classList.add("active");
+  }
+}, { rootMargin: "0px 0px -75% 0px" });
+Object.keys(secOf).forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+
+/* ═══ 輕量語法高亮 ═══ */
+const KW = {
+  cpp: /\b(auto|break|case|catch|char|class|const|continue|default|do|double|else|enum|false|float|for|function|if|int|long|namespace|new|nullptr|operator|priority_queue|private|public|return|short|signed|sizeof|static|string|struct|switch|template|this|throw|true|try|typedef|typename|union|unsigned|using|vector|void|while|multiset|set|map|pair|greater|less)\b/g,
+  py: /\b(and|as|assert|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|not|or|pass|print|raise|return|True|try|while|with|yield|range|len|max|min)\b/g
+};
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function hl(src, lang){
+  const parts = [];
+  // 逐段切出註解與字串，避免在其中誤高亮
+  const re = lang === "cpp"
+    ? /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g
+    : /(#[^\n]*|"""[\s\S]*?"""|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+  let last = 0, m;
+  const plain = t => esc(t)
+    .replace(KW[lang], '<span class="tok-kw">$&</span>')
+    .replace(/\b(\d+(?:\.\d+)?(?:LL|L|f)?)\b/g, '<span class="tok-num">$1</span>')
+    .replace(/(\w+)(\()/g, '<span class="tok-fn">$1</span>$2');
+  while ((m = re.exec(src))){
+    parts.push(plain(src.slice(last, m.index)));
+    const cls = (m[0][0] === "/" || m[0][0] === "#") ? "tok-com" : "tok-str";
+    parts.push(`<span class="${cls}">${esc(m[0])}</span>`);
+    last = m.index + m[0].length;
+  }
+  parts.push(plain(src.slice(last)));
+  return parts.join("");
+}
+document.querySelectorAll("code.lang-cpp, code.lang-py").forEach(el => {
+  const lang = el.classList.contains("lang-cpp") ? "cpp" : "py";
+  el.innerHTML = hl(el.textContent, lang);
+});
+</script>
+</body>
+</html>
