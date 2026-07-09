@@ -1,0 +1,55 @@
+<h2>2.9 數位 DP</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>統計區間 [l, r] 內「數位滿足某性質」的數：差分成 solve(r) − solve(l−1)，然後<b>從最高位往低位逐位填數字</b>，狀態記「數位相關的性質」＋兩面旗：<b>tight</b>（前綴是否貼著上界，貼著則本位最多填到上界位）與 <b>lead</b>(前導零，尚未開始的數不該計入性質)。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>上界大到 10¹⁸（不能枚舉），但條件只跟<b>數位</b>有關：含/不含某數字、數位和、相鄰數位關係、整除性。</li>
+<li>複雜度 = 位數 × 性質狀態數 × 10，幾乎永遠跑得飛快。</li>
+</ul></div>
+
+<pre><code class="lang-cpp">// 統一模板（記憶化搜尋版）：只 cache「自由態」(!tight &amp;&amp; !lead) 的結果
+int digits[20], len;
+long long memo[20][STATE]; bool vis[20][STATE];
+long long dfs(int pos, int st, bool tight, bool lead) {
+    if (pos == len) return 合法(st, lead) ? 1 : 0;
+    if (!tight &amp;&amp; !lead &amp;&amp; vis[pos][st]) return memo[pos][st];
+    int hi = tight ? digits[pos] : 9;
+    long long res = 0;
+    for (int d = 0; d &lt;= hi; d++)
+        res += dfs(pos + 1, 轉移(st, d, lead), tight &amp;&amp; d == hi, lead &amp;&amp; d == 0);
+    if (!tight &amp;&amp; !lead) { vis[pos][st] = true; memo[pos][st] = res; }
+    return res;
+}
+// 答案 = solve(r) - solve(l - 1)</code></pre>
+
+<div class="problem" data-problem-id="luogu-p2657">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2657" target="_blank">洛谷 P2657 windy 數</a><span class="chip">數位</span></div>
+<p>相鄰數位之差至少為 2 的數，在 [a, b] 中有幾個？</p>
+<details><summary>思路</summary><p>模板直出：狀態 = 上一位數字（前導零時記「無」）。lead 旗在這題是<b>必要的</b>：007 的「0 → 0」不能算違規，因為數還沒開始。適合當第一道自己寫的數位 DP。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2602">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2602" target="_blank">洛谷 P2602 數字計數</a><span class="chip">數位</span><span class="chip">計數</span></div>
+<p>統計 [a, b] 中每個數字 0–9 各出現多少次。</p>
+<details><summary>思路</summary><p>對每個目標數字跑一次，狀態 = 目前已出現次數（或直接把「出現次數」當返回值的一部分：返回 (數的個數, 出現總次數) 二元組）。LC 233（數字 1 的個數）是單數字版。<b>「統計出現次數」而非「統計個數」時，讓 dfs 同時返回兩個量最不易錯。</b></p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-902">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/numbers-at-most-n-given-digit-set/" target="_blank">LC 902 最大為 N 的數字組合</a><span class="chip">數位</span></div>
+<p>只能用給定數字集合，能拼出多少個 ≤ N 的正整數？</p>
+<details><summary>思路</summary><p>tight 旗的純粹練習：貼上界時本位只能填 ≤ 對應位的數字，且「嚴格小於」的瞬間之後全自由（自由位直接乘 |D| 的冪）。位數比 N 短的數另外加總。</p></details>
+</div>
+
+<div class="problem" data-problem-id="atcoder-dp-s">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_s" target="_blank">AtCoder DP S - Digit Sum</a><span class="chip">數位</span></div>
+<p>1..K（K ≤ 10^10000）中數位和被 D 整除的數有幾個？</p>
+<details><summary>思路</summary><p>狀態 = 數位和 mod D。特別之處是 K 長達一萬位——數位 DP 的複雜度只跟<b>位數</b>線性相關，天生就是為這種上界準備的。記得答案要扣掉 0。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-55d">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/55/D" target="_blank">CF 55D Beautiful Numbers</a><span class="chip">數位</span><span class="chip">狀態壓縮</span></div>
+<p>統計能被自己每個非零數位整除的數。</p>
+<details><summary>思路</summary><p>「被每個出現的數位整除」⟺ 被它們的 lcm 整除。關鍵壓縮：1–9 任意組合的 lcm 都整除 <b>2520</b>，所以只需記（數 mod 2520、已出現數位的 lcm）。lcm 只有 48 種，離散化後狀態 20×2520×48。<b>「看似要記完整資訊，實則只需 mod 某個共同倍數」是數位 DP 最漂亮的壓縮範式。</b></p></details>
+</div>
