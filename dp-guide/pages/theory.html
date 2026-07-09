@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理論基礎：DP 思考框架 — DP 上分攻略</title>
+<meta name="description" content="三大前提、解題六步驟、記憶化 vs 遞推、複雜度反推狀態設計">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%88</text></svg>">
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/progress.js"></script>
+</head>
+<body data-page="theory">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../index.html">📈 DP 上分攻略<span>動態規劃 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-linear.html">2.1 線性 DP</a>
+    <a class="lv2" data-page="s02" href="strategies/02-grid.html">2.2 網格與座標 DP</a>
+    <a class="lv2" data-page="s03" href="strategies/03-knapsack.html">2.3 背包全家桶</a>
+    <a class="lv2" data-page="s04" href="strategies/04-interval.html">2.4 區間 DP</a>
+    <a class="lv2" data-page="s05" href="strategies/05-two-sequences.html">2.5 雙序列 DP</a>
+    <a class="lv2" data-page="s06" href="strategies/06-state-machine.html">2.6 狀態機 DP</a>
+    <a class="lv2" data-page="s07" href="strategies/07-bitmask.html">2.7 位元狀壓 DP</a>
+    <a class="lv2" data-page="s08" href="strategies/08-tree.html">2.8 樹上 DP</a>
+    <a class="lv2" data-page="s09" href="strategies/09-digit.html">2.9 數位 DP</a>
+    <a class="lv2" data-page="s10" href="strategies/10-counting-expectation.html">2.10 計數與期望 DP</a>
+    <a class="lv2" data-page="s11" href="strategies/11-graph-game.html">2.11 圖上與博弈 DP</a>
+    <a class="lv2" data-page="s12" href="strategies/12-optimization.html">2.12 DP 優化技術</a>
+    <a class="lv2" data-page="s13" href="strategies/13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與除錯</a>
+    <a class="lv1" data-page="method" href="method.html">4. 狀態設計方法論</a>
+    <a class="lv1" data-page="problems" href="problems.html">5. 題目總表（可篩選）</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2><span class="sec-no">1</span>理論基礎：DP 思考框架</h2>
+
+<h3>1.1 三大前提</h3>
+<div class="tbl-wrap"><table>
+<tr><th>性質</th><th>意義</th><th>缺了會怎樣</th></tr>
+<tr><td><b>重疊子問題</b></td><td>不同決策路徑到達相同的子問題</td><td>不重疊就退化成分治——記憶化毫無收益</td></tr>
+<tr><td><b>最優子結構</b></td><td>大問題的最優解由子問題的<b>最優解</b>組成</td><td>例：經過中繼點的「最長簡單路徑」不能拼接子答案</td></tr>
+<tr><td><b>無後效性</b></td><td>到達某狀態後，未來只取決於狀態本身，與「怎麼來的」無關</td><td>轉移依賴歷史 → 把缺的資訊<b>加進狀態</b>（見 <a href="pitfalls.html">第 3 章</a>反例）</td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 無後效性是狀態設計的唯一準繩</b>
+<p>「狀態設計」說穿了就是回答一個問題：<b>要讓未來與歷史無關，我最少得記住哪些資訊？</b>記太少 → 轉移算不出來（後效性）；記太多 → 狀態爆炸。整個第 2 章的 13 種策略，本質上是 13 種「該記什麼」的答案。</p></div>
+
+<h3>1.2 解題六步驟</h3>
+<ol>
+  <li><b>狀態定義</b>：dp[…] 的每一維是什麼、值是什麼（最值？方案數？可行性？）。用一句完整的中文寫下來。</li>
+  <li><b>轉移方程</b>：枚舉「最後一步決策」，把狀態表成更小狀態的函數。</li>
+  <li><b>初始化與邊界</b>：哪些狀態是遞迴終點；不可達狀態設 −INF／0 的語意要想清楚。</li>
+  <li><b>計算順序</b>：保證算 dp[s] 時它依賴的狀態都已算完（線性掃、按區間長度、拓撲序、記憶化搜尋自動處理）。</li>
+  <li><b>答案位置</b>：可能是單一格、一整排取 max、或若干狀態的組合。</li>
+  <li><b>優化</b>：空間滾動、轉移加速（<a href="strategies/12-optimization.html">2.12</a>）。先寫對，再寫快。</li>
+</ol>
+
+<h3>1.3 記憶化搜尋 vs 遞推</h3>
+<div class="tbl-wrap"><table>
+<tr><th></th><th>記憶化搜尋（top-down）</th><th>遞推（bottom-up）</th></tr>
+<tr><td>寫法</td><td>暴力遞迴 + cache，思路直翻</td><td>for 迴圈按順序填表</td></tr>
+<tr><td>優點</td><td>不用想計算順序；自動跳過無效狀態（數位 DP、樹上 DP 最愛）</td><td>方便滾動陣列、方便單調佇列/斜率等轉移優化</td></tr>
+<tr><td>缺點</td><td>遞迴常數大、深度 10⁶ 級會爆棧</td><td>要自己保證順序正確、會算到用不到的狀態</td></tr>
+</table></div>
+<p>建議：<b>先用記憶化搜尋把方程想對，需要優化時再改遞推</b>。兩者只是同一張 DAG 的兩種遍歷方向。</p>
+
+<h3>1.4 複雜度 = 狀態數 × 單次轉移</h3>
+<p>這條公式同時是<b>估時間</b>與<b>反推狀態設計</b>的工具。看到資料範圍先心算：</p>
+<div class="tbl-wrap"><table>
+<tr><th>n 的量級</th><th>可接受複雜度</th><th>優先聯想</th></tr>
+<tr><td>n ≤ 20</td><td>O(2ⁿ·n)</td><td>狀壓 DP（<a href="strategies/07-bitmask.html">2.7</a>）</td></tr>
+<tr><td>n ≤ 500</td><td>O(n³)</td><td>區間 DP（<a href="strategies/04-interval.html">2.4</a>）、Floyd</td></tr>
+<tr><td>n ≤ 5000</td><td>O(n²)</td><td>雙序列、O(n²) 線性 DP</td></tr>
+<tr><td>n ≤ 10⁵–10⁶</td><td>O(n log n)／O(n)</td><td>轉移必須優化：單調佇列、斜率、BIT（<a href="strategies/12-optimization.html">2.12</a>）</td></tr>
+<tr><td>n ≤ 10¹⁸</td><td>O(k³ log n)</td><td>矩陣快速冪加速遞推（<a href="strategies/12-optimization.html">2.12.7</a>）、數位 DP（<a href="strategies/09-digit.html">2.9</a>）</td></tr>
+</table></div>
+
+<h3>1.5 實作工具箱</h3>
+<ul>
+  <li><b>滾動陣列</b>：dp[i][*] 只依賴 dp[i−1][*] 時，兩排交替或原地倒序（0/1 背包）。</li>
+  <li><b>下標偏移</b>：狀態含負數（差值、座標）時整體平移，別用 map 拖慢常數。</li>
+  <li><b>−INF 哨兵</b>：用 <code>0x3f3f3f3f</code> 級別的值，夠大又不會相加溢位；判斷不可達用 <code>dp[x] &lt; −INF/2</code>。</li>
+  <li><b>路徑還原</b>：另開 <code>from[]</code> 記錄每格取 max 時的決策點，答案處倒著走回去。</li>
+  <li><b>取模</b>：每次加法/乘法後取模；相減後 <code>(x % MOD + MOD) % MOD</code> 防負數。</li>
+</ul>
+
+<pre><code class="lang-cpp">// 記憶化搜尋通用骨架
+long long memo[MAXN]; bool vis[MAXN];
+long long f(int s) {
+    if (是邊界) return 邊界值;
+    if (vis[s]) return memo[s];
+    vis[s] = true;                 // 用 vis 而非特殊值，避免「初始值撞答案」
+    long long best = -INF;
+    for (每個決策 d) best = max(best, f(更小狀態) + 決策收益);
+    return memo[s] = best;
+}</code></pre>
+
+<div class="pagenav">
+<a class="prev" href="../index.html"><span class="dir">← 上一節</span>首頁</a>
+<a class="next" href="strategies/01-linear.html"><span class="dir">下一節 →</span>2.1 線性 DP</a>
+</div>
+<footer class="site-footer">
+  <p>DP 上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。姊妹站：<a href="../../index.html">貪心演算法完全指南</a>。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

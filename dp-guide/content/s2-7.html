@@ -1,0 +1,64 @@
+<h2>2.7 位元狀壓 DP</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>n ≤ 20 時，「哪些元素已處理」的<b>集合</b>本身塞進狀態：一個 n 位二進位整數。轉移就是位運算。兩大家族：<b>集合推進型</b>（dp[S]，按 S 從小到大）與<b>行輪廓型</b>（dp[i][S]，S 是第 i 行的放置狀態）。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>n ≤ 20（2ⁿ 狀態）或棋盤寬 ≤ 20（每行 2^m 種輪廓）。</li>
+<li>「每個元素用一次、順序可任意」的排列/配對問題——用集合代替排列，n! 降成 2ⁿ。</li>
+</ul></div>
+
+<pre><code class="lang-cpp">// 位運算工具箱
+int lb = S &amp; (-S);                 // lowbit：最低位的 1
+int c  = __builtin_popcount(S);    // 集合大小
+for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */ }
+// 全體「枚舉每個集合的每個子集」總量是 3^n（每位三種歸屬），非 4^n</code></pre>
+
+<div class="problem" data-problem-id="atcoder-dp-o">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_o" target="_blank">AtCoder DP O - Matching</a><span class="chip">狀壓</span><span class="chip">配對計數</span></div>
+<p>n 男 n 女相容關係給定，求完美匹配數（n ≤ 21）。</p>
+<details><summary>思路</summary><p>dp[S] = 前 popcount(S) 個男生與女生集合 S 完成配對的方案數。<b>關鍵洞見：第 i 個男生配誰不用記「哪些男生用過」——按順序處理，男生編號 = popcount(S)</b>，一維集合就夠。轉移枚舉 S 的每個位。O(2ⁿ·n)。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">dp[0] = 1;
+for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
+    int i = __builtin_popcount(S) - 1;        // 正在配第 i 個男生
+    for (int j = 0; j &lt; n; j++)
+        if ((S &gt;&gt; j &amp; 1) &amp;&amp; ok[i][j])
+            dp[S] = (dp[S] + dp[S ^ (1 &lt;&lt; j)]) % MOD;
+}</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1171">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1171" target="_blank">洛谷 P1171 售貨員的難題（TSP）</a><span class="chip">狀壓</span><span class="chip">TSP</span></div>
+<p>訪問所有村莊一次並回起點的最短路程（n ≤ 20）。</p>
+<details><summary>思路</summary><p>經典 TSP：dp[S][v] = 已訪問集合 S、目前在 v 的最短距離，轉移枚舉下一站。O(2ⁿ·n²)。<b>「已訪問集合 + 目前位置」是狀壓最常用的狀態骨架</b>——位置必須進狀態，因為它決定後續代價（無後效性）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1896">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1896" target="_blank">洛谷 P1896 互不侵犯（SCOI2005）</a><span class="chip">狀壓</span><span class="chip">行輪廓</span></div>
+<p>n×n 棋盤放 k 個國王，互不攻擊（八方向相鄰），方案數。</p>
+<details><summary>思路</summary><p>行輪廓型模板：dp[i][j][S] = 前 i 行放 j 個、第 i 行狀態 S。預處理所有「行內無相鄰 1」的合法行狀態（n=9 時僅數十個），行間檢查 <code>S &amp; T</code>、<code>S &amp; (T&lt;&lt;1)</code>、<code>S &amp; (T&gt;&gt;1)</code> 皆空。<b>先枚舉合法行再兩兩配對</b>，比枚舉全部 2ⁿ×2ⁿ 快得多。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2704">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2704" target="_blank">洛谷 P2704 炮兵陣地（NOI 2001）</a><span class="chip">狀壓</span><span class="chip">行輪廓</span></div>
+<p>炮兵攻擊範圍上下左右各兩格，地形限制部署位置，最多放幾個？</p>
+<details><summary>思路</summary><p>影響跨<b>兩</b>行 → 狀態記兩行：dp[i][S_i][S_{i−1}]。合法狀態數少，實際跑得動。<b>「影響範圍多遠，輪廓就記多深」</b>——這個原則推到極致就是專家章的輪廓線/插頭 DP（<a href="#s2-13">2.13.1</a>）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2831">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2831" target="_blank">洛谷 P2831 憤怒的小鳥（NOIP 2016）</a><span class="chip">狀壓</span><span class="chip">預處理覆蓋</span></div>
+<p>每條過原點的拋物線可消滅其上所有豬（n ≤ 18），最少幾條拋物線？</p>
+<details><summary>思路</summary><p>先預處理：每對豬決定一條拋物線 → 它能覆蓋的豬集合 cover[i][j]。然後最小集合覆蓋：dp[S] = 已消滅集合 S 的最少線數，<b>轉移時固定 S 中最小的未消滅豬</b>——它必屬於某條線，只枚舉包含它的線，避免同一組合被枚舉多次，複雜度從 3ⁿ 降到 2ⁿ·n。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">for (int S = 0; S &lt; (1 &lt;&lt; n); S++) {
+    if (dp[S] == INF) continue;
+    int p = __builtin_ctz(~S);                 // 最小的還活著的豬
+    for (int j = 0; j &lt; n; j++)                // 枚舉「經過 p」的拋物線
+        dp[S | cover[p][j]] = min(dp[S | cover[p][j]], dp[S] + 1);
+}</code></pre></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>棋盤鋪滿類（骨牌、迴路）→ 輪廓線 DP／插頭 DP（<a href="#s2-13">2.13.1</a>）；「對每個 S 求所有子集的貢獻和」→ SOS DP（<a href="#s2-13">2.13.2</a>）。</p></div>

@@ -1,0 +1,36 @@
+<h2><span class="sec-no">0</span>導讀與使用方式</h2>
+
+<p><b>動態規劃（Dynamic Programming, DP）</b>：把一個問題拆成「狀態」，發現不同決策路徑會反覆到達相同狀態（重疊子問題），於是每個狀態只算一次——指數大小的決策樹被壓縮成一張多項式大小的 DAG：<b>狀態是節點、轉移是邊</b>。</p>
+
+<p>四種範式的對照：</p>
+<div class="tbl-wrap"><table>
+<tr><th>範式</th><th>本質</th><th>適用前提</th></tr>
+<tr><td><b>暴力搜尋</b></td><td>走遍整棵決策樹</td><td>永遠正確，指數時間</td></tr>
+<tr><td><b>分治</b></td><td>子問題彼此獨立、不重疊</td><td>合併子解即可（歸併、快冪）</td></tr>
+<tr><td><b>動態規劃</b></td><td>子問題大量重疊 → 樹壓成 DAG</td><td>最優子結構＋無後效性</td></tr>
+<tr><td><b>貪心</b></td><td>每個狀態只需走一條邊 → DAG 退化成鏈</td><td>需要交換論證等正確性證明</td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 一句話判斷「這題是不是 DP」</b>
+<p>問自己：「如果我知道<b>某個規模更小的同型問題</b>的答案，能不能組合出原問題的答案？」能——而且小問題會被重複用到——就是 DP。競賽中更實用的訊號是<b>資料範圍</b>：n ≤ 20 想狀壓、n ≤ 500 想區間 O(n³)、n ≤ 5000 想 O(n²)、n 到 10⁵ 以上就要想 O(n log n) 的優化轉移。</p></div>
+
+<h3>難度分級</h3>
+<div class="tbl-wrap"><table>
+<tr><th>星級</th><th>定位</th><th>大約對應</th></tr>
+<tr><td><span class="stars s1">★</span></td><td>入門：一維遞推，方程一眼可見</td><td>LeetCode Easy／洛谷 紅題</td></tr>
+<tr><td><span class="stars s2">★★</span></td><td>基礎：經典模型直接套用</td><td>LeetCode Medium／CF 1200 以下</td></tr>
+<tr><td><span class="stars s3">★★★</span></td><td>進階：需要一步轉化或自行設計狀態</td><td>LeetCode Hard 邊緣／CF 1400–1800／NOIP 普及</td></tr>
+<tr><td><span class="stars s4">★★★★</span></td><td>競賽：狀態不顯然、轉移需要優化</td><td>CF 1900–2300／NOIP 提高／USACO Gold</td></tr>
+<tr><td><span class="stars s5">★★★★★</span></td><td>專家：插頭 DP、wqs 二分、DDP、DP 套 DP</td><td>CF 2400+／NOI／APIO／ICPC 區域賽難題</td></tr>
+</table></div>
+
+<h3>使用建議</h3>
+<ol>
+  <li>先讀第 1 章，把「狀態、轉移、無後效性」的語言建立起來——之後每一章都用同一套語言描述。</li>
+  <li>第 2 章的 13 個策略分類依序讀：2.1–2.5 是基本盤，2.6–2.11 是競賽常客，2.12 優化技術是升 ★★★★ 的分水嶺，2.13 留給衝擊高分段。</li>
+  <li>每題先自己想，再展開「思路 → 程式碼」。<b>AtCoder Educational DP Contest（A–Z）</b>是絕佳的模板檢核，本站多章都收錄其中題目。</li>
+  <li>用第 5 章總表按標籤與星級刷題並標記進度，按第 6 章路線圖檢核階段目標。</li>
+  <li>寫掛了先翻第 3 章——DP 的 bug 高度模式化，多半能對號入座。</li>
+</ol>
+
+<p class="small">同系列：<a href="#greedy">貪心演算法完全指南</a>（本站的姊妹作，部署於網站根目錄）。</p>
