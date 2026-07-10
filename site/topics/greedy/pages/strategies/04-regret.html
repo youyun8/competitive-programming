@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.4 反悔貪心（Regret Greedy） — 演算法上分攻略</title>
+<meta name="description" content="先貪心接受，再用堆撤銷最差決策的萬用框架">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s04" data-topic="greedy">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法上分攻略<span>策略分類 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="active" data-topic="greedy" href="../../index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    </div>
+  <a class="lv1 sitewide" href="../../../../pages/problems.html#topic=greedy">📋 全站題目總表</a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 貪心演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="../proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.4 反悔貪心（Regret Greedy）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>普通貪心不敢貪（怕後悔）的地方，反悔貪心<b>先貪了再說</b>，同時把「撤銷這次選擇的代價」丟進堆裡；未來遇到更好的選項時，彈出堆頂完成撤銷。等價於在時間軸上動態維護「目前最優的選擇集合」。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>依時間/期限順序處理，選擇之間互相排擠（容量、期限、次數限制）。</li>
+<li>「不選白不選、選錯可退貨」— 撤銷一個已選項不影響其他已選項的可行性。</li>
+<li>直接貪心能構造出反例、DP 狀態又太大時，優先想反悔堆。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="lc-630">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/course-schedule-iii/" target="_blank">LC 630 課程表 III</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
+<p>第 i 門課耗時 d_i、截止 e_i，從時刻 0 開始連續上課，最多修幾門？</p>
+<details><summary>思路</summary><p>按<b>截止時間遞增</b>處理，維護大根堆（已選課程的耗時）與目前總耗時 T。每門課先選上（T += d）；若 T 超過截止時間，<b>反悔</b>：彈掉堆中耗時最大的課（撤銷最虧的決策）。正確性：交換論證 — 修課數相同時總耗時越小越好，彈最大者使 T 最小化，為未來保留最大餘裕。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(c.begin(), c.end(), [](auto&amp; a, auto&amp; b){ return a[1] &lt; b[1]; });
+priority_queue&lt;int&gt; pq;           // 已選課程的耗時，大根堆
+long long T = 0;
+for (auto&amp; [d, e] : c) {
+    T += d; pq.push(d);
+    if (T &gt; e) { T -= pq.top(); pq.pop(); }   // 反悔：踢掉最耗時的
+}
+return pq.size();</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="lc-871">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-number-of-refueling-stops/" target="_blank">LC 871 最低加油次數</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
+<p>路上有加油站，車開到哪算哪，最少加幾次油到終點？</p>
+<details><summary>思路</summary><p>「路過先不加，把油量存入大根堆；油不夠時再反悔 — 取出堆中最大的油量視為當時加過」。次數相同時油越多越好，故每次補堆頂。這是把「在哪加油」的決策<b>延遲到必要時刻</b>的教科書範例。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;int&gt; pq;
+long long fuel = startFuel; int cnt = 0, i = 0;
+stations.push_back({target, 0});
+for (auto&amp; [pos, gas] : stations) {
+    while (fuel &lt; pos) {                 // 到不了，反悔補油
+        if (pq.empty()) return -1;
+        fuel += pq.top(); pq.pop(); cnt++;
+    }
+    pq.push(gas);
+}
+return cnt;</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4053">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4053" target="_blank">洛谷 P4053 [JSOI2007] 建築搶修</a><span class="chip">反悔貪心</span><span class="chip">堆</span></div>
+<p>n 棟建築，修第 i 棟耗時 t_i、必須在 d_i 前修完，一次修一棟，最多修幾棟？（LC 630 的原型競賽題，USACO 2009 Work Scheduling 為「最大化報酬」變體）</p>
+<details><summary>思路</summary><p>同 LC 630 反悔堆。USACO Work Scheduling 變體：按期限處理、堆存<b>報酬最小</b>的已接工作，時間不夠且新工作報酬更高時換掉堆頂 — 反悔的對象從「耗時」變成「報酬」，體會反悔鍵值隨目標函數變化。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-865d">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/865/D" target="_blank">CF 865D Buy Low Sell High</a><span class="chip">反悔貪心</span><span class="chip">堆</span><span class="chip">費用流思想</span></div>
+<p>已知未來 n 天股價，每天限買一股或賣一股或不動，最大化最終利潤（結束時不持股要求可自動滿足）。</p>
+<details><summary>思路</summary><p>經典<b>反悔交換</b>：每天把 p_i 推入小根堆；若 p_i &gt; 堆頂，利潤 += p_i − 堆頂，彈出堆頂，<b>再把 p_i 推回去一次</b>。第二次推入的 p_i 代表「反悔券」：若未來有更高價 p_j 用它成交，總效果 (p_i − p_x) + (p_j − p_i) = p_j − p_x，等價於當初直接在 x 買 j 賣 — 中間商 p_i 無縫退出。這正是模擬費用流中「殘量網路反向邊」的化身，是通往 2.11.5 的橋樑。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq;
+long long profit = 0;
+for (int i = 0; i &lt; n; i++) {
+    long long p; cin &gt;&gt; p;
+    if (!pq.empty() &amp;&amp; pq.top() &lt; p) {
+        profit += p - pq.top(); pq.pop();
+        pq.push(p);              // 反悔券：允許未來把這次交易升級
+    }
+    pq.push(p);
+}</code></pre></details>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="03-exchange-scheduling.html"><span class="dir">← 上一節</span>2.3 交換論證排程</a>
+<a class="next" href="05-heap.html"><span class="dir">下一節 →</span>2.5 堆積貪心</a>
+</div>
+<footer class="site-footer">
+  <p>演算法上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理論基礎：什麼時候貪心是對的 — 演算法上分攻略</title>
+<meta name="description" content="貪心選擇性質、最優子結構、四大證明技巧與反例構造的系統方法">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/firebase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="theory" data-topic="greedy">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法上分攻略<span>策略分類 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="active" data-topic="greedy" href="../index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    </div>
+  <a class="lv1 sitewide" href="../../../pages/problems.html#topic=greedy">📋 全站題目總表</a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 貪心演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="strategies/02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="strategies/03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="strategies/04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="strategies/05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="strategies/06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="strategies/07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="strategies/08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="strategies/09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="strategies/10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2><span class="sec-no">1</span>理論基礎：什麼時候貪心是對的</h2>
+
+<p>一個問題能用貪心正確求解，教科書上的標準條件是以下兩個性質同時成立：</p>
+
+<h3 id="s1-1">1.1 貪心選擇性質（Greedy Choice Property）</h3>
+<p>存在一個<b>全域最優解包含第一步的貪心選擇</b>。換句話說：不管最優解長什麼樣，我們總能把它「改造」成第一步就採用貪心選擇、而且不變差的解。這個「改造」正是交換論證的核心動作。</p>
+
+<h3 id="s1-2">1.2 最優子結構（Optimal Substructure）</h3>
+<p>做完第一步貪心選擇後，剩下的子問題的最優解，拼上這一步，就是原問題的最優解。DP 也需要這條；貪心額外需要的是上面那條「第一步就能貪」。</p>
+
+<div class="callout idea"><b>💡 實戰翻譯</b>
+<p>競賽裡你不會真的寫證明，但你腦中應該完成這個 30 秒檢查：「假設神給我一個最優解，它第一步和我的貪心不一樣 — 我能不能把它換成我的選擇而不變差？」若你能在腦中完成這個交換且理由紮實，貪心大概率是對的；若你發現交換會牽動後面一連串東西且理不清，請立刻警戒（考慮 DP 或反悔貪心）。</p></div>
+
+<h3 id="s1-3">1.3 四大證明技巧</h3>
+
+<h4>① 交換論證（Exchange Argument）— 使用率 80%</h4>
+<p>假設最優解 <code>OPT</code> 與貪心解 <code>G</code> 不同，找到第一個不同處，把 <code>OPT</code> 中的元素換成 <code>G</code> 的選擇，證明交換後仍是可行解且目標值不變差。重複交換，<code>OPT</code> 被逐步改造成 <code>G</code>，故 <code>G</code> 最優。排序類貪心則常用<b>相鄰交換</b>版本：證明任意相鄰逆序對交換後不變差 ⇒ 排序後最優（類似冒泡排序的正確性）。完整五步驟模板見 <a href="proofs.html">第 4 章</a>。</p>
+
+<h4>② 領先論證（Greedy Stays Ahead）</h4>
+<p>用歸納法證明：貪心解在每一步都「不落後」於任何解 — 例如活動選擇中，貪心選的第 <code>i</code> 個活動結束時間 ≤ 任何解的第 <code>i</code> 個活動結束時間。步步領先 ⇒ 最終不劣。</p>
+
+<h4>③ 反證法與極端原理</h4>
+<p>假設貪心不是最優，取「第一個出錯的位置」或「差異最小的最優解」等極端對象，推出矛盾。常與前兩者混用。</p>
+
+<h4>④ 擬陣（Matroid）— 專家級</h4>
+<p>若問題的可行解族構成擬陣（遺傳性 + 交換公理），則<b>按權重由大到小、能加就加</b>的貪心必然得到最大權基（Rado–Edmonds 定理）。Kruskal 正確性的最深刻解釋。詳見 <a href="strategies/11-expert.html">2.11</a>。</p>
+
+<h3 id="s1-4">1.4 如何「懷疑」一個貪心：反例構造的系統方法</h3>
+<ul>
+  <li><b>小資料窮舉對拍</b>：寫一個 <code>O(2^n)</code> 或 <code>O(n!)</code> 暴力，隨機生成 n ≤ 8 的小測資對拍 200 次 — 5 分鐘寫完，能擋掉 95% 的錯誤貪心。模板見 <a href="proofs.html#s4-3">4.3</a>。</li>
+  <li><b>攻擊排序鍵</b>：構造兩個元素，讓你的排序鍵認為 A 優於 B，但實際上先選 B 更好（利用「後效性」— A 的選擇影響了未來）。</li>
+  <li><b>攻擊邊界</b>：全部相等、極大極小混搭、恰好卡滿容量。</li>
+  <li><b>經典警訊</b>：目標函數含權重（帶權區間排程）、資源不可分割（0/1 背包）、非 canonical 硬幣系統 — 見 <a href="pitfalls.html">第 3 章</a>。</li>
+</ul>
+
+<div class="pagenav">
+<a class="prev" href="../index.html"><span class="dir">← 上一節</span>🏠 貪心演算法 首頁</a>
+<a class="next" href="strategies/01-sorting.html"><span class="dir">下一節 →</span>2.1 排序貪心</a>
+</div>
+<footer class="site-footer">
+  <p>演算法上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>
