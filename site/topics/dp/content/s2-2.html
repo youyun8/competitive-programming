@@ -27,8 +27,9 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">vector&lt;long long&gt; dp(n, 1);
 for (int i = 1; i &lt; m; i++)
-    for (int j = 1; j &lt; n; j++) dp[j] += dp[j-1];   // 滾動：dp[j] 即上方，dp[j-1] 即左方
-return dp[n-1];</code></pre></details>
+    for (int j = 1; j &lt; n; j++)
+        dp[j] += dp[j - 1];  // 滾動：dp[j] 即上方，dp[j-1] 即左方
+return dp[n - 1];</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="lc-64">
@@ -42,9 +43,10 @@ return dp[n-1];</code></pre></details>
 <p>騎士從左上走到右下救公主，路上有加血/扣血，血量任何時刻不得 ≤ 0，求最小初始血量。</p>
 <details><summary>思路</summary><p>無後效性的實戰課。正著推需要同時記「目前血量」與「歷史最低點」，狀態糾纏；<b>倒著定義</b>就解耦了：dp[i][j] = 從 (i,j) 出發活著到終點所需的最小血量 = max(1, min(dp[i+1][j], dp[i][j+1]) − a[i][j])。<b>正推卡住時，試著把狀態定義成「從這裡出發」而非「走到這裡」。</b></p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">for (int i = m-1; i &gt;= 0; i--)
-    for (int j = n-1; j &gt;= 0; j--) {
-        long long need = min(dp[i+1][j], dp[i][j+1]) - a[i][j]; // 邊界外設 INF、終點外側設 1
+<pre><code class="lang-cpp">for (int i = m - 1; i &gt;= 0; i--)
+    for (int j = n - 1; j &gt;= 0; j--) {
+        long long need = min(dp[i + 1][j], dp[i][j + 1]) -
+                         a[i][j];  // 邊界外設 INF、終點外側設 1
         dp[i][j] = max(1LL, need);
     }</code></pre></details>
 </div>
@@ -54,13 +56,16 @@ return dp[n-1];</code></pre></details>
 <p>從左上到右下走兩趟，取過的數變 0，最大化兩趟總和。</p>
 <details><summary>思路</summary><p>兩趟改成<b>兩人同時走</b>：走 k 步後兩人都在反對角線 i+j=k 上，狀態 dp[k][x1][x2]（y 由 k−x 算出）——四維壓成三維。重疊格只算一次。同型題「傳紙條」（P1006）完全同構。<b>「多趟」問題幾乎都該轉成「多人同步」</b>，否則第一趟的選擇對第二趟有後效性。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">for (int k = 2; k &lt;= 2*n; k++)
-  for (int x1 = 1; x1 &lt;= min(k-1, n); x1++)
-    for (int x2 = x1; x2 &lt;= min(k-1, n); x2++) {
-      int y1 = k - x1, y2 = k - x2;
-      if (y1 &lt; 1 || y1 &gt; n || y2 &lt; 1 || y2 &gt; n) continue;
-      int gain = a[x1][y1] + (x1 == x2 ? 0 : a[x2][y2]);
-      dp[k][x1][x2] = max({dp[k-1][x1][x2],   dp[k-1][x1-1][x2],
-                           dp[k-1][x1][x2-1], dp[k-1][x1-1][x2-1]}) + gain;
-    }</code></pre></details>
+<pre><code class="lang-cpp">for (int k = 2; k &lt;= 2 * n; k++)
+    for (int x1 = 1; x1 &lt;= min(k - 1, n); x1++)
+        for (int x2 = x1; x2 &lt;= min(k - 1, n); x2++) {
+            int y1 = k - x1, y2 = k - x2;
+            if (y1 &lt; 1 || y1 &gt; n || y2 &lt; 1 || y2 &gt; n)
+                continue;
+            int gain = a[x1][y1] + (x1 == x2 ? 0 : a[x2][y2]);
+            dp[k][x1][x2] =
+                max({dp[k - 1][x1][x2], dp[k - 1][x1 - 1][x2],
+                     dp[k - 1][x1][x2 - 1], dp[k - 1][x1 - 1][x2 - 1]}) +
+                gain;
+        }</code></pre></details>
 </div>

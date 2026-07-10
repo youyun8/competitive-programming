@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s12" data-topic="dp">
@@ -90,12 +90,14 @@
 <p>從格子 i 只能跳到 [i+L, i+R]，最大化途經權值和。</p>
 <details><summary>思路</summary><p>dp[i] = max(dp[j]) + a[i]，j ∈ [i−R, i−L]——決策窗口隨 i 平移，<b>單調遞減佇列</b>維護窗口最大值：隊尾比新值差就彈掉（它永遠不會再當最大），隊首過期就出隊。攤還 O(1)。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">deque&lt;int&gt; q;                       // 存下標，dp 值遞減
+<pre><code class="lang-cpp">deque&lt;int&gt; q;  // 存下標，dp 值遞減
 for (int i = L; i &lt;= n; i++) {
-    int j = i - L;                   // j 進入窗口
-    while (!q.empty() &amp;&amp; dp[q.back()] &lt;= dp[j]) q.pop_back();
+    int j = i - L;  // j 進入窗口
+    while (!q.empty() &amp;&amp; dp[q.back()] &lt;= dp[j])
+        q.pop_back();
     q.push_back(j);
-    while (q.front() &lt; i - R) q.pop_front();
+    while (q.front() &lt; i - R)
+        q.pop_front();
     dp[i] = dp[q.front()] + a[i];
 }</code></pre></details>
 </div>
@@ -116,11 +118,14 @@ for (int i = L; i &lt;= n; i++) {
 auto slope = [&amp;](int a, int b) {
     return (double)(Y(b) - Y(a)) / (X(b) - X(a));
 };
-int h = 0, t = 0; q[t++] = 0;
+int h = 0, t = 0;
+q[t++] = 0;
 for (int i = 1; i &lt;= n; i++) {
-    while (t - h &gt;= 2 &amp;&amp; slope(q[h], q[h+1]) &lt;= K(i)) h++;   // 查詢斜率遞增：隊首彈出
+    while (t - h &gt;= 2 &amp;&amp; slope(q[h], q[h + 1]) &lt;= K(i))
+        h++;  // 查詢斜率遞增：隊首彈出
     dp[i] = calc(i, q[h]);
-    while (t - h &gt;= 2 &amp;&amp; slope(q[t-2], q[t-1]) &gt;= slope(q[t-1], i)) t--; // 維護凸性
+    while (t - h &gt;= 2 &amp;&amp; slope(q[t - 2], q[t - 1]) &gt;= slope(q[t - 1], i))
+        t--;  // 維護凸性
     q[t++] = i;
 }</code></pre></details>
 </div>
@@ -175,9 +180,10 @@ for (int i = 1; i &lt;= n; i++) {
 <h3>2.12.9 bitset 壓位</h3>
 <div class="callout idea"><b>💡 模式</b>
 <p>可行性背包 <code>dp |= dp &lt;&lt; w</code>：一行完成一件物品的全部轉移，O(nW/64)。字串類（LCS 的 bitset 演算法）、傳遞閉包、可達性 DP 同理。<b>當 dp 值只有 0/1 且轉移是平移/或/與，就想 bitset</b>——它經常把「明顯超時」的 O(n²) 直接壓進時限。</p>
-<pre><code class="lang-cpp">bitset&lt;100001&gt; can; can[0] = 1;
-for (int w : items) can |= can &lt;&lt; w;    // 可行性 0/1 背包
-</code></pre></div>
+<pre><code class="lang-cpp">bitset&lt;100001&gt; can;
+can[0] = 1;
+for (int w : items)
+    can |= can &lt;&lt; w;  // 可行性 0/1 背包</code></pre></div>
 
 <div class="pagenav">
 <a class="prev" href="11-graph-game.html"><span class="dir">← 上一節</span>2.11 圖上與博弈 DP</a>

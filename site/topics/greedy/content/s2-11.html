@@ -27,14 +27,15 @@
 <details><summary>提示</summary><p>嚴格遞增先做變換 <code>a_i −= i</code> 化為非嚴格。定義 <code>f_i(x)</code> = 前 i 項、第 i 項改為 ≤ x 時的最小代價 — 它是關於 x 的凸的分段線性函數。</p></details>
 <details><summary>思路</summary><p>轉移 <code>f_i(x) = min_{y≤x} [f_{i−1}(y)] + |a_i − x|</code>。凸函數的「前綴 min」= 砍掉右半上升段；「+|a−x|」= 左右各加一個斜率轉折點。<b>用大根堆存左半段的斜率轉折點集合</b>：每步 push a_i 兩次、若堆頂 &gt; a_i 則答案累加 <code>top − a_i</code> 並彈出替換。整套操作把 O(n·V) 的 DP 壓成 O(n log n) 貪心。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">priority_queue&lt;long long&gt; L;    // 凸函數左半段斜率轉折點
+<pre><code class="lang-cpp">priority_queue&lt;long long&gt; L;  // 凸函數左半段斜率轉折點
 long long ans = 0;
 for (int i = 0; i &lt; n; i++) {
-    long long x = a[i] - i;      // 嚴格遞增 → 非嚴格
+    long long x = a[i] - i;  // 嚴格遞增 → 非嚴格
     L.push(x);
-    if (L.top() &gt; x) {           // 出現下降段，付出代價抹平
+    if (L.top() &gt; x) {  // 出現下降段，付出代價抹平
         ans += L.top() - x;
-        L.pop(); L.push(x);
+        L.pop();
+        L.push(x);
     }
 }</code></pre></details>
 </div>

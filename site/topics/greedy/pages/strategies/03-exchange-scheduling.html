@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s03" data-topic="greedy">
@@ -55,13 +55,45 @@
 <div class="tbl-wrap"><table>
 <tr><th>排程目標</th><th>局部比較</th><th>得到的規則</th><th>限制</th></tr>
 <tr><td>ΣC<sub>i</sub></td><td>兩任務誰短先做</td><td>p 遞增（SJF）</td><td>單機、全部同時可用</td></tr>
-<tr><td>Σw<sub>i</sub>C<sub>i</sub></td><td><code>p_i w_j ≤ p_j w_i</code></td><td>p/w 遞增（Smith）</td><td>w 非負；無 release time</td></tr>
+<tr><td>Σw<sub>i</sub>C<sub>i</sub></td><td><span class="math-inline">p<sub>i</sub>w<sub>j</sub> ≤ p<sub>j</sub>w<sub>i</sub></span></td><td>p/w 遞增（Smith）</td><td>w 為正；無 release time</td></tr>
 <tr><td>兩機 flow shop makespan</td><td>比較相鄰工件在 A、B 的等待</td><td>Johnson：前組 a 遞增、後組 b 遞減</td><td>每件都先 A 後 B</td></tr>
 <tr><td>選子集再排順序</td><td>先證明選定集合存在固定最優序</td><td>排序後再 DP／背包</td><td>排序關係不得依「選了哪些其他項」改變</td></tr>
 </table></div>
 
-<div class="callout proof"><b>🧮 Smith's Rule 完整推導</b>
-<p>設 i、j 前已有共同耗時 T。順序 ij 的相關成本是 <code>w_i(T+p_i)+w_j(T+p_i+p_j)</code>；順序 ji 是 <code>w_j(T+p_j)+w_i(T+p_j+p_i)</code>。消去共同項後，ij 不劣當且僅當 <code>w_j p_i≤w_i p_j</code>，即 <code>p_i/w_i≤p_j/w_j</code>。因此所有逆序對都可逐一交換而不增成本，最後得到排序序列。程式不要做浮點除法，應用 <code>__int128(p_i)*w_j &lt; __int128(p_j)*w_i</code>，相等代表兩種次序同價。</p></div>
+<div class="callout proof"><b>🧮 Smith's Rule：一步一步比較兩種順序</b>
+<p>假設前面的工作都一樣，做完它們已經花了 <var>T</var>。現在只比較相鄰的工作 <var>i</var>、<var>j</var>；後面的工作無論交換前後都在同一時間開始，所以也不受影響。</p>
+<p><b>先做 i 再做 j：</b><var>i</var> 在 <var>T + p<sub>i</sub></var> 完成，<var>j</var> 在 <var>T + p<sub>i</sub> + p<sub>j</sub></var> 完成。</p>
+<div class="formula">cost(i, j)
+= w<sub>i</sub>(T + p<sub>i</sub>) + w<sub>j</sub>(T + p<sub>i</sub> + p<sub>j</sub>)
+= (w<sub>i</sub> + w<sub>j</sub>)T + w<sub>i</sub>p<sub>i</sub> + w<sub>j</sub>p<sub>i</sub> + w<sub>j</sub>p<sub>j</sub></div>
+<p><b>先做 j 再做 i：</b></p>
+<div class="formula">cost(j, i)
+= (w<sub>i</sub> + w<sub>j</sub>)T + w<sub>i</sub>p<sub>i</sub> + w<sub>i</sub>p<sub>j</sub> + w<sub>j</sub>p<sub>j</sub></div>
+<p>兩式都有 <span class="math-inline">(w<sub>i</sub> + w<sub>j</sub>)T</span>、<span class="math-inline">w<sub>i</sub>p<sub>i</sub></span>、<span class="math-inline">w<sub>j</sub>p<sub>j</sub></span>；這就是「共同項」。相減後只剩：</p>
+<div class="formula">cost(i, j) − cost(j, i) = w<sub>j</sub>p<sub>i</sub> − w<sub>i</sub>p<sub>j</sub></div>
+<p>若先做 <var>i</var> 不會比較差，左邊必須 ≤ 0，因此 <span class="math-inline">p<sub>i</sub>w<sub>j</sub> ≤ p<sub>j</sub>w<sub>i</sub></span>。當權重皆為正時，兩邊除以 <span class="math-inline">w<sub>i</sub>w<sub>j</sub></span>，便得到 <span class="math-inline">p<sub>i</sub>/w<sub>i</sub> ≤ p<sub>j</sub>/w<sub>j</sub></span>：依 <var>p/w</var> 由小到大排序。</p>
+<p>若某一對順序違反這條規則，交換它們不會增加成本；重複交換所有逆序對，就會得到排序後的最優序列。等號表示兩種順序同價。</p></div>
+
+<details><summary>C++ 比較器：用交叉相乘避免浮點誤差</summary>
+<pre><code class="lang-cpp">struct Job {
+    long long processing_time;
+    long long weight;
+    int original_index;
+};
+
+bool SmithOrder(const Job&amp; left, const Job&amp; right) {
+    const __int128 left_product =
+        static_cast&lt;__int128&gt;(left.processing_time) * right.weight;
+    const __int128 right_product =
+        static_cast&lt;__int128&gt;(right.processing_time) * left.weight;
+    if (left_product != right_product) {
+        return left_product &lt; right_product;
+    }
+    return left.original_index &lt; right.original_index;
+}
+
+std::sort(jobs.begin(), jobs.end(), SmithOrder);</code></pre>
+<p><code>__int128</code> 是 GNU C++ 擴充型別，兩邊都先轉型再相乘，避免 <code>long long</code> 乘法先溢位。最後用原輸入位置打破同價平手，只是讓輸出固定，不會改變目標值。</p></details>
 
 <details><summary>數值例：為什麼「工時短」不一定先做？</summary>
 <p>任務 A=(p=3,w=100)、B=(p=1,w=1)。A 先的成本為 100×3+1×4=304；B 先為 1×1+100×4=401。雖然 B 更短，A 的權重極高，Smith 比值 A=0.03、B=1，會正確地把 A 放前面。這也說明排序鍵必須從目標函數推導，而不是只憑「短作業優先」直覺。</p></details>

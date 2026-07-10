@@ -26,10 +26,10 @@
   - 內文字體大小：小 / 中 / 大 / 特大
   - 版面寬度：窄 / 預設 / 寬 / 全螢幕
   - 設定存在瀏覽器 `localStorage`（單一 key：`algo-guide-settings`），全站共用、切換頁面或重新整理都會保留
-- **練習進度追蹤 + 跨裝置同步**：每題（策略頁面的題目卡片、全站題目總表的每一列）都能標記「尚未練習 ⬜／需複習 🔶／已通過 ✅」；用 Google 帳號登入後，同一帳號在不同裝置登入會看到相同進度（見下方「[跨裝置進度同步](#️-跨裝置進度同步選用)」設定）。進度以**題目 id** 為 key、橫跨全站所有主題共用同一份資料（單一 key：`algo-guide-progress`）。**未設定雲端同步時完全不影響使用**——進度會退回只存在目前瀏覽器
+- **練習進度追蹤 + 跨裝置同步**：每題（策略頁面的題目卡片、全站題目總表的每一列）都能標記「尚未練習 ⬜／需複習 🔶／已通過 ✅」；設定 Supabase 後可用 Email magic link 登入，同一信箱在不同裝置會看到相同進度（見下方「[跨裝置進度同步](#️-跨裝置進度同步選用)」）。進度以**題目 id** 為 key、橫跨全站所有主題共用同一份資料（本機 key：`algo-guide-progress`）。**未設定雲端同步時完全不影響使用**——進度只存在目前瀏覽器
 - **全站題目總表**（`pages/problems.html`）可依**主題**、難度星級、策略標籤（皆可複選）與關鍵字即時篩選，並顯示已通過/需複習/尚未練習的統計；從主題內頁點側欄的「📋 全站題目總表」連結會自動帶上該主題的篩選（網址帶 `#topic=<id>`），仍可手動清除篩選看全部
-- 手機自動收合為抽屜式側欄；程式碼區塊有自寫的輕量 C++ / Python 語法上色
-- 網站本身零外部依賴、可離線使用；只有「雲端進度同步」這一項功能會在設定好之後連線 Google 的 Firebase 服務（未設定時完全不會發出任何外部請求）
+- 手機自動收合為抽屜式側欄；演算法程式碼統一使用 C++，並有自寫的輕量語法上色
+- 網站本身零安裝相依、可離線使用；只有「雲端進度同步」設定完成後才會載入 Supabase 瀏覽器 SDK（未設定時不會發出任何雲端請求）
 
 ---
 
@@ -46,8 +46,8 @@ competitive-programming/
     │   ├── site.css             # 共用樣式（主題色變數、字體大小/版面寬度、主題切換器）
     │   ├── site.js              # 共用行為（設定面板、側欄、主題切換高亮、語法上色、題目篩選）
     │   ├── problems-data.js     # 全站題目總表資料（每列多一欄「主題 id」，橫跨所有主題合併存放）
-    │   ├── progress.js          # 練習進度追蹤 + Firebase 登入/雲端同步（全站共用一份）
-    │   └── firebase-config.js   # 你的 Firebase 專案金鑰（預設是佔位值＝本機模式）
+    │   ├── progress.js          # 練習進度追蹤 + Supabase 登入/雲端同步（全站共用一份）
+    │   └── supabase-config.js   # Supabase 公開連線設定（預設是佔位值＝本機模式）
     ├── pages/
     │   └── problems.html        # 全站題目總表（由 build.py 產生；唯一不屬於任何主題的頁面）
     └── topics/                  # 每個主題一個資料夾，彼此結構相同、互不相依
@@ -99,7 +99,7 @@ cd site && python3 build.py
 
 ### 本機預覽
 
-因為網站本身沒有使用 `fetch()`／XHR 讀取其他檔案（共用樣式與腳本都是透過 `<link>`／`<script src>` 載入，這在 `file://` 協定下也能正常運作），最簡單的預覽方式是**直接用瀏覽器開啟 `site/index.html`**，不需要啟動任何伺服器。（雲端進度同步功能需要連上 Firebase；沒有網路或還沒設定 Firebase 時，其餘所有功能——包含本機進度標記——都不受影響。）
+若只測本機內容與進度，可直接用瀏覽器開啟 `site/index.html`。若要測 Email magic link 雲端登入，請使用下方的本機 HTTP 伺服器，並把 `http://localhost:8000/**` 加到 Supabase 的 Redirect URLs；`file://` 不能作為登入回呼網址。沒有網路或尚未設定 Supabase 時，其餘功能都不受影響。
 
 若想用本機伺服器預覽：
 
@@ -125,69 +125,72 @@ cd site && python3 -m http.server 8000
 
 ## ☁️ 跨裝置進度同步（選用）
 
-網站是純靜態的（GitHub Pages 沒有自己的伺服器），沒辦法自己驗證使用者身份、存資料。要做到「不同裝置登入同一個帳號、看到相同的練習進度」，必須接上一個雲端服務——這裡選用 **Firebase**（Google 的免費 BaaS：Authentication + Firestore），因為它的 SDK 可以完全在瀏覽器端運作，不需要自己架後端伺服器，且免費額度（Spark Plan）對這種規模的個人使用完全足夠。
+網站是純靜態的，GitHub Pages 不提供登入與資料庫。這裡改用 **Supabase Auth + Postgres**：使用者只要輸入 Email、點信箱裡的 magic link，不必另外設定 Google OAuth；瀏覽器直接透過 Supabase 的公開 API 連線，資料則由 Row Level Security（RLS）限制成每人只能讀寫自己的進度。
 
-**在你完成下面的設定之前，網站會自動停留在「本機模式」**：練習進度照樣能標記，只是存在 `localStorage`、換瀏覽器/裝置就看不到——不會有任何錯誤或壞掉的畫面，側欄只會顯示「☁️ 尚未設定雲端同步」。
+**在你完成下面的設定之前，網站會自動停留在「本機進度模式」**：練習進度照樣存在 `localStorage`，不載入 Supabase SDK，也不會發出雲端請求。
 
 ### 設定步驟
 
-1. **建立 Firebase 專案**
-   - 到 [Firebase Console](https://console.firebase.google.com)，用你的 Google 帳號登入
-   - 點「新增專案」，取個名字（例如 `algo-guide`），一路下一步（可以關閉 Google Analytics，用不到）
+1. **建立 Supabase 專案**
+   - 到 [Supabase Dashboard](https://supabase.com/dashboard) 建立一個專案。
 
-2. **開啟 Google 登入**
-   - 左側選單 **Authentication → Sign-in method**（或「開始使用」後進到這頁）
-   - 啟用 **Google** 這個登入提供者，設定一個支援電子郵件後儲存
+2. **建立資料表與 RLS 規則**
+   - 打開 **SQL Editor → New query**，執行以下 SQL：
 
-3. **設定授權網域**（重要，不做這步登入會失敗）
-   - 同樣在 Authentication 頁面，點 **Settings → Authorized domains**
-   - 加入你的 GitHub Pages 網域，例如 `youyun8.github.io`（Firebase 預設只信任它自己配的網域和 `localhost`）
+     ```sql
+     create table public.user_progress (
+       user_id uuid not null references auth.users(id) on delete cascade,
+       problem_id text not null,
+       status text not null check (status in ('none', 'review', 'done')),
+       updated_at timestamptz not null default now(),
+       primary key (user_id, problem_id)
+     );
 
-4. **建立 Firestore 資料庫**
-   - 左側選單 **Firestore Database → 建立資料庫**
-   - 位置隨意選（挑離你近的），**先選「正式版模式（production mode）」**（安全規則下一步會設定成只能存取自己的資料）
+     alter table public.user_progress enable row level security;
 
-5. **設定 Firestore 安全規則**
-   - **Firestore Database → 規則**分頁，貼上：
+     grant select, insert, update, delete
+       on table public.user_progress
+       to authenticated;
+
+     create policy "Users manage only their own progress"
+       on public.user_progress
+       for all
+       to authenticated
+       using ((select auth.uid()) = user_id)
+       with check ((select auth.uid()) = user_id);
      ```
-     rules_version = '2';
-     service cloud.firestore {
-       match /databases/{database}/documents {
-         match /users/{uid} {
-           allow read, write: if request.auth != null && request.auth.uid == uid;
-         }
-       }
-     }
-     ```
-   - 這確保每個使用者只能讀寫自己 `users/{自己的 uid}` 那份文件，看不到、也改不到別人的進度
 
-6. **取得設定值**
-   - **專案設定**（左上角齒輪圖示）→ 一般 → 往下捲到「你的應用程式」→ 點 `</>`（網頁應用程式圖示）新增一個應用程式
-   - 取個暱稱（例如 `algo-guide-web`），**不需要**勾選「同時設定 Firebase Hosting」
-   - 建立後會看到一段 `firebaseConfig = { apiKey: "...", authDomain: "...", ... }`，把這幾個值複製起來
+   - RLS 規則會在資料庫層強制 `auth.uid() = user_id`，匿名訪客與其他使用者都無法讀寫不屬於自己的資料。
 
-7. **貼進網站設定檔**
-   - 打開 `site/assets/firebase-config.js`，把預設的佔位值換成第 6 步拿到的實際值：
+3. **設定 magic link 回呼網址**
+   - 到 **Authentication → URL Configuration**。
+   - 將 **Site URL** 設成 `https://youyun8.github.io/competitive-programming/`。
+   - 在 **Redirect URLs** 加入 `https://youyun8.github.io/competitive-programming/**`；本機測試另加 `http://localhost:8000/**`。
+
+4. **取得兩個公開設定值**
+   - 從專案的 **Connect** 對話框或 **Project Settings → API** 複製 Project URL 與 Publishable key。
+   - 不要使用 `service_role` secret；瀏覽器端只應放 Publishable key。
+
+5. **填入網站設定檔**
+   - 編輯 `site/assets/supabase-config.js`：
+
      ```js
-     window.FIREBASE_CONFIG = {
-       apiKey: "AIzaSy...",
-       authDomain: "algo-guide-xxxxx.firebaseapp.com",
-       projectId: "algo-guide-xxxxx",
-       storageBucket: "algo-guide-xxxxx.appspot.com",
-       messagingSenderId: "1234567890",
-       appId: "1:1234567890:web:abcdef123456"
+     window.SUPABASE_CONFIG = {
+       url: "https://your-project.supabase.co",
+       publishableKey: "sb_publishable_..."
      };
      ```
-   - commit、push（或走一般部署流程），網站偵測到 `apiKey` 不再是 `"YOUR_API_KEY"` 後就會自動載入 Firebase SDK、側欄出現「🔑 用 Google 同步進度」按鈕。因為全站只有一份 `assets/`，設定一次就對所有主題生效
 
-> `apiKey` 這類 Firebase 前端設定值本來就設計成公開在瀏覽器程式碼裡（它不是密碼），真正的存取控制來自第 5 步的 Firestore 安全規則——這也是為什麼那條規則不能省略。
+   - commit 並重新部署。網站偵測到兩個值不再是 `YOUR_...` 佔位字串後，才會載入 Supabase SDK 並顯示 Email 登入表單。
+
+> Project URL 與 Publishable key 本來就會公開在前端；安全邊界是第 2 步的 RLS。不要把 `service_role` secret 放進 repo 或瀏覽器。
 
 ### 資料怎麼存、怎麼同步
 
-- 每人的進度存在 Firestore 的 `users/{該使用者的 uid}` 這份文件裡，格式是 `{ progress: { "lc-630": "done", "poj-2287": "review", ... } }`（key 是題目 id，可在 `assets/problems-data.js` 每列第 7 欄、或 `topics/<id>/content/s2-*.html` 卡片的 `data-problem-id` 屬性看到；全站所有主題讀寫同一份文件）
-- 登入後 `assets/progress.js` 用 Firestore 的 `onSnapshot` 即時監聽該文件，換裝置登入同一帳號會立刻讀到雲端的最新進度；兩個裝置同時開著網站，其中一台標記進度後，另一台也會即時更新（不用重新整理）
-- 第一次登入、雲端還沒有任何資料時，會把你登入前在本機標記的進度一次推上雲端，成為之後同步的起點
-- 登出後，網站退回只用瀏覽器 `localStorage` 裡的本機快取（不會遺失剛剛同步過的資料，只是不會再跨裝置更新）
+- 每個題目的進度是一列，主鍵為 `(user_id, problem_id)`；同一題出現在不同主題頁時仍共用同一個 `problem_id`。
+- 登入時會讀取雲端資料；雲端沒有而本機已有的題目會上傳，同一題兩邊都有時以雲端值為準。
+- 登入後每次標記都立即 upsert；另一台裝置重新載入頁面，或切回已開啟的分頁時，會再抓一次最新進度。
+- 登出後繼續使用 `localStorage` 快取；未設定 Supabase 時不載入外部 SDK。
 
 ---
 
@@ -232,9 +235,10 @@ cd site && python3 -m http.server 8000
 | 修改了 `content/` 但網站沒變 | 忘記重新執行 `build.py`，或執行後忘記 commit 產生的檔案 | `cd site && python3 build.py`，再 `git add` 產生出的 `index.html`／`topics/*/pages/`／`pages/problems.html` 一起 commit |
 | 新增主題後首頁/側欄沒出現 | `build.py` 的 `TOPICS` 清單忘記加、或 `assets/site.js` 的 `TOPIC_META` 忘記加 | 對照上方「新增一個主題」章節，兩處都要補；只改一處會導致圖示/篩選 chip 顯示異常 |
 | 第一次啟用 Pages 時 workflow 失敗 | 極少數情況下 organization 層級關閉了 Actions 自動管理 Pages 的權限 | 依照上方「首次啟用」的手動步驟，把 Source 設成 GitHub Actions 後重新觸發 |
-| 點「用 Google 同步進度」沒反應或跳出 `auth/unauthorized-domain` | 部署後的網域沒有加進 Firebase 的授權網域清單 | Firebase Console → Authentication → Settings → Authorized domains，加入你的 `*.github.io` 網域 |
-| 登入後進度沒有同步、Console 出現 `Missing or insufficient permissions` | Firestore 安全規則沒設定，或設定的 `uid` 條件寫錯 | 對照上方「跨裝置進度同步」第 5 步重新貼一次安全規則，並確認是發布（Publish）過的 |
-| 側欄一直顯示「☁️ 尚未設定雲端同步」 | `assets/firebase-config.js` 還是預設的 `"YOUR_API_KEY"` 佔位值 | 依照「跨裝置進度同步」章節，把 Firebase 專案的實際設定值貼進該檔案並重新部署 |
+| magic link 點開後回到錯誤網址或無法登入 | Supabase 沒有允許目前頁面的回呼網址 | 到 Authentication → URL Configuration，確認 Site URL 與含 `/**` 的 Redirect URL 都已加入 |
+| 登入後 Console 顯示 `row-level security`、`401` 或 `403` | 資料表、grant 或 RLS policy 沒有完整建立 | 重新執行「跨裝置進度同步」第 2 步 SQL，確認 table 的 RLS 已啟用 |
+| 側欄一直顯示「☁️ 本機進度模式」 | `assets/supabase-config.js` 仍是 `YOUR_...` 佔位值 | 填入 Project URL 與 Publishable key，重新執行 `build.py` 並部署 |
+| 收不到登入信 | 郵件被分類、Email provider 設定或寄送頻率限制 | 先檢查垃圾郵件，再到 Supabase Authentication 的 Users 與 Logs 查看寄送結果 |
 
 ### 自訂網域（選用）
 

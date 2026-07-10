@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s01" data-topic="dp">
@@ -78,9 +78,13 @@
 <p>每次爬 1 或 2 階，爬到 n 階有幾種走法？</p>
 <details><summary>思路</summary><p>dp[i] = 到第 i 階的走法數。最後一步要嘛從 i−1 跨 1 階、要嘛從 i−2 跨 2 階：<b>dp[i] = dp[i−1] + dp[i−2]</b>——就是斐波那契。這題示範了轉移方程的萬用推導法：<b>枚舉最後一步</b>。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">int a = 1, b = 1;                  // dp[0], dp[1]
-for (int i = 2; i &lt;= n; i++) { int c = a + b; a = b; b = c; }
-return b;                          // 滾動到只剩兩個變數</code></pre></details>
+<pre><code class="lang-cpp">int a = 1, b = 1;  // dp[0], dp[1]
+for (int i = 2; i &lt;= n; i++) {
+    int c = a + b;
+    a = b;
+    b = c;
+}
+return b;  // 滾動到只剩兩個變數</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="lc-198">
@@ -89,7 +93,11 @@ return b;                          // 滾動到只剩兩個變數</code></pre></
 <details><summary>思路</summary><p>dp[i] = 只考慮前 i 家的最大收益。第 i 家<b>不偷</b>：dp[i−1]；<b>偷</b>：dp[i−2] + a[i]。取 max。「選/不選」是線性 DP 最基本的決策形式，環形版 LC 213 拆成「不偷第 1 家」與「不偷最後一家」兩條鏈各做一次。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">int prev2 = 0, prev1 = 0;
-for (int x : nums) { int cur = max(prev1, prev2 + x); prev2 = prev1; prev1 = cur; }
+for (int x : nums) {
+    int cur = max(prev1, prev2 + x);
+    prev2 = prev1;
+    prev1 = cur;
+}
 return prev1;</code></pre></details>
 </div>
 
@@ -99,7 +107,10 @@ return prev1;</code></pre></details>
 <details><summary>思路</summary><p>「以 i 結尾」視角的代表作：dp[i] = 以 a[i] 結尾的最大子段和 = <b>max(dp[i−1], 0) + a[i]</b>（前綴是負的就丟掉重開）。答案 = max 全部 dp[i]。環形版 LC 918：答案是「普通最大子段和」或「總和 − 最小子段和」二者取大。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">int cur = 0, best = INT_MIN;
-for (int x : nums) { cur = max(cur, 0) + x; best = max(best, cur); }
+for (int x : nums) {
+    cur = max(cur, 0) + x;
+    best = max(best, cur);
+}
 return best;</code></pre></details>
 </div>
 
@@ -110,8 +121,11 @@ return best;</code></pre></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">vector&lt;int&gt; g;
 for (int x : nums) {
-    auto it = lower_bound(g.begin(), g.end(), x);   // 非嚴格遞增改 upper_bound
-    if (it == g.end()) g.push_back(x); else *it = x;
+    auto it = lower_bound(g.begin(), g.end(), x);  // 非嚴格遞增改 upper_bound
+    if (it == g.end())
+        g.push_back(x);
+    else
+        *it = x;
 }
 return g.size();</code></pre></details>
 </div>

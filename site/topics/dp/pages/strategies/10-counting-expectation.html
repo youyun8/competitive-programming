@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s10" data-topic="dp">
@@ -99,9 +99,13 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">// 反圖拓撲序遞推
 for (int u : topo_reverse) {
-    if (u == T) { E[u] = 0; continue; }
+    if (u == T) {
+        E[u] = 0;
+        continue;
+    }
     double s = 0;
-    for (auto [v, w] : g[u]) s += E[v] + w;
+    for (auto [v, w] : g[u])
+        s += E[v] + w;
     E[u] = s / g[u].size();
 }</code></pre></details>
 </div>

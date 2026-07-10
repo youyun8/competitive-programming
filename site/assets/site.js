@@ -119,7 +119,7 @@
     }
   }
 
-  /* ── 輕量 C++/Python 語法上色 ── */
+  /* ── 輕量 C++ 語法上色 ── */
   var KW = {
     cpp: /\b(auto|break|case|catch|char|class|const|continue|default|do|double|else|enum|false|float|for|function|if|int|long|namespace|new|nullptr|operator|priority_queue|private|public|return|short|signed|sizeof|static|string|struct|switch|template|this|throw|true|try|typedef|typename|union|unsigned|using|vector|void|while|multiset|set|map|pair|greater|less)\b/g,
     py: /\b(and|as|assert|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|not|or|pass|print|raise|return|True|try|while|with|yield|range|len|max|min)\b/g
@@ -147,7 +147,7 @@
     return parts.join("");
   }
   function initSyntaxHighlight() {
-    document.querySelectorAll("code.lang-cpp, code.lang-py").forEach(function (el) {
+    document.querySelectorAll("code.lang-cpp").forEach(function (el) {
       var lang = el.classList.contains("lang-cpp") ? "cpp" : "py";
       el.innerHTML = hl(el.textContent, lang);
     });

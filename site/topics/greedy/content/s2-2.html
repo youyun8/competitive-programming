@@ -28,10 +28,14 @@
 <p>移除最少的區間，使其餘互不重疊 ⟺ 選出最多互不重疊的區間。</p>
 <details><summary>思路</summary><p>按<b>右端點遞增</b>排序，能選就選（左端點 ≥ 上一個選中的右端點）。證明用領先論證：貪心第 k 個選中區間的右端點 ≤ 任意解第 k 個的右端點（歸納），所以任何解能塞下的，貪心都塞得下。<b>為什麼不是左端點</b>：一個很早開始但很長的區間會堵死後面 — 反例 <code>[1,100],[2,3],[4,5]</code>。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; a, auto&amp; b){ return a[1] &lt; b[1]; });
-int keep = 0; long long lastEnd = LLONG_MIN;
+<pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; a, auto&amp; b) { return a[1] &lt; b[1]; });
+int keep = 0;
+long long lastEnd = LLONG_MIN;
 for (auto&amp; v : iv)
-    if (v[0] &gt;= lastEnd) { keep++; lastEnd = v[1]; }
+    if (v[0] &gt;= lastEnd) {
+        keep++;
+        lastEnd = v[1];
+    }
 return iv.size() - keep;</code></pre></details>
 </div>
 
@@ -44,7 +48,10 @@ return iv.size() - keep;</code></pre></details>
 <pre><code class="lang-cpp">int jumps = 0, curEnd = 0, farthest = 0;
 for (int i = 0; i + 1 &lt; n; i++) {
     farthest = max(farthest, i + nums[i]);
-    if (i == curEnd) { jumps++; curEnd = farthest; }  // 必須起跳
+    if (i == curEnd) {
+        jumps++;
+        curEnd = farthest;
+    }  // 必須起跳
 }</code></pre></details>
 </div>
 
@@ -55,9 +62,10 @@ for (int i = 0; i + 1 &lt; n; i++) {
 <details><summary>思路</summary><p>兩種等價視角：<b>掃描線</b> — 把開始 +1、結束 −1 排成事件，答案是前綴和最大值（= 最大同時重疊數，這是下界，也構造性地可達）；<b>小根堆</b> — 按開始時間排序，堆存每間房目前的結束時間，新會議若能接最早空出的房就接，否則開新房。</p></details>
 <details><summary>程式碼（C++，小根堆）</summary>
 <pre><code class="lang-cpp">sort(iv.begin(), iv.end());
-priority_queue&lt;int, vector&lt;int&gt;, greater&lt;&gt;&gt; rooms; // 各房結束時間
+priority_queue&lt;int, vector&lt;int&gt;, greater&lt;&gt;&gt; rooms;  // 各房結束時間
 for (auto&amp; [s, e] : iv) {
-    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= s) rooms.pop();
+    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= s)
+        rooms.pop();
     rooms.push(e);
 }
 return rooms.size();</code></pre></details>

@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s10" data-topic="greedy">
@@ -79,18 +79,26 @@
 <p>移走至多 M 塊石頭，最大化相鄰石頭最短跳躍距離。（= POJ 2456 Aggressive Cows）</p>
 <details><summary>思路</summary><p>二分最短距離 x；check：從起點掃過去，與上一塊保留石頭距離 &lt; x 的就移走，數移走數是否 ≤ M。check 的貪心正確性：碰到近的就移，絕不提前移遠的 — 領先論證。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">auto ok = [&amp;](long long x){
-    long long last = 0; int removed = 0;
+<pre><code class="lang-cpp">auto ok = [&amp;](long long x) {
+    long long last = 0;
+    int removed = 0;
     for (int i = 1; i &lt;= n; i++)
-        if (d[i] - last &lt; x) removed++;      // 移走第 i 塊
-        else last = d[i];
-    if (L - last &lt; x) return false;          // 終點是牆，不可移
+        if (d[i] - last &lt; x)
+            removed++;  // 移走第 i 塊
+        else
+            last = d[i];
+    if (L - last &lt; x)
+        return false;  // 終點是牆，不可移
     return removed &lt;= m;
 };
 long long lo = 0, hi = L, ans = 0;
 while (lo &lt;= hi) {
     long long mid = (lo + hi) / 2;
-    if (ok(mid)) { ans = mid; lo = mid + 1; } else hi = mid - 1;
+    if (ok(mid)) {
+        ans = mid;
+        lo = mid + 1;
+    } else
+        hi = mid - 1;
 }</code></pre></details>
 </div>
 

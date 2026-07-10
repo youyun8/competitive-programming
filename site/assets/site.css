@@ -100,6 +100,14 @@ a:hover{text-decoration:underline}
   color:var(--fg2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;
 }
 .authbox .toolbtn{flex:0 0 auto}
+.authbox-form{display:flex; flex-direction:column; gap:6px}
+.authbox-form label{font-weight:700; color:var(--fg2)}
+.authbox-form input{
+  width:100%; border:1px solid var(--line); border-radius:7px;
+  padding:7px 8px; background:var(--bg); color:var(--fg); font:inherit;
+}
+.authbox-form input:focus{outline:2px solid var(--accent-soft); border-color:var(--accent)}
+.authbox-form .toolbtn{width:100%}
 
 /* ── main (font-size & max-width driven by user settings) ── */
 main{
@@ -200,6 +208,21 @@ pre{
 code{font-family:"JetBrains Mono","Cascadia Code",Consolas,"Courier New",monospace}
 p code,li code,td code{
   background:var(--chip-bg); border-radius:5px; padding:1px 6px; font-size:.9em; color:var(--fg);
+}
+.math-inline,var{
+  font-family:"Times New Roman",Cambria,serif; font-style:italic; letter-spacing:.01em;
+}
+.formula{
+  margin:10px 0; padding:10px 14px; overflow-x:auto;
+  border:1px solid var(--border); border-radius:8px; background:var(--bg2);
+  font-family:"Times New Roman",Cambria,serif; font-style:italic; line-height:1.8;
+  white-space:pre-line;
+}
+.knapsack-topic{
+  margin:28px 0; padding-top:4px; scroll-margin-top:18px;
+}
+.knapsack-topic + .knapsack-topic{
+  border-top:1px solid var(--line); padding-top:24px;
 }
 .tok-kw{color:#f472b6} .tok-str{color:#a5d6a7} .tok-com{color:#64748b;font-style:italic}
 .tok-num{color:#fbbf24} .tok-fn{color:#7dd3fc} .tok-pre{color:#c4b5fd}

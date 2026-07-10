@@ -24,11 +24,14 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">string st;
 for (char c : num) {
-    while (!st.empty() &amp;&amp; k &amp;&amp; st.back() &gt; c) { st.pop_back(); k--; }
+    while (!st.empty() &amp;&amp; k &amp;&amp; st.back() &gt; c) {
+        st.pop_back();
+        k--;
+    }
     st.push_back(c);
 }
 st.resize(st.size() - k);
-st.erase(0, st.find_first_not_of('0'));      // 去前導零
+st.erase(0, st.find_first_not_of('0'));  // 去前導零
 return st.empty() ? "0" : st;</code></pre></details>
 </div>
 

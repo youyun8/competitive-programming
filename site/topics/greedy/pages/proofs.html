@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../assets/site.css">
 <script src="../../../assets/site.js"></script>
-<script src="../../../assets/firebase-config.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
 <script src="../../../assets/progress.js"></script>
 </head>
 <body data-page="proofs" data-topic="greedy">
@@ -88,29 +88,76 @@
 <p>定義「進度量」m(·)（如：前 i 個選擇後的結束時間 / 剩餘資源）。歸納證明：對每個 i，貪心解的 m(G, i) <b>不劣於</b>任何解的 m(S, i)。步步領先 ⇒ 若 S 可行/達到 k，G 也能。適用於「貪心與對手逐步並排比較」自然的問題（活動選擇、跳躍遊戲、分發餅乾）。</p></div>
 
 <h3 id="s4-3">4.3 對拍驗證器（競賽現場 5 分鐘保命工具）</h3>
-<p>寫不出證明時，用小資料窮舉對拍。以下 Python 模板可套用到大多數「選擇型」問題：</p>
-<pre><code class="lang-py">import random
-from itertools import combinations
+<p>寫不出證明時，可先用小資料窮舉對拍。以下以「選最多個互不重疊區間」示範：暴力枚舉所有子集，與右端點排序的貪心答案比較。</p>
+<pre><code class="lang-cpp">struct Interval {
+    int left;
+    int right;
+};
 
-def brute(items):                       # 暴力：窮舉所有子集
-    best = 0
-    for k in range(len(items) + 1):
-        for sub in combinations(items, k):
-            if feasible(sub):
-                best = max(best, value(sub))
-    return best
+int BruteForce(std::vector&lt;Interval&gt; intervals) {
+    const int interval_count = static_cast&lt;int&gt;(intervals.size());
+    int best = 0;
+    for (int mask = 0; mask &lt; (1 &lt;&lt; interval_count); ++mask) {
+        std::vector&lt;Interval&gt; chosen;
+        for (int index = 0; index &lt; interval_count; ++index) {
+            if ((mask &gt;&gt; index) &amp; 1) {
+                chosen.push_back(intervals[index]);
+            }
+        }
+        std::sort(chosen.begin(), chosen.end(),
+                  [](const Interval&amp; left, const Interval&amp; right) {
+                      return left.left &lt; right.left;
+                  });
+        bool feasible = true;
+        for (int index = 1; index &lt; static_cast&lt;int&gt;(chosen.size()); ++index) {
+            feasible &amp;= chosen[index - 1].right &lt;= chosen[index].left;
+        }
+        if (feasible) {
+            best = std::max(best, static_cast&lt;int&gt;(chosen.size()));
+        }
+    }
+    return best;
+}
 
-def greedy(items):
-    ...                                  # 你的貪心
+int Greedy(std::vector&lt;Interval&gt; intervals) {
+    std::sort(intervals.begin(), intervals.end(),
+              [](const Interval&amp; left, const Interval&amp; right) {
+                  return left.right &lt; right.right;
+              });
+    int answer = 0;
+    int last_right = std::numeric_limits&lt;int&gt;::lowest();
+    for (const Interval&amp; interval : intervals) {
+        if (interval.left &gt;= last_right) {
+            ++answer;
+            last_right = interval.right;
+        }
+    }
+    return answer;
+}
 
-for test in range(300):
-    n = random.randint(1, 8)             # 小到暴力能跑，大到能觸發結構
-    items = [(random.randint(1, 10), random.randint(1, 10)) for _ in range(n)]
-    if brute(items) != greedy(items):
-        print("WA on:", items)           # 得到最小反例，人腦分析它
-        break
-else:
-    print("300 tests passed")</code></pre>
+int main() {
+    std::mt19937 random_engine(123456789);
+    std::uniform_int_distribution&lt;int&gt; size_distribution(1, 8);
+    std::uniform_int_distribution&lt;int&gt; point_distribution(0, 10);
+    for (int test = 0; test &lt; 300; ++test) {
+        std::vector&lt;Interval&gt; intervals;
+        const int interval_count = size_distribution(random_engine);
+        for (int index = 0; index &lt; interval_count; ++index) {
+            int left = point_distribution(random_engine);
+            int right = point_distribution(random_engine);
+            if (left &gt; right) {
+                std::swap(left, right);
+            }
+            intervals.push_back({left, right});
+        }
+        if (BruteForce(intervals) != Greedy(intervals)) {
+            std::cout &lt;&lt; "Counterexample found\n";
+            return 0;
+        }
+    }
+    std::cout &lt;&lt; "300 tests passed\n";
+    return 0;
+}</code></pre>
 <p class="small">技巧：值域開小（1–10）更容易撞出反例；找到反例後手動最小化它，反例會告訴你貪心錯在哪一類結構。</p>
 
 <div class="pagenav">

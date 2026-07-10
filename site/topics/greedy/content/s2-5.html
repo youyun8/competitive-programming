@@ -23,9 +23,12 @@
 <pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq(w.begin(), w.end());
 long long cost = 0;
 while (pq.size() &gt; 1) {
-    long long a = pq.top(); pq.pop();
-    long long b = pq.top(); pq.pop();
-    cost += a + b; pq.push(a + b);
+    long long a = pq.top();
+    pq.pop();
+    long long b = pq.top();
+    pq.pop();
+    cost += a + b;
+    pq.push(a + b);
 }</code></pre></details>
 </div>
 

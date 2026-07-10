@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s11" data-topic="dp">
@@ -100,7 +100,10 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int k = 1; k &lt;= K; k++)
     for (int a : A)
-        if (a &lt;= k &amp;&amp; !win[k - a]) { win[k] = true; break; }</code></pre></details>
+        if (a &lt;= k &amp;&amp; !win[k - a]) {
+            win[k] = true;
+            break;
+        }</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="atcoder-dp-l">

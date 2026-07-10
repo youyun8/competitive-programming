@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s05" data-topic="dp">
@@ -81,8 +81,8 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int i = 1; i &lt;= n; i++)
     for (int j = 1; j &lt;= m; j++)
-        dp[i][j] = (a[i-1] == b[j-1]) ? dp[i-1][j-1] + 1
-                                       : max(dp[i-1][j], dp[i][j-1]);</code></pre></details>
+        dp[i][j] = (a[i - 1] == b[j - 1]) ? dp[i - 1][j - 1] + 1
+                                          : max(dp[i - 1][j], dp[i][j - 1]);</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p1439">
@@ -109,11 +109,14 @@
 <details><summary>思路</summary><p>dp[i][j] = s 前 i 個能否匹配 p 前 j 個。<code>*</code> 的轉移：dp[i][j] = dp[i][j−1]（* 匹配空）|| dp[i−1][j]（* 多吞一個字元）。難度再上一級的 LC 10 正則版：<code>x*</code> 是整體單位，轉移分「匹配零次」dp[i][j−2] 與「再吞一個」dp[i−1][j]（需 s[i] 與 x 相容）。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">dp[0][0] = true;
-for (int j = 1; j &lt;= m; j++) dp[0][j] = dp[0][j-1] &amp;&amp; p[j-1] == '*';
+for (int j = 1; j &lt;= m; j++)
+    dp[0][j] = dp[0][j - 1] &amp;&amp; p[j - 1] == '*';
 for (int i = 1; i &lt;= n; i++)
     for (int j = 1; j &lt;= m; j++)
-        dp[i][j] = (p[j-1] == '*') ? dp[i][j-1] || dp[i-1][j]
-                 : dp[i-1][j-1] &amp;&amp; (p[j-1] == '?' || p[j-1] == s[i-1]);</code></pre></details>
+        dp[i][j] =
+            (p[j - 1] == '*')
+                ? dp[i][j - 1] || dp[i - 1][j]
+                : dp[i - 1][j - 1] &amp;&amp; (p[j - 1] == '?' || p[j - 1] == s[i - 1]);</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="lc-97">

@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../assets/site.css">
 <script src="../../../assets/site.js"></script>
-<script src="../../../assets/firebase-config.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
 <script src="../../../assets/progress.js"></script>
 </head>
 <body data-page="theory" data-topic="dp">
@@ -117,13 +117,17 @@
 </ul>
 
 <pre><code class="lang-cpp">// 記憶化搜尋通用骨架
-long long memo[MAXN]; bool vis[MAXN];
+long long memo[MAXN];
+bool vis[MAXN];
 long long f(int s) {
-    if (是邊界) return 邊界值;
-    if (vis[s]) return memo[s];
-    vis[s] = true;                 // 用 vis 而非特殊值，避免「初始值撞答案」
+    if (是邊界)
+        return 邊界值;
+    if (vis[s])
+        return memo[s];
+    vis[s] = true;  // 用 vis 而非特殊值，避免「初始值撞答案」
     long long best = -INF;
-    for (每個決策 d) best = max(best, f(更小狀態) + 決策收益);
+    for (每個決策 d)
+        best = max(best, f(更小狀態) + 決策收益);
     return memo[s] = best;
 }</code></pre>
 

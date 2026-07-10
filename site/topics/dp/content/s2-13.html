@@ -38,7 +38,8 @@
 <pre><code class="lang-cpp">// f[S] = S 的子集中任一個存在的元素（0 表示無）
 for (int b = 0; b &lt; n; b++)
     for (int S = 0; S &lt; (1 &lt;&lt; n); S++)
-        if ((S &gt;&gt; b &amp; 1) &amp;&amp; !f[S] &amp;&amp; f[S ^ (1 &lt;&lt; b)]) f[S] = f[S ^ (1 &lt;&lt; b)];</code></pre></details>
+        if ((S &gt;&gt; b &amp; 1) &amp;&amp; !f[S] &amp;&amp; f[S ^ (1 &lt;&lt; b)])
+            f[S] = f[S ^ (1 &lt;&lt; b)];</code></pre></details>
 </div>
 
 <h3>2.13.3 連通塊插入 DP</h3>

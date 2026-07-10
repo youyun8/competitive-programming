@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../assets/site.css">
 <script src="../../../assets/site.js"></script>
-<script src="../../../assets/firebase-config.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
 <script src="../../../assets/progress.js"></script>
 </head>
 <body data-page="method" data-topic="dp">
@@ -102,29 +102,49 @@
   <li><b>凸性/單調性外包</b>：整個函數當 DP 值，用堆/平衡樹維護（slope trick）。</li>
 </ul>
 
-<h3>4.4 對拍驗證器（Python）</h3>
+<h3>4.4 對拍驗證器（C++）</h3>
 <p>DP 最幸福的一點：<b>暴力遞迴天然就是正確性基準</b>。方程一寫完就對拍，別等大測資 WA。</p>
-<pre><code class="lang-py">import random
+<pre><code class="lang-cpp">long long BruteForce(const std::vector&lt;int&gt;&amp; values, int index) {
+    if (index &lt; 0) {
+        return 0;
+    }
+    return std::max(BruteForce(values, index - 1),
+                    BruteForce(values, index - 2) + values[index]);
+}
 
-def brute(a):                       # 暴力：不記憶化的遞迴 = 規格書
-    n = len(a)
-    def go(i):
-        if i &lt; 0: return 0
-        return max(go(i - 1), go(i - 2) + a[i])
-    return go(n - 1)
+long long SolveDp(const std::vector&lt;int&gt;&amp; values) {
+    long long two_steps_back = 0;
+    long long one_step_back = 0;
+    for (const int value : values) {
+        const long long current =
+            std::max(one_step_back, two_steps_back + value);
+        two_steps_back = one_step_back;
+        one_step_back = current;
+    }
+    return one_step_back;
+}
 
-def fast(a):                        # 待驗證的 DP
-    p2 = p1 = 0
-    for x in a:
-        p2, p1 = p1, max(p1, p2 + x)
-    return p1
-
-for t in range(100000):
-    a = [random.randint(-5, 20) for _ in range(random.randint(0, 8))]
-    if brute(a) != fast(a):
-        print("WA!", a, brute(a), fast(a)); break
-else:
-    print("100000 tests passed")</code></pre>
+int main() {
+    std::mt19937 random_engine(123456789);
+    std::uniform_int_distribution&lt;int&gt; size_distribution(0, 8);
+    std::uniform_int_distribution&lt;int&gt; value_distribution(-5, 20);
+    for (int test = 0; test &lt; 100000; ++test) {
+        const int size = size_distribution(random_engine);
+        std::vector&lt;int&gt; values(size);
+        for (int&amp; value : values) {
+            value = value_distribution(random_engine);
+        }
+        const long long brute_answer =
+            BruteForce(values, static_cast&lt;int&gt;(values.size()) - 1);
+        const long long dp_answer = SolveDp(values);
+        if (brute_answer != dp_answer) {
+            std::cout &lt;&lt; "Counterexample found\n";
+            return 0;
+        }
+    }
+    std::cout &lt;&lt; "100000 tests passed\n";
+    return 0;
+}</code></pre>
 <p class="small">要點：測資<b>小而刁</b>（長度 0–8、含負數/零/重複）比大測資更會抓 bug；找到反例後把它縮到最小再除錯。</p>
 
 <div class="pagenav">

@@ -28,7 +28,7 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">int hold = INT_MIN, free_ = 0;
 for (int p : prices) {
-    hold  = max(hold, free_ - p);
+    hold = max(hold, free_ - p);
     free_ = max(free_, hold + p);
 }
 return free_;</code></pre></details>

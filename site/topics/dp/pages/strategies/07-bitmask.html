@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
-<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
 <body data-page="s07" data-topic="dp">
@@ -78,9 +78,10 @@
 </ul></div>
 
 <pre><code class="lang-cpp">// 位運算工具箱
-int lb = S &amp; (-S);                 // lowbit：最低位的 1
-int c  = __builtin_popcount(S);    // 集合大小
-for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */ }
+int lb = S &amp; (-S);                    // lowbit：最低位的 1
+int c = __builtin_popcount(S);        // 集合大小
+for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */
+}
 // 全體「枚舉每個集合的每個子集」總量是 3^n（每位三種歸屬），非 4^n</code></pre>
 
 <div class="problem" data-problem-id="atcoder-dp-o">
@@ -90,7 +91,7 @@ for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */ }
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">dp[0] = 1;
 for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
-    int i = __builtin_popcount(S) - 1;        // 正在配第 i 個男生
+    int i = __builtin_popcount(S) - 1;  // 正在配第 i 個男生
     for (int j = 0; j &lt; n; j++)
         if ((S &gt;&gt; j &amp; 1) &amp;&amp; ok[i][j])
             dp[S] = (dp[S] + dp[S ^ (1 &lt;&lt; j)]) % MOD;
@@ -121,9 +122,10 @@ for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
 <details><summary>思路</summary><p>先預處理：每對豬決定一條拋物線 → 它能覆蓋的豬集合 cover[i][j]。然後最小集合覆蓋：dp[S] = 已消滅集合 S 的最少線數，<b>轉移時固定 S 中最小的未消滅豬</b>——它必屬於某條線，只枚舉包含它的線，避免同一組合被枚舉多次，複雜度從 3ⁿ 降到 2ⁿ·n。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int S = 0; S &lt; (1 &lt;&lt; n); S++) {
-    if (dp[S] == INF) continue;
-    int p = __builtin_ctz(~S);                 // 最小的還活著的豬
-    for (int j = 0; j &lt; n; j++)                // 枚舉「經過 p」的拋物線
+    if (dp[S] == INF)
+        continue;
+    int p = __builtin_ctz(~S);   // 最小的還活著的豬
+    for (int j = 0; j &lt; n; j++)  // 枚舉「經過 p」的拋物線
         dp[S | cover[p][j]] = min(dp[S | cover[p][j]], dp[S] + 1);
 }</code></pre></details>
 </div>

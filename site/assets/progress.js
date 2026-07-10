@@ -1,16 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
-   演算法策略圖鑑 — 練習進度追蹤 + 跨裝置雲端同步
+   演算法策略圖鑑 — 練習進度追蹤 + Supabase 跨裝置同步
 
-   本機模式（預設）：進度存在 localStorage，換瀏覽器/裝置看不到彼此。
-   雲端模式（設定好 assets/firebase-config.js 後自動啟用）：
-     使用者用 Google 帳號登入 → 進度存進該帳號專屬的 Firestore 文件
-     → 從任何裝置用同一 Google 帳號登入都會讀到同一份進度，且透過
-       onSnapshot 即時監聽，多裝置同時開著也會互相同步。
-
-   進度以「題目 id」為 key、橫跨全站所有主題共用同一份資料——同一題不論
-   在哪個主題頁面被標記，題目總表與其他主題頁面的同一張卡片都會同步。
-
-   設定步驟請見 README.md「跨裝置進度同步」章節。
+   預設只使用 localStorage。設定 assets/supabase-config.js 後，使用者
+   可以用 Email magic link 登入；登入時讀取雲端進度，每次標記後立即
+   upsert 自己的資料列，回到分頁時再同步一次其他裝置的最新變更。
    ═══════════════════════════════════════════════════════════════ */
 (function () {
   "use strict";
@@ -19,58 +12,108 @@
   var STATUSES = ["none", "review", "done"];
   var LABELS = { none: "尚未練習", review: "需複習", done: "已通過" };
   var ICONS = { none: "⬜", review: "🔶", done: "✅" };
-  var FIREBASE_SDK_BASE = "https://www.gstatic.com/firebasejs/10.13.0/";
+  var SUPABASE_SDK_URL =
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
   var cache = loadLocal();
   var currentUser = null;
-  var firebaseReady = false;
-  var auth = null, db = null, unsubscribeDoc = null;
+  var cloudClient = null;
+  var cloudReady = false;
+  var cloudError = "";
+  var authMessage = "";
+  var lastSyncAt = 0;
 
   function loadLocal() {
-    try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}"); } catch (e) { return {}; }
-  }
-  function saveLocal() {
-    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(cache)); } catch (e) {}
-  }
-
-  function getStatus(id) { return cache[id] || "none"; }
-
-  function setStatus(id, status) {
-    cache[id] = status;
-    saveLocal();
-    paint();
-    if (currentUser && db) {
-      var update = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-      update["progress." + id] = status;
-      db.collection("users").doc(currentUser.uid).set(update, { merge: true })
-        .catch(function (e) { console.error("[Progress] 寫入雲端失敗：", e); });
+    try {
+      return JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}");
+    } catch (error) {
+      console.warn("[Progress] 無法讀取本機進度：", error);
+      return {};
     }
   }
 
+  function saveLocal() {
+    try {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(cache));
+    } catch (error) {
+      console.warn("[Progress] 無法儲存本機進度：", error);
+    }
+  }
+
+  function getStatus(id) {
+    return cache[id] || "none";
+  }
+
+  function setStatus(id, status) {
+    if (STATUSES.indexOf(status) === -1) return;
+    cache[id] = status;
+    saveLocal();
+    paint();
+    if (currentUser && cloudClient) {
+      writeCloudStatus(id, status);
+    }
+  }
+
+  function writeCloudStatus(id, status) {
+    cloudClient
+      .from("user_progress")
+      .upsert(
+        {
+          user_id: currentUser.id,
+          problem_id: id,
+          status: status,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: "user_id,problem_id" }
+      )
+      .then(function (result) {
+        if (result.error) {
+          console.error("[Progress] 寫入雲端失敗：", result.error);
+        }
+      });
+  }
+
   function summary() {
-    var s = { none: 0, review: 0, done: 0 };
+    var result = { none: 0, review: 0, done: 0 };
     Object.keys(cache).forEach(function (id) {
-      if (s[cache[id]] !== undefined) s[cache[id]]++;
+      if (result[cache[id]] !== undefined) {
+        result[cache[id]]++;
+      }
     });
-    return s;
+    return result;
   }
 
-  /* ── 每題的進度控制元件（⬜/🔶/✅ 三顆小按鈕） ── */
   function controlHTML(id) {
-    var st = getStatus(id);
-    return '<span class="progress-ctl" data-for="' + id + '">' +
-      STATUSES.map(function (s) {
-        return '<button type="button" data-status="' + s + '" class="' + (s === st ? "active" : "") +
-          '" aria-label="' + LABELS[s] + '" title="' + LABELS[s] + '">' + ICONS[s] + "</button>";
-      }).join("") + "</span>";
+    var status = getStatus(id);
+    return (
+      '<span class="progress-ctl" data-for="' +
+      id +
+      '">' +
+      STATUSES.map(function (candidate) {
+        return (
+          '<button type="button" data-status="' +
+          candidate +
+          '" class="' +
+          (candidate === status ? "active" : "") +
+          '" aria-label="' +
+          LABELS[candidate] +
+          '" title="' +
+          LABELS[candidate] +
+          '">' +
+          ICONS[candidate] +
+          "</button>"
+        );
+      }).join("") +
+      "</span>"
+    );
   }
 
-  function wireControl(el, id) {
-    if (!el) return;
-    el.querySelectorAll("button").forEach(function (btn) {
-      btn.addEventListener("click", function (ev) {
-        ev.preventDefault();
-        setStatus(id, btn.dataset.status);
+  function wireControl(element, id) {
+    if (!element) return;
+    element.querySelectorAll("button").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        setStatus(id, button.dataset.status);
       });
     });
   }
@@ -80,26 +123,21 @@
     target.classList.add("status-" + getStatus(id));
   }
 
-  /* 把控制元件塞進頁面上所有帶 data-problem-id 的地方（題目卡片 + 總表列），
-     可重複呼叫（例如篩選後表格重繪、或雲端資料同步回來時）以刷新狀態。
-     同一個題目 id 可能同時出現在多個地方（例如兩個主題都講到同一題），
-     每一處都會各自綁定控制元件、但共用同一份 cache，操作其中一處會讓
-     下次 paint() 時全部一起更新。 */
   function paint() {
     document.querySelectorAll(".problem[data-problem-id]").forEach(function (card) {
       var id = card.dataset.problemId;
-      applyStatusClass(card, id);
       var head = card.querySelector(".p-head");
+      applyStatusClass(card, id);
       if (!head) return;
       var existing = head.querySelector(".progress-ctl");
       if (existing) existing.remove();
       head.insertAdjacentHTML("beforeend", controlHTML(id));
       wireControl(head.querySelector(".progress-ctl"), id);
     });
-    document.querySelectorAll("tr[data-problem-id]").forEach(function (tr) {
-      var id = tr.dataset.problemId;
-      applyStatusClass(tr, id);
-      var cell = tr.querySelector(".progress-cell");
+    document.querySelectorAll("tr[data-problem-id]").forEach(function (row) {
+      var id = row.dataset.problemId;
+      var cell = row.querySelector(".progress-cell");
+      applyStatusClass(row, id);
       if (!cell) return;
       cell.innerHTML = controlHTML(id);
       wireControl(cell.querySelector(".progress-ctl"), id);
@@ -108,105 +146,231 @@
   }
 
   function renderSummary() {
-    var el = document.getElementById("progress-summary");
-    if (!el) return;
-    var s = summary();
-    var total = (window.PROBLEMS && window.PROBLEMS.length) || (s.none + s.review + s.done);
-    var untouched = Math.max(0, total - s.review - s.done);
-    el.textContent = "✅ 已通過 " + s.done + "　🔶 需複習 " + s.review + "　⬜ 尚未練習 " + untouched;
+    var element = document.getElementById("progress-summary");
+    if (!element) return;
+    var counts = summary();
+    var total =
+      (window.PROBLEMS && window.PROBLEMS.length) ||
+      counts.none + counts.review + counts.done;
+    var untouched = Math.max(0, total - counts.review - counts.done);
+    element.textContent =
+      "✅ 已通過 " +
+      counts.done +
+      "　🔶 需複習 " +
+      counts.review +
+      "　⬜ 尚未練習 " +
+      untouched;
   }
 
-  /* ── 登入狀態顯示 ── */
+  function escapeHTML(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function isConfigured(config) {
+    return !!(
+      config &&
+      config.url &&
+      config.publishableKey &&
+      config.url.indexOf("YOUR_") !== 0 &&
+      config.publishableKey.indexOf("YOUR_") !== 0
+    );
+  }
+
   function renderAuthUI() {
     var box = document.getElementById("authBox");
     if (!box) return;
-    if (!isConfigured(window.FIREBASE_CONFIG)) {
-      box.innerHTML = '<div class="authbox-msg" title="尚未設定 assets/firebase-config.js，進度僅存在本機瀏覽器">☁️ 尚未設定雲端同步</div>';
+    if (!isConfigured(window.SUPABASE_CONFIG)) {
+      box.innerHTML =
+        '<div class="authbox-msg" title="尚未設定 assets/supabase-config.js，進度僅存在本機瀏覽器">☁️ 本機進度模式</div>';
       return;
     }
-    if (!firebaseReady) {
+    if (cloudError) {
+      box.innerHTML =
+        '<div class="authbox-msg">' + escapeHTML(cloudError) + "</div>";
+      return;
+    }
+    if (!cloudReady) {
       box.innerHTML = '<div class="authbox-msg">☁️ 連線中…</div>';
       return;
     }
     if (currentUser) {
-      var label = currentUser.displayName || currentUser.email || "已登入";
       box.innerHTML =
         '<div class="authbox-user">' +
-        '<span class="authbox-email" title="' + esc(currentUser.email || "") + '">👤 ' + esc(label) + "</span>" +
+        '<span class="authbox-email" title="' +
+        escapeHTML(currentUser.email || "") +
+        '">👤 ' +
+        escapeHTML(currentUser.email || "已登入") +
+        "</span>" +
         '<button id="signOutBtn" class="toolbtn">登出</button>' +
-        "</div>";
-      var so = document.getElementById("signOutBtn");
-      if (so) so.addEventListener("click", function () { auth.signOut(); });
-    } else {
-      box.innerHTML = '<button id="signInBtn" class="toolbtn">🔑 用 Google 同步進度</button>';
-      var si = document.getElementById("signInBtn");
-      if (si) si.addEventListener("click", function () {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-          .catch(function (e) { alert("登入失敗：" + e.message); });
+        "</div>" +
+        (authMessage
+          ? '<div class="authbox-msg">' + escapeHTML(authMessage) + "</div>"
+          : "");
+      document.getElementById("signOutBtn").addEventListener("click", function () {
+        cloudClient.auth.signOut();
       });
+      return;
     }
-  }
-  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-  /* ── Firebase 初始化：設定檔沒填就完全不載入 SDK，維持純本機模式 ── */
-  function isConfigured(cfg) {
-    return !!(cfg && cfg.apiKey && cfg.apiKey.indexOf("YOUR_") !== 0);
+    box.innerHTML =
+      '<form id="signInForm" class="authbox-form">' +
+      '<label for="syncEmail">跨裝置同步</label>' +
+      '<input id="syncEmail" type="email" autocomplete="email" placeholder="Email" required>' +
+      '<button class="toolbtn" type="submit">寄送登入連結</button>' +
+      "</form>" +
+      (authMessage
+        ? '<div class="authbox-msg">' + escapeHTML(authMessage) + "</div>"
+        : "");
+    document.getElementById("signInForm").addEventListener("submit", signIn);
+  }
+
+  function signIn(event) {
+    event.preventDefault();
+    var email = document.getElementById("syncEmail").value.trim();
+    if (!email) return;
+    authMessage = "正在寄送…";
+    renderAuthUI();
+    cloudClient.auth
+      .signInWithOtp({
+        email: email,
+        options: { emailRedirectTo: window.location.href.split("#")[0] }
+      })
+      .then(function (result) {
+        authMessage = result.error
+          ? "寄送失敗：" + result.error.message
+          : "登入連結已寄出，請檢查信箱。";
+        renderAuthUI();
+      });
   }
 
   function loadScript(src) {
     return new Promise(function (resolve, reject) {
-      var s = document.createElement("script");
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = function () { reject(new Error("載入失敗：" + src)); };
-      document.head.appendChild(s);
+      var script = document.createElement("script");
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = function () {
+        reject(new Error("載入失敗：" + src));
+      };
+      document.head.appendChild(script);
     });
   }
 
-  function initFirebase() {
-    var cfg = window.FIREBASE_CONFIG;
-    if (!isConfigured(cfg)) return;
+  function syncCloudProgress() {
+    if (!currentUser || !cloudClient) return Promise.resolve();
+    var userId = currentUser.id;
+    lastSyncAt = Date.now();
+    return cloudClient
+      .from("user_progress")
+      .select("problem_id,status")
+      .eq("user_id", userId)
+      .then(function (result) {
+        if (result.error) throw result.error;
+        if (!currentUser || currentUser.id !== userId) return;
+        var remote = {};
+        (result.data || []).forEach(function (row) {
+          if (STATUSES.indexOf(row.status) !== -1) {
+            remote[row.problem_id] = row.status;
+          }
+        });
 
-    loadScript(FIREBASE_SDK_BASE + "firebase-app-compat.js")
-      .then(function () { return loadScript(FIREBASE_SDK_BASE + "firebase-auth-compat.js"); })
-      .then(function () { return loadScript(FIREBASE_SDK_BASE + "firebase-firestore-compat.js"); })
-      .then(function () {
-        firebase.initializeApp(cfg);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        firebaseReady = true;
+        var missingRows = Object.keys(cache)
+          .filter(function (id) {
+            return remote[id] === undefined;
+          })
+          .map(function (id) {
+            return {
+              user_id: userId,
+              problem_id: id,
+              status: cache[id],
+              updated_at: new Date().toISOString()
+            };
+          });
+        cache = Object.assign({}, cache, remote);
+        saveLocal();
+        paint();
+        authMessage = "已同步";
         renderAuthUI();
 
-        auth.onAuthStateChanged(function (user) {
-          if (unsubscribeDoc) { unsubscribeDoc(); unsubscribeDoc = null; }
-          currentUser = user;
-          renderAuthUI();
-          if (!user) return;
-
-          var ref = db.collection("users").doc(user.uid);
-          unsubscribeDoc = ref.onSnapshot(function (snap) {
-            if (snap.exists && snap.data().progress) {
-              cache = Object.assign({}, cache, snap.data().progress);
-              saveLocal();
-            } else if (Object.keys(cache).length) {
-              // 遠端還沒有資料：把登入前累積的本機進度推上去，成為雲端的起點
-              ref.set({ progress: cache }, { merge: true });
-            }
-            paint();
-          }, function (err) { console.error("[Progress] 同步監聽失敗：", err); });
-        });
+        if (missingRows.length) {
+          return cloudClient
+            .from("user_progress")
+            .upsert(missingRows, { onConflict: "user_id,problem_id" })
+            .then(function (writeResult) {
+              if (writeResult.error) throw writeResult.error;
+            });
+        }
       })
-      .catch(function (e) {
-        console.error("[Progress] Firebase 載入失敗：", e);
+      .catch(function (error) {
+        if (!currentUser || currentUser.id !== userId) return;
+        authMessage = "同步失敗，進度仍保存在本機。";
+        console.error("[Progress] 同步失敗：", error);
         renderAuthUI();
       });
   }
 
+  function handleSession(session) {
+    currentUser = session && session.user ? session.user : null;
+    authMessage = "";
+    renderAuthUI();
+    if (currentUser) {
+      syncCloudProgress();
+    }
+  }
+
+  function initCloud() {
+    var config = window.SUPABASE_CONFIG;
+    if (!isConfigured(config)) return;
+    loadScript(SUPABASE_SDK_URL)
+      .then(function () {
+        cloudClient = window.supabase.createClient(
+          config.url,
+          config.publishableKey
+        );
+        cloudReady = true;
+        renderAuthUI();
+        return cloudClient.auth.getSession();
+      })
+      .then(function (result) {
+        if (result.error) throw result.error;
+        handleSession(result.data.session);
+        cloudClient.auth.onAuthStateChange(function (event, session) {
+          window.setTimeout(function () {
+            handleSession(session);
+          }, 0);
+        });
+      })
+      .catch(function (error) {
+        cloudError = "雲端服務載入失敗，已改用本機模式。";
+        console.error("[Progress] Supabase 初始化失敗：", error);
+        renderAuthUI();
+      });
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (
+      document.visibilityState === "visible" &&
+      currentUser &&
+      Date.now() - lastSyncAt > 10000
+    ) {
+      syncCloudProgress();
+    }
+  });
+
   document.addEventListener("DOMContentLoaded", function () {
     paint();
     renderAuthUI();
-    initFirebase();
+    initCloud();
   });
 
-  window.Progress = { getStatus: getStatus, setStatus: setStatus, paint: paint, summary: summary };
+  window.Progress = {
+    getStatus: getStatus,
+    setStatus: setStatus,
+    paint: paint,
+    summary: summary,
+    sync: syncCloudProgress
+  };
 })();
