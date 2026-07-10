@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -55,21 +57,21 @@
 <div class="tbl-wrap"><table>
 <tr><th>目標</th><th>排序／資料結構</th><th>每步選擇</th><th>不變量</th></tr>
 <tr><td>最多不重疊區間</td><td>右端點遞增</td><td>能接就選</td><td>同樣選取數下，最後右端點最小</td></tr>
-<tr><td>最少區間覆蓋 [L,R]</td><td>左端點遞增</td><td>所有 l≤目前位置中取 r 最大</td><td>使用同樣段數時覆蓋最遠</td></tr>
+<tr><td>最少區間覆蓋 \([L,R]\)</td><td>左端點遞增</td><td>所有 \(l\le\text{目前位置}\) 中取 \(r\) 最大</td><td>使用同樣段數時覆蓋最遠</td></tr>
 <tr><td>最少資源／最大重疊數</td><td>事件排序或結束時間小根堆</td><td>釋放已結束資源，再分配</td><td>堆精確保存目前占用資源</td></tr>
 <tr><td>最少點刺穿所有區間</td><td>右端點遞增</td><td>未覆蓋時選其右端點</td><td>所選點儘量靠右，最利於後續</td></tr>
 <tr><td>最大權重不重疊集合</td><td>排序＋前驅二分＋DP</td><td>選／不選取 max</td><td>權重破壞只看數量的交換論證</td></tr>
 </table></div>
 
 <div class="callout warn"><b>⚠ 端點相等要先定義</b>
-<p>會議 [l,r) 與 [r,t) 可銜接，因此判斷是 <code>next.l≥last.r</code>；若題意是閉區間且共用端點算衝突，就要嚴格大於。掃描線同座標的開始／結束事件先後也由此決定。很多「貪心錯誤」其實只是區間語意沒有先固定。</p></div>
+<p>會議 \([l,r)\) 與 \([r,t)\) 可銜接，因此判斷是 <code>next.l &gt;= last.r</code>；若題意是閉區間且共用端點算衝突，就要嚴格大於。掃描線同座標的開始／結束事件先後也由此決定。很多「貪心錯誤」其實只是區間語意沒有先固定。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
 <p>區間貪心的一切糾結都在「按左端點還是右端點排」。記住對應關係：<b>選最多不重疊 → 右端點</b>；<b>完全覆蓋 → 左端點</b>；<b>算最少資源 → 掃描線/小根堆</b>。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
-<li>輸入是一堆 <code>[l, r]</code>，或能轉化成區間（如 POJ 1328 的幾何轉化、「站點+半徑」轉化）。</li>
+<li>輸入是一堆 \([l,r]\)，或能轉化成區間（如 POJ 1328 的幾何轉化、「站點 + 半徑」轉化）。</li>
 <li>目標是「最多選幾個 / 最少用幾個 / 最少資源數 / 能否覆蓋」。</li>
 <li>⚠ 若區間<b>帶權</b>且目標是權和 — 貪心失效，轉 DP（見 2.2.5）。</li>
 </ul></div>
@@ -77,8 +79,8 @@
 <h3>2.2.1 不重疊區間最多選幾個（活動選擇）— 按右端點排</h3>
 <div class="problem" data-problem-id="lc-435">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/non-overlapping-intervals/" target="_blank">LC 435 無重疊區間</a><span class="chip">區間</span><span class="chip">右端點排序</span></div>
-<p>移除最少的區間，使其餘互不重疊 ⟺ 選出最多互不重疊的區間。</p>
-<details><summary>思路</summary><p>按<b>右端點遞增</b>排序，能選就選（左端點 ≥ 上一個選中的右端點）。證明用領先論證：貪心第 k 個選中區間的右端點 ≤ 任意解第 k 個的右端點（歸納），所以任何解能塞下的，貪心都塞得下。<b>為什麼不是左端點</b>：一個很早開始但很長的區間會堵死後面 — 反例 <code>[1,100],[2,3],[4,5]</code>。</p></details>
+<p>移除最少的區間，使其餘互不重疊 \(\Longleftrightarrow\) 選出最多互不重疊的區間。</p>
+<details><summary>思路</summary><p>按<b>右端點遞增</b>排序，能選就選（左端點 \(\ge\) 上一個選中的右端點）。證明用領先論證：貪心第 \(k\) 個選中區間的右端點 \(\le\) 任意解第 \(k\) 個的右端點（歸納），所以任何解能塞下的，貪心都塞得下。<b>為什麼不是左端點</b>：一個很早開始但很長的區間會堵死後面 — 反例 \([1,100],[2,3],[4,5]\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; a, auto&amp; b) { return a[1] &lt; b[1]; });
 int keep = 0;
@@ -94,8 +96,8 @@ return iv.size() - keep;</code></pre></details>
 <h3>2.2.2 完全覆蓋最少段數 — 按左端點排 + 貪心延伸</h3>
 <div class="problem" data-problem-id="lc-1024">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/video-stitching/" target="_blank">LC 1024 視頻拼接</a><span class="chip">區間</span><span class="chip">左端點排序</span><span class="chip">覆蓋</span></div>
-<p>用最少段影片覆蓋 [0, T]。同型：LC 45 跳躍遊戲 II、LC 1326 灌溉花園。</p>
-<details><summary>思路</summary><p>按左端點排序。維護目前已覆蓋到 <code>cur</code>；在所有左端點 ≤ <code>cur</code> 的區間中，選<b>右端點最遠</b>的一段接上（這一步是貪心選擇性質：反正都要有一段跨過 cur，選伸最遠的不會變差），<code>cur</code> 跳到該右端點。跳躍遊戲 II 是同一個模型的陣列形式，可 O(n) 一次掃描。</p></details>
+<p>用最少段影片覆蓋 \([0,T]\)。同型：LC 45 跳躍遊戲 II、LC 1326 灌溉花園。</p>
+<details><summary>思路</summary><p>按左端點排序。維護目前已覆蓋到 <code>cur</code>；在所有左端點 \(\le\) <code>cur</code> 的區間中，選<b>右端點最遠</b>的一段接上（這一步是貪心選擇性質：反正都要有一段跨過 <code>cur</code>，選伸最遠的不會變差），<code>cur</code> 跳到該右端點。跳躍遊戲 II 是同一個模型的陣列形式，可用 \(O(n)\) 一次掃描。</p></details>
 <details><summary>程式碼（C++，跳躍遊戲 II 形式）</summary>
 <pre><code class="lang-cpp">int jumps = 0, curEnd = 0, farthest = 0;
 for (int i = 0; i + 1 &lt; n; i++) {
@@ -111,7 +113,7 @@ for (int i = 0; i + 1 &lt; n; i++) {
 <div class="problem" data-problem-id="lc-253">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/meeting-rooms-ii/" target="_blank">LC 253 會議室 II</a><span class="chip">區間</span><span class="chip">堆</span><span class="chip">掃描線</span></div>
 <p>最少需要幾間會議室容納所有會議？同型：洛谷 P2887、CF 手機基地台類。</p>
-<details><summary>思路</summary><p>兩種等價視角：<b>掃描線</b> — 把開始 +1、結束 −1 排成事件，答案是前綴和最大值（= 最大同時重疊數，這是下界，也構造性地可達）；<b>小根堆</b> — 按開始時間排序，堆存每間房目前的結束時間，新會議若能接最早空出的房就接，否則開新房。</p></details>
+<details><summary>思路</summary><p>兩種等價視角：<b>掃描線</b> — 把開始 \(+1\)、結束 \(-1\) 排成事件，答案是前綴和最大值（即最大同時重疊數，這是下界，也構造性地可達）；<b>小根堆</b> — 按開始時間排序，堆存每間房目前的結束時間，新會議若能接最早空出的房就接，否則開新房。</p></details>
 <details><summary>程式碼（C++，小根堆）</summary>
 <pre><code class="lang-cpp">sort(iv.begin(), iv.end());
 priority_queue&lt;int, vector&lt;int&gt;, greater&lt;&gt;&gt; rooms;  // 各房結束時間
@@ -126,18 +128,18 @@ return rooms.size();</code></pre></details>
 <h3>2.2.4 區間選點 / 最少箭射氣球</h3>
 <div class="problem" data-problem-id="lc-452">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/" target="_blank">LC 452 用最少數量的箭引爆氣球</a><span class="chip">區間</span><span class="chip">右端點排序</span></div>
-<details><summary>思路</summary><p>「最少的點使每個區間至少含一點」— 與活動選擇對偶。按右端點排序，箭射在目前區間的右端點（能捅穿的最晚位置，捅到最多後續區間），左端點超過箭位置就補新箭。答案 = 最多不相交區間數（LP 對偶的離散體現）。</p></details>
+<details><summary>思路</summary><p>「最少的點使每個區間至少含一點」— 與活動選擇對偶。按右端點排序，箭射在目前區間的右端點（能捅穿的最晚位置，捅到最多後續區間），左端點超過箭位置就補新箭。答案等於最多不相交區間數（LP 對偶的離散體現）。</p></details>
 </div>
 
 <h3>2.2.5 邊界討論：帶權區間 → 貪心失效 → DP</h3>
-<p>當每個區間帶權 w、目標最大化選中權和：交換論證失敗 — 「結束早」與「權大」不可比。此時按右端點排序後做 <code>dp[i] = max(dp[i−1], w_i + dp[prev(i)])</code>（prev 用二分找），<code>O(n log n)</code>。<b>辨識訓練</b>：看到區間題先問「有沒有權重」，這一問決定貪心/DP 的分岔。</p>
+<p>當每個區間帶權 \(w\)、目標最大化選中權和：交換論證失敗 — 「結束早」與「權大」不可比。此時按右端點排序後使用 \(\mathrm{dp}[i] = \max(\mathrm{dp}[i-1],\,w_i+\mathrm{dp}[\operatorname{prev}(i)])\)（\(\operatorname{prev}\) 用二分找），時間為 \(O(n\log n)\)。<b>辨識訓練</b>：看到區間題先問「有沒有權重」，這一問決定貪心/DP 的分岔。</p>
 
 <div class="pagenav">
 <a class="prev" href="01-sorting.html"><span class="dir">← 上一節</span>2.1 排序貪心</a>
 <a class="next" href="03-exchange-scheduling.html"><span class="dir">下一節 →</span>2.3 交換論證排程</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

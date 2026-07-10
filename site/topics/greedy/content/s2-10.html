@@ -1,17 +1,17 @@
 <h2>2.10 貪心 × 二分答案（參數化貪心）</h2>
 
 <div class="callout proof"><b>📈 二分的對象是單調命題，不是答案本身</b>
-<p>先定義 <code>check(x)</code> 的完整語意，例如「能否讓最小距離至少 x」。證明若 x 可行，所有更小值也可行，答案軸才會呈現 TTTFFF；貪心只負責在線性／n log n 時間內判定一個 x。最後再決定要找最後一個 true 還是第一個 true。</p></div>
+<p>先定義 <code>check(x)</code> 的完整語意，例如「能否讓最小距離至少 \(x\)」。證明若 \(x\) 可行，所有更小值也可行，答案軸才會呈現 TTTFFF；貪心只負責在線性或 \(O(n\log n)\) 時間內判定一個 \(x\)。最後再決定要找最後一個 true 還是第一個 true。</p></div>
 
 <div class="tbl-wrap"><table>
 <tr><th>答案型態</th><th>單調命題</th><th>常見 check 貪心</th></tr>
-<tr><td>最大化最小距離</td><td>距離 ≥x 是否可行（x 越大越難）</td><td>從左到右放在最早可放位置</td></tr>
-<tr><td>最小化最大負擔</td><td>每段和 ≤x 是否可行（x 越大越易）</td><td>依序裝滿再開新段</td></tr>
+<tr><td>最大化最小距離</td><td>距離 \(\ge x\) 是否可行（\(x\) 越大越難）</td><td>從左到右放在最早可放位置</td></tr>
+<tr><td>最小化最大負擔</td><td>每段和 \(\le x\) 是否可行（\(x\) 越大越易）</td><td>依序裝滿再開新段</td></tr>
 <tr><td>最小速度／容量</td><td>資源 x 能否在期限內完成</td><td>累加所需時間／批次數</td></tr>
 </table></div>
 
 <div class="callout warn"><b>⚠ 邊界模板要帶著不變量寫</b>
-<p>整數二分可維護「lo 已知可行、hi 已知不可行」並在相鄰時停下，或用閉區間模板；不要混用更新式。上下界需由題意證明，<code>mid=lo+(hi-lo)/2</code> 防溢位。實數答案則固定迭代約 80–100 次，且 check 中避免不穩定的等號比較。</p></div>
+<p>整數二分可維護「lo 已知可行、hi 已知不可行」並在相鄰時停下，或用閉區間模板；不要混用更新式。上下界需由題意證明，<code>mid = lo + (hi - lo) / 2</code> 可防溢位。實數答案則固定迭代約 80–100 次，且 check 中避免不穩定的等號比較。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
 <p>「最大化最小值 / 最小化最大值」的答案具單調性：二分答案 x，把最優化問題降級成判定問題「能否達成 x」— 而判定問題往往有顯然的貪心解。<b>貪心不必解決原題，只需服務 check。</b></p></div>
@@ -24,8 +24,8 @@
 
 <div class="problem" data-problem-id="luogu-p2678">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2678" target="_blank">洛谷 P2678 [NOIP2015] 跳石頭</a><span class="chip">二分+貪心</span></div>
-<p>移走至多 M 塊石頭，最大化相鄰石頭最短跳躍距離。（= POJ 2456 Aggressive Cows）</p>
-<details><summary>思路</summary><p>二分最短距離 x；check：從起點掃過去，與上一塊保留石頭距離 &lt; x 的就移走，數移走數是否 ≤ M。check 的貪心正確性：碰到近的就移，絕不提前移遠的 — 領先論證。</p></details>
+<p>移走至多 \(M\) 塊石頭，最大化相鄰石頭最短跳躍距離。（同 POJ 2456 Aggressive Cows）</p>
+<details><summary>思路</summary><p>二分最短距離 \(x\)；check 從起點掃過去，與上一塊保留石頭距離 \(<x\) 的就移走，再判斷移走數是否 \(\le M\)。check 的貪心正確性：碰到近的就移，絕不提前移遠的 — 領先論證。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">auto ok = [&amp;](long long x) {
     long long last = 0;
@@ -52,12 +52,12 @@ while (lo &lt;= hi) {
 
 <div class="problem" data-problem-id="cf-1486d">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1486/D" target="_blank">CF 1486D Max Median</a><span class="chip">二分+貪心</span><span class="chip">中位數</span></div>
-<p>找長度 ≥ k 的子陣列，最大化其中位數。</p>
-<details><summary>思路</summary><p>二分中位數 x，把 ≥ x 記 +1、&lt; x 記 −1：「存在長 ≥ k 子陣列中位數 ≥ x」⟺「存在長 ≥ k 子陣列和 &gt; 0」，前綴和 + 前綴最小值 O(n) 判定。<b>「二分 + ±1 轉化」是中位數最值題的萬能鑰匙</b>（同型：POJ 3579、各類「第 k 大最大化」）。</p></details>
+<p>找長度 \(\ge k\) 的子陣列，最大化其中位數。</p>
+<details><summary>思路</summary><p>二分中位數 \(x\)，把 \(\ge x\) 記為 \(+1\)、\(<x\) 記為 \(-1\)：<br>\(\text{存在長度}\ge k\text{、中位數}\ge x\) \(\Longleftrightarrow\) \(\text{存在長度}\ge k\text{、元素和}>0\)。<br>接著用前綴和與前綴最小值在 \(O(n)\) 內判定。<b>「二分 + \(\pm1\) 轉化」是中位數最值題的萬能鑰匙</b>（同型：POJ 3579、各類「第 \(k\) 大最大化」）。</p></details>
 </div>
 
 <div class="problem" data-problem-id="poj-2728">
 <div class="p-head"><span class="stars s5">★★★★★</span><span class="p-title">01 分數規劃（最優比率生成樹/環）</span><span class="chip">二分+貪心</span><span class="chip">分數規劃</span></div>
-<p>最大化 Σa_i·x_i / Σb_i·x_i（選擇 x ∈ 可行集）。例：POJ 2728 最優比率生成樹、洛谷 P3199 最小圈。</p>
-<details><summary>思路</summary><p>二分比率 λ，判定「是否存在解使 Σ(a_i − λ·b_i)x_i ≥ 0」— 每個元素的權重變為 <code>a − λb</code>，判定問題退化成普通的最優化（做一次 MST／找負環／取前 k 大），可用貪心或標準演算法。Dinkelbach 迭代可加速。<b>參數化思想的巔峰：把非線性目標「線性化」後餵給貪心。</b></p></details>
+<p>最大化 \(\frac{\sum_i a_ix_i}{\sum_i b_ix_i}\)，其中 \(x\) 屬於可行集。例：POJ 2728 最優比率生成樹、洛谷 P3199 最小圈。</p>
+<details><summary>思路</summary><p>二分比率 \(\lambda\)，判定是否存在解使 \(\sum_i(a_i-\lambda b_i)x_i\ge0\)。每個元素的權重變為 \(a_i-\lambda b_i\)，判定問題退化成普通的最優化（做一次 MST／找負環／取前 \(k\) 大），可用貪心或標準演算法。Dinkelbach 迭代可加速。<b>參數化思想的巔峰：把非線性目標「線性化」後餵給貪心。</b></p></details>
 </div>

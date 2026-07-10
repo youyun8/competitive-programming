@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -55,26 +57,26 @@
 <h2>2.9 數位 DP</h2>
 
 <div class="callout idea"><b>🔍 數位 DP 在數什麼？</b>
-<p>把區間問題改成前綴函數 <code>solve(x)</code> = [0,x] 中合法數量，答案為 <code>solve(R)-solve(L-1)</code>。從高位到低位填數字，狀態至少含位置 pos 與描述限制所需的資訊；<code>tight</code> 表示目前前綴是否仍等於上界，<code>started</code> 表示是否已放過非前導零。只有 <code>tight=false</code> 的狀態能跨不同 x 的分支安全記憶化。</p></div>
+<p>把區間問題改成前綴函數 \(\mathrm{solve}(x)\)，表示 \([0,x]\) 中合法數量，答案為 \(\mathrm{solve}(R)-\mathrm{solve}(L-1)\)。從高位到低位填數字，狀態至少含位置 <code>pos</code> 與描述限制所需的資訊；<code>tight</code> 表示目前前綴是否仍等於上界，<code>started</code> 表示是否已放過非前導零。只有 <code>tight == false</code> 的狀態能跨不同 \(x\) 的分支安全記憶化。</p></div>
 
 <div class="tbl-wrap"><table>
 <tr><th>參數</th><th>作用</th><th>常見錯法</th></tr>
 <tr><td><code>pos</code></td><td>目前填到哪一位</td><td>位數方向與 base case 不一致</td></tr>
-<tr><td><code>tight</code></td><td>本位上限是 digit[pos] 還是 9</td><td>下一層寫成 <code>d==limit</code>，忘了還要且上原 tight</td></tr>
+<tr><td><code>tight</code></td><td>本位上限是 \(\mathrm{digit}[\mathrm{pos}]\) 還是 \(9\)</td><td>下一層寫成 <code>d == limit</code>，忘了還要且上原 <code>tight</code></td></tr>
 <tr><td><code>started</code></td><td>區分前導零與數字中的 0</td><td>把 0007 的零當真實數位計數</td></tr>
 <tr><td>問題狀態</td><td>前一位、餘數、出現集合、自動機節點等</td><td>漏掉會影響未來合法性的歷史</td></tr>
 </table></div>
 
 <div class="callout warn"><b>⚠ 0 是否算入答案？</b>
-<p>DFS 全程都不 started 的分支代表數字 0。它是否符合題意要在終點明確決定，不能靠前導零轉移碰運氣。含負區間也要先把正、負部分拆開，再依數位性質是否對絕對值對稱處理。</p></div>
+<p>DFS 全程都不 <code>started</code> 的分支代表數字 \(0\)。它是否符合題意要在終點明確決定，不能靠前導零轉移碰運氣。含負區間也要先把正、負部分拆開，再依數位性質是否對絕對值對稱處理。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>統計區間 [l, r] 內「數位滿足某性質」的數：差分成 solve(r) − solve(l−1)，然後<b>從最高位往低位逐位填數字</b>，狀態記「數位相關的性質」＋兩面旗：<b>tight</b>（前綴是否貼著上界，貼著則本位最多填到上界位）與 <b>lead</b>(前導零，尚未開始的數不該計入性質)。</p></div>
+<p>統計區間 \([l,r]\) 內「數位滿足某性質」的數：差分成 \(\mathrm{solve}(r)-\mathrm{solve}(l-1)\)，然後<b>從最高位往低位逐位填數字</b>，狀態記「數位相關的性質」＋兩面旗：<b>tight</b>（前綴是否貼著上界，貼著則本位最多填到上界位）與 <b>lead</b>（前導零，尚未開始的數不該計入性質）。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
-<li>上界大到 10¹⁸（不能枚舉），但條件只跟<b>數位</b>有關：含/不含某數字、數位和、相鄰數位關係、整除性。</li>
-<li>複雜度 = 位數 × 性質狀態數 × 10，幾乎永遠跑得飛快。</li>
+<li>上界大到 \(10^{18}\)（不能枚舉），但條件只跟<b>數位</b>有關：含／不含某數字、數位和、相鄰數位關係、整除性。</li>
+<li>複雜度為 \(O(\text{位數}\times\text{性質狀態數}\times10)\)，幾乎永遠跑得飛快。</li>
 </ul></div>
 
 <pre><code class="lang-cpp">// 統一模板（記憶化搜尋版）：只 cache「自由態」(!tight &amp;&amp; !lead) 的結果
@@ -101,32 +103,32 @@ long long dfs(int pos, int st, bool tight, bool lead) {
 
 <div class="problem" data-problem-id="luogu-p2657">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2657" target="_blank">洛谷 P2657 windy 數</a><span class="chip">數位</span></div>
-<p>相鄰數位之差至少為 2 的數，在 [a, b] 中有幾個？</p>
-<details><summary>思路</summary><p>模板直出：狀態 = 上一位數字（前導零時記「無」）。lead 旗在這題是<b>必要的</b>：007 的「0 → 0」不能算違規，因為數還沒開始。適合當第一道自己寫的數位 DP。</p></details>
+<p>相鄰數位之差至少為 \(2\) 的數，在 \([a,b]\) 中有幾個？</p>
+<details><summary>思路</summary><p>模板直出：狀態是上一位數字（前導零時記「無」）。<code>lead</code> 旗在這題是<b>必要的</b>：007 的前兩個零不能算違規，因為數還沒開始。適合當第一道自己寫的數位 DP。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p2602">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2602" target="_blank">洛谷 P2602 數字計數</a><span class="chip">數位</span><span class="chip">計數</span></div>
-<p>統計 [a, b] 中每個數字 0–9 各出現多少次。</p>
-<details><summary>思路</summary><p>對每個目標數字跑一次，狀態 = 目前已出現次數（或直接把「出現次數」當返回值的一部分：返回 (數的個數, 出現總次數) 二元組）。LC 233（數字 1 的個數）是單數字版。<b>「統計出現次數」而非「統計個數」時，讓 dfs 同時返回兩個量最不易錯。</b></p></details>
+<p>統計 \([a,b]\) 中每個數字 \(0\) 到 \(9\) 各出現多少次。</p>
+<details><summary>思路</summary><p>對每個目標數字跑一次，狀態是目前已出現次數；也可直接把「出現次數」當返回值的一部分，回傳 \((\text{數的個數},\text{出現總次數})\) 二元組。LC 233（數字 \(1\) 的個數）是單數字版。<b>「統計出現次數」而非「統計個數」時，讓 DFS 同時返回兩個量最不易錯。</b></p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-902">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/numbers-at-most-n-given-digit-set/" target="_blank">LC 902 最大為 N 的數字組合</a><span class="chip">數位</span></div>
-<p>只能用給定數字集合，能拼出多少個 ≤ N 的正整數？</p>
-<details><summary>思路</summary><p>tight 旗的純粹練習：貼上界時本位只能填 ≤ 對應位的數字，且「嚴格小於」的瞬間之後全自由（自由位直接乘 |D| 的冪）。位數比 N 短的數另外加總。</p></details>
+<p>只能用給定數字集合，能拼出多少個不超過 \(N\) 的正整數？</p>
+<details><summary>思路</summary><p><code>tight</code> 旗的純粹練習：貼上界時本位只能填不超過對應位的數字，且「嚴格小於」的瞬間之後全自由（自由位直接乘 \(|D|\) 的冪）。位數比 \(N\) 短的數另外加總。</p></details>
 </div>
 
 <div class="problem" data-problem-id="atcoder-dp-s">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_s" target="_blank">AtCoder DP S - Digit Sum</a><span class="chip">數位</span></div>
-<p>1..K（K ≤ 10^10000）中數位和被 D 整除的數有幾個？</p>
-<details><summary>思路</summary><p>狀態 = 數位和 mod D。特別之處是 K 長達一萬位——數位 DP 的複雜度只跟<b>位數</b>線性相關，天生就是為這種上界準備的。記得答案要扣掉 0。</p></details>
+<p>\(1\) 到 \(K\)（\(K\le10^{10000}\)）中數位和被 \(D\) 整除的數有幾個？</p>
+<details><summary>思路</summary><p>狀態是數位和模 \(D\)。特別之處是 \(K\) 長達一萬位——數位 DP 的複雜度只跟<b>位數</b>線性相關，天生就是為這種上界準備的。記得答案要扣掉 \(0\)。</p></details>
 </div>
 
 <div class="problem" data-problem-id="cf-55d">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/55/D" target="_blank">CF 55D Beautiful Numbers</a><span class="chip">數位</span><span class="chip">狀態壓縮</span></div>
 <p>統計能被自己每個非零數位整除的數。</p>
-<details><summary>思路</summary><p>「被每個出現的數位整除」⟺ 被它們的 lcm 整除。關鍵壓縮：1–9 任意組合的 lcm 都整除 <b>2520</b>，所以只需記（數 mod 2520、已出現數位的 lcm）。lcm 只有 48 種，離散化後狀態 20×2520×48。<b>「看似要記完整資訊，實則只需 mod 某個共同倍數」是數位 DP 最漂亮的壓縮範式。</b></p></details>
+<details><summary>思路</summary><p>「被每個出現的數位整除」等價於被它們的最小公倍數整除。關鍵壓縮：\(1\) 到 \(9\) 任意組合的最小公倍數都整除 \(2520\)，所以只需記 \((\text{數}\bmod2520,\text{已出現數位的最小公倍數})\)。最小公倍數只有 \(48\) 種，離散化後狀態數為 \(20\times2520\times48\)。<b>「看似要記完整資訊，實則只需模某個共同倍數」是數位 DP 最漂亮的壓縮範式。</b></p></details>
 </div>
 
 <div class="pagenav">
@@ -134,7 +136,7 @@ long long dfs(int pos, int st, bool tight, bool lead) {
 <a class="next" href="10-counting-expectation.html"><span class="dir">下一節 →</span>2.10 計數與期望 DP</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

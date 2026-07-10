@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../assets/site.css">
 <script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../assets/supabase-config.js"></script>
 <script src="../../../assets/progress.js"></script>
 </head>
@@ -69,14 +71,14 @@
 
 <div class="stage">
 <h3>第一階段 <span class="stars s1">★</span>–<span class="stars s2">★★</span>：建立狀態直覺（約 2 週）</h3>
-<p><b>目標</b>：能用一句話定義狀態、寫出轉移；分得清「前 i 個」與「以 i 結尾」。</p>
+<p><b>目標</b>：能用一句話定義狀態、寫出轉移；分得清「前 \(i\) 個」與「以 \(i\) 結尾」。</p>
 <ul>
-<li>線性入門：LC 70 → LC 198 → LC 53 → LC 300（先 O(n²) 再二分版）</li>
+<li>線性入門：LC 70 → LC 198 → LC 53 → LC 300（先 \(O(n^2)\) 再二分版）</li>
 <li>網格：LC 62 → LC 64 → 洛谷 P1216 數字三角形</li>
 <li>背包兩件套：採藥（P1048）、疯狂的采药（P1616）——親手體會枚舉方向那一字之差</li>
 <li>計數初體驗：LC 96、LC 494</li>
 </ul>
-<p class="small">✅ 畢業檢定：獨立寫出 LC 300 的 O(n log n) 解，並解釋 g 陣列的含義。</p>
+<p class="small">✅ 畢業檢定：獨立寫出 LC 300 的 \(O(n\log n)\) 解，並解釋 \(g\) 陣列的含義。</p>
 </div>
 
 <div class="stage">
@@ -95,10 +97,10 @@
 
 <div class="stage">
 <h3>第三階段 <span class="stars s4">★★★★</span>：優化技術與組合技（約 1–2 月）</h3>
-<p><b>目標</b>：看到 O(n²) 轉移能判斷用哪種優化；換根、期望進階、狀壓進階不再現場發明。</p>
+<p><b>目標</b>：看到 \(O(n^2)\) 轉移能判斷用哪種優化；換根、期望進階、狀壓進階不再現場發明。</p>
 <ul>
 <li>優化四連：AtCoder DP M（前綴和）→ 琪露諾（P1725，單調佇列）→ 玩具裝箱（P3195，斜率）→ Post Office（POJ 1160，Knuth）</li>
-<li>單調佇列實戰：股票交易（P2569）、多重背包 O(nW)（P1776 重做）</li>
+<li>單調佇列實戰：股票交易（P2569）、多重背包 \(O(nW)\)（P1776 重做）</li>
 <li>換根：P3478 → CF 1187E → AtCoder DP V</li>
 <li>狀壓進階：炮兵陣地（P2704）、憤怒的小鳥（P2831）、蒙德里安（POJ 2411）</li>
 <li>期望進階：OSU!（P1365）、換教室（P1850）、收集郵票（P4550）</li>
@@ -119,14 +121,14 @@
 <li>複合狀態：GT 考試（P3193，自動機×矩陣冪）→ DP 套 DP（遊園會，P4590）</li>
 <li>凸性：slope trick（CF 713C）——與貪心指南 2.11.2 對讀</li>
 </ul>
-<p class="small">✅ 畢業檢定：對一道陌生的「恰好 k 個」最優化題，能先驗證凸性、再完整實作 wqs 二分（含相同值的邊界處理）。</p>
+<p class="small">✅ 畢業檢定：對一道陌生的「恰好 \(k\) 個」最優化題，能先驗證凸性、再完整實作 wqs 二分（含相同值的邊界處理）。</p>
 </div>
 
 <div class="pagenav">
 <a class="prev" href="method.html"><span class="dir">← 上一節</span>4. 狀態設計方法論</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

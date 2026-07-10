@@ -2,17 +2,17 @@
 
 <div class="tbl-wrap"><table>
 <tr><th>目標</th><th>常用轉移</th><th>不可達格</th><th>初值</th></tr>
-<tr><td>路徑數</td><td>前驅方案數相加</td><td>0</td><td>起點 = 1</td></tr>
-<tr><td>最小代價</td><td>前驅取 min 再加本格</td><td>+INF</td><td>起點 = 本格代價</td></tr>
-<tr><td>最大收益</td><td>前驅取 max 再加本格</td><td>−INF</td><td>起點 = 本格收益</td></tr>
+<tr><td>路徑數</td><td>前驅方案數相加</td><td>\(0\)</td><td>\(\text{起點}=1\)</td></tr>
+<tr><td>最小代價</td><td>前驅取最小值再加本格</td><td>\(+\infty\)</td><td>\(\text{起點}=\text{本格代價}\)</td></tr>
+<tr><td>最大收益</td><td>前驅取最大值再加本格</td><td>\(-\infty\)</td><td>\(\text{起點}=\text{本格收益}\)</td></tr>
 <tr><td>多人同步</td><td>同一步數下枚舉每人的前驅</td><td>越界／衝突依題意處理</td><td>所有人同在起點</td></tr>
 </table></div>
 
 <div class="callout warn"><b>⚠ 網格不等於一定能 DP</b>
-<p>真正的判準是移動關係能否排成拓撲序。只能右／下時，<code>i+j</code> 每步嚴格增加，所以依賴無環；四方向自由移動時，同一格可能繞回，應改成 BFS／Dijkstra。若題目另給「步數 k」且每次 k 增加，則即使座標能回頭，狀態 <code>(k,i,j)</code> 仍可能無環。初始化時推薦在表外放哨兵（最小化放 +INF、最大化放 −INF），避免第一行第一列充滿分支特判。</p></div>
+<p>真正的判準是移動關係能否排成拓撲序。只能右／下時，\(i+j\) 每步嚴格增加，所以依賴無環；四方向自由移動時，同一格可能繞回，應改成 BFS／Dijkstra。若題目另給「步數 \(k\)」且每次 \(k\) 增加，則即使座標能回頭，狀態 \((k,i,j)\) 仍可能無環。初始化時推薦在表外放哨兵（最小化放 \(+\infty\)、最大化放 \(-\infty\)），避免第一行第一列充滿分支特判。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>狀態就是座標 (i, j)，轉移來自固定方向的鄰居（上方、左方）。只要移動方向不構成環（只能往右/往下），網格天然就是一張 DAG，按行列順序填表即可。</p></div>
+<p>狀態就是座標 \((i,j)\)，轉移來自固定方向的鄰居（上方、左方）。只要移動方向不構成環（只能往右/往下），網格天然就是一張 DAG，按行列順序填表即可。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
@@ -22,8 +22,8 @@
 
 <div class="problem" data-problem-id="lc-62">
 <div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/unique-paths/" target="_blank">LC 62 不同路徑</a><span class="chip">網格</span><span class="chip">計數</span></div>
-<p>m×n 網格從左上走到右下（只能右/下），路徑數？</p>
-<details><summary>思路</summary><p>dp[i][j] = dp[i−1][j] + dp[i][j−1]，邊界第一行第一列全為 1。有障礙的 LC 63 只是把障礙格設 0。組合數 C(m+n−2, m−1) 是它的封閉解——DP 與組合計數常常互為驗算。</p></details>
+<p>\(m\times n\) 網格從左上走到右下（只能右／下），路徑數？</p>
+<details><summary>思路</summary><p>\(\mathrm{dp}[i][j]=\mathrm{dp}[i-1][j]+\mathrm{dp}[i][j-1]\)，邊界第一行第一列全為 \(1\)。有障礙的 LC 63 只是把障礙格設 \(0\)。組合數 \(\binom{m+n-2}{m-1}\) 是它的封閉解——DP 與組合計數常常互為驗算。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">vector&lt;long long&gt; dp(n, 1);
 for (int i = 1; i &lt; m; i++)
@@ -35,18 +35,18 @@ return dp[n - 1];</code></pre></details>
 <div class="problem" data-problem-id="lc-64">
 <div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/minimum-path-sum/" target="_blank">LC 64 最小路徑和</a><span class="chip">網格</span></div>
 <p>同樣的走法，最小化路徑上數字總和。</p>
-<details><summary>思路</summary><p>把計數的「+」換成最值的「min」：dp[i][j] = min(dp[i−1][j], dp[i][j−1]) + a[i][j]。<b>計數與最值共用同一套狀態</b>，只差運算子——這個對應關係全書通用。洛谷 P1216 數字三角形是同型入門題。</p></details>
+<details><summary>思路</summary><p>把計數的加法換成最小值：\(\mathrm{dp}[i][j]=\min\left(\mathrm{dp}[i-1][j],\mathrm{dp}[i][j-1]\right)+a_{i,j}\)。<b>計數與最值共用同一套狀態</b>，只差運算子——這個對應關係全書通用。洛谷 P1216 數字三角形是同型入門題。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-174">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/dungeon-game/" target="_blank">LC 174 地下城遊戲</a><span class="chip">網格</span><span class="chip">倒推</span></div>
-<p>騎士從左上走到右下救公主，路上有加血/扣血，血量任何時刻不得 ≤ 0，求最小初始血量。</p>
-<details><summary>思路</summary><p>無後效性的實戰課。正著推需要同時記「目前血量」與「歷史最低點」，狀態糾纏；<b>倒著定義</b>就解耦了：dp[i][j] = 從 (i,j) 出發活著到終點所需的最小血量 = max(1, min(dp[i+1][j], dp[i][j+1]) − a[i][j])。<b>正推卡住時，試著把狀態定義成「從這裡出發」而非「走到這裡」。</b></p></details>
+<p>騎士從左上走到右下救公主，路上有加血／扣血，血量任何時刻必須大於 \(0\)，求最小初始血量。</p>
+<details><summary>思路</summary><p>無後效性的實戰課。正著推需要同時記「目前血量」與「歷史最低點」，狀態糾纏；<b>倒著定義</b>就解耦了：\(\mathrm{dp}[i][j]\) 是從 \((i,j)\) 出發活著到終點所需的最小血量，轉移為 \(\mathrm{dp}[i][j]=\max\left(1,\min\left(\mathrm{dp}[i+1][j],\mathrm{dp}[i][j+1]\right)-a_{i,j}\right)\)。<b>正推卡住時，試著把狀態定義成「從這裡出發」而非「走到這裡」。</b></p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int i = m - 1; i &gt;= 0; i--)
     for (int j = n - 1; j &gt;= 0; j--) {
         long long need = min(dp[i + 1][j], dp[i][j + 1]) -
-                         a[i][j];  // 邊界外設 INF、終點外側設 1
+            a[i][j];  // 邊界外設 INF、終點外側設 1
         dp[i][j] = max(1LL, need);
     }</code></pre></details>
 </div>
@@ -54,7 +54,7 @@ return dp[n - 1];</code></pre></details>
 <div class="problem" data-problem-id="luogu-p1004">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1004" target="_blank">洛谷 P1004 方格取數</a><span class="chip">網格</span><span class="chip">雙路徑</span></div>
 <p>從左上到右下走兩趟，取過的數變 0，最大化兩趟總和。</p>
-<details><summary>思路</summary><p>兩趟改成<b>兩人同時走</b>：走 k 步後兩人都在反對角線 i+j=k 上，狀態 dp[k][x1][x2]（y 由 k−x 算出）——四維壓成三維。重疊格只算一次。同型題「傳紙條」（P1006）完全同構。<b>「多趟」問題幾乎都該轉成「多人同步」</b>，否則第一趟的選擇對第二趟有後效性。</p></details>
+<details><summary>思路</summary><p>兩趟改成<b>兩人同時走</b>：走 \(k\) 步後兩人都在反對角線 \(i+j=k\) 上，狀態為 \(\mathrm{dp}[k][x_1][x_2]\)，而 \(y\) 由 \(k-x\) 算出，於是四維壓成三維。重疊格只算一次。同型題「傳紙條」（P1006）完全同構。<b>「多趟」問題幾乎都該轉成「多人同步」</b>，否則第一趟的選擇對第二趟有後效性。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int k = 2; k &lt;= 2 * n; k++)
     for (int x1 = 1; x1 &lt;= min(k - 1, n); x1++)
@@ -65,7 +65,7 @@ return dp[n - 1];</code></pre></details>
             int gain = a[x1][y1] + (x1 == x2 ? 0 : a[x2][y2]);
             dp[k][x1][x2] =
                 max({dp[k - 1][x1][x2], dp[k - 1][x1 - 1][x2],
-                     dp[k - 1][x1][x2 - 1], dp[k - 1][x1 - 1][x2 - 1]}) +
+                    dp[k - 1][x1][x2 - 1], dp[k - 1][x1 - 1][x2 - 1]}) +
                 gain;
         }</code></pre></details>
 </div>

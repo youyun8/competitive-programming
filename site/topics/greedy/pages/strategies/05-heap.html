@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -62,15 +64,15 @@
 <tr><td>維護目前選擇集合</td><td>加入後若違規便 pop 最差者</td><td>每個前綴下集合保持最優（見 2.4）</td></tr>
 </table></div>
 
-<p>複雜度按 heap 操作次數計算：每個元素若只 push／pop 常數次，總計 O(n log n)；懶刪除時同一元素可能出現舊版本，取頂前必須用 id／時間戳剔除失效項。</p>
+<p>複雜度按 heap 操作次數計算：每個元素若只 push／pop 常數次，總計 \(O(n\log n)\)；懶刪除時同一元素可能出現舊版本，取頂前必須用 id／時間戳剔除失效項。</p>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>貪心策略是「每一步取全域最小（或最大）的元素合併/處理」，且處理後會產生新元素回到候選池 — 用 heap 維護候選池，總複雜度 <code>O(n log n)</code>。</p></div>
+<p>貪心策略是「每一步取全域最小（或最大）的元素合併／處理」，且處理後會產生新元素回到候選池 — 用 heap 維護候選池，總複雜度為 \(O(n\log n)\)。</p></div>
 
 <div class="problem" data-problem-id="luogu-p1090">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1090" target="_blank">洛谷 P1090 合併果子（Huffman）</a><span class="chip">堆</span><span class="chip">Huffman</span></div>
 <p>每次合併兩堆果子，代價為兩堆重量和，求合併成一堆的最小總代價。</p>
-<details><summary>思路</summary><p>每次取<b>最小的兩堆</b>合併 — 即 Huffman 樹構造。證明（交換論證）：最小的兩個元素必然可以是最優樹中深度最深的一對兄弟 — 若不是，把它們與最深處的元素交換，總代價（Σ 重量×深度）不增。合併次序對應樹形，貪心構造即最優前綴碼，這也是資訊理論中 Huffman 編碼最優性的來源。</p></details>
+<details><summary>思路</summary><p>每次取<b>最小的兩堆</b>合併 — 即 Huffman 樹構造。證明（交換論證）：最小的兩個元素必然可以是最優樹中深度最深的一對兄弟；若不是，把它們與最深處的元素交換，總代價 \(\sum_i \text{重量}_i\cdot\text{深度}_i\) 不增。合併次序對應樹形，貪心構造即最優前綴碼，這也是資訊理論中 Huffman 編碼最優性的來源。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq(w.begin(), w.end());
 long long cost = 0;
@@ -86,19 +88,19 @@ while (pq.size() &gt; 1) {
 
 <div class="problem" data-problem-id="luogu-p2168">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2168" target="_blank">洛谷 P2168 [NOI2015] 荷馬史詩（k 叉 Huffman）</a><span class="chip">堆</span><span class="chip">Huffman</span><span class="chip">構造</span></div>
-<p>k 進位前綴編碼，最小化總長度，並在最小總長下最小化最長編碼。</p>
-<details><summary>思路</summary><p>k 叉 Huffman：每次合併 k 個最小的。<b>關鍵技巧</b>：若 <code>(n−1) mod (k−1) ≠ 0</code>，先補權值為 0 的虛擬節點湊齊，保證每次都能滿 k 合併（否則根附近會浪費短編碼）。第二關鍵字：堆中同權值時取「樹高最小」者合併，即可同時最小化最深深度。</p></details>
+<p>\(k\) 進位前綴編碼，最小化總長度，並在最小總長下最小化最長編碼。</p>
+<details><summary>思路</summary><p>\(k\) 叉 Huffman：每次合併 \(k\) 個最小的。<b>關鍵技巧</b>：若 \((n-1)\bmod(k-1)\ne0\)，先補權值為 0 的虛擬節點湊齊，保證每次都能滿 \(k\) 合併（否則根附近會浪費短編碼）。第二關鍵字：堆中同權值時取「樹高最小」者合併，即可同時最小化最深深度。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-295">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/find-median-from-data-stream/" target="_blank">LC 295 數據流中位數（對頂堆）</a><span class="chip">堆</span><span class="chip">中位數</span></div>
-<details><summary>思路</summary><p>大根堆存小的一半、小根堆存大的一半，兩堆大小差 ≤ 1，中位數在堆頂。這個「對頂堆」結構是許多貪心題的載體（如 2.7 的中位數貪心需要動態中位數、slope trick 的可合併堆雛形）。滑動視窗版需要延遲刪除或 multiset。</p></details>
+<details><summary>思路</summary><p>大根堆存小的一半、小根堆存大的一半，兩堆大小差 \(\le1\)，中位數在堆頂。這個「對頂堆」結構是許多貪心題的載體（如 2.7 的中位數貪心需要動態中位數、slope trick 的可合併堆雛形）。滑動視窗版需要延遲刪除或 multiset。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p1631">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1631" target="_blank">洛谷 P1631 序列合併（k 路歸併）</a><span class="chip">堆</span><span class="chip">多路歸併</span></div>
-<p>兩個長度 n 的遞增序列，n² 個和中最小的 n 個。</p>
-<details><summary>思路</summary><p>堆中放 <code>(a_i + b_1, i, 1)</code>，彈出 <code>(i, j)</code> 時推入 <code>(i, j+1)</code> — 把 n² 個候選組織成 n 條有序鏈做 k 路歸併。同型：LC 373、Super Ugly Number、CF「第 k 小的 XXX」系列。核心辨識：<b>候選集合呈笛卡兒積/指數大，但可以分層有序生成</b>。</p></details>
+<p>兩個長度為 \(n\) 的遞增序列，在 \(n^2\) 個和中找最小的 \(n\) 個。</p>
+<details><summary>思路</summary><p>堆中放 \((a_i+b_1,i,1)\)，彈出 \((i,j)\) 時推入 \((i,j+1)\) — 把 \(n^2\) 個候選組織成 \(n\) 條有序鏈做 \(k\) 路歸併。同型：LC 373、Super Ugly Number、CF「第 \(k\) 小的 XXX」系列。核心辨識：<b>候選集合呈笛卡兒積／指數大，但可以分層有序生成</b>。</p></details>
 </div>
 
 <div class="pagenav">
@@ -106,7 +108,7 @@ while (pq.size() &gt; 1) {
 <a class="next" href="06-lexicographic.html"><span class="dir">下一節 →</span>2.6 字典序貪心</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

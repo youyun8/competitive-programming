@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -55,58 +57,58 @@
 <h2>2.5 雙序列 DP</h2>
 
 <div class="callout idea"><b>🧭 把 dp 表看成「對齊路徑」</b>
-<p>在 (n+1)×(m+1) 的格點圖上，<code>(i,j)</code> 表示兩序列各消耗了 i、j 個元素。向下代表跳過 A[i]，向右代表跳過 B[j]，斜走代表把兩個元素配對或替換。LCS 是在斜走且字元相等時得 1 分；編輯距離則讓橫、直、斜三種操作各有成本。這個幾何觀點能直接推導轉移，也能用倒走格點路徑還原一組對齊方案。</p></div>
+<p>在 \((n+1)\times(m+1)\) 的格點圖上，\((i,j)\) 表示兩序列各消耗了 \(i,j\) 個元素。向下代表跳過 \(A_i\)，向右代表跳過 \(B_j\)，斜走代表把兩個元素配對或替換。LCS 是在斜走且字元相等時得 \(1\) 分；編輯距離則讓橫、直、斜三種操作各有成本。這個幾何觀點能直接推導轉移，也能用倒走格點路徑還原一組對齊方案。</p></div>
 
 <div class="tbl-wrap"><table>
 <tr><th>問題</th><th>斜走</th><th>橫／直走</th><th>邊界</th></tr>
 <tr><td>LCS</td><td>相等才配對並 +1</td><td>跳過其中一端</td><td>任一空序列答案 0</td></tr>
-<tr><td>編輯距離</td><td>相等 +0，否則替換 +1</td><td>插入／刪除 +1</td><td><code>dp[i][0]=i</code>、<code>dp[0][j]=j</code></td></tr>
-<tr><td>交錯字串</td><td>不使用</td><td>從 A 或 B 取下一字元</td><td>由 <code>i+j</code> 推出第三下標</td></tr>
+<tr><td>編輯距離</td><td>相等 \(+0\)，否則替換 \(+1\)</td><td>插入／刪除 \(+1\)</td><td>\(\mathrm{dp}[i][0]=i\)、\(\mathrm{dp}[0][j]=j\)</td></tr>
+<tr><td>交錯字串</td><td>不使用</td><td>從 \(A\) 或 \(B\) 取下一字元</td><td>由 \(i+j\) 推出第三下標</td></tr>
 <tr><td>雙序列計數</td><td>依配對規則加／乘</td><td>必須設計去重規則</td><td>空前綴常是唯一空方案</td></tr>
 </table></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>dp[i][j] = 「序列 A 的前 i 個」與「序列 B 的前 j 個」的答案。轉移枚舉兩序列末端字元的處置方式（配對 / 各自跳過），永遠只有常數種，複雜度 O(nm)。</p></div>
+<p>\(\mathrm{dp}[i][j]\) 是「序列 \(A\) 的前 \(i\) 個」與「序列 \(B\) 的前 \(j\) 個」的答案。轉移枚舉兩序列末端字元的處置方式（配對／各自跳過），永遠只有常數種，複雜度 \(O(nm)\)。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
 <li>兩條字串/序列之間的比較、對齊、匹配、轉換。</li>
-<li>關鍵不變量：<b>處理完前綴 (i, j) 後，剩下的問題只跟後綴有關</b>。</li>
+<li>關鍵不變量：<b>處理完前綴 \((i,j)\) 後，剩下的問題只跟後綴有關</b>。</li>
 </ul></div>
 
 <div class="problem" data-problem-id="lc-1143">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/longest-common-subsequence/" target="_blank">LC 1143 最長公共子序列（LCS）</a><span class="chip">雙序列</span></div>
 <p>兩字串的最長公共子序列長度。</p>
-<details><summary>思路</summary><p>a[i]==b[j] → dp[i−1][j−1]+1；否則 max(dp[i−1][j], dp[i][j−1])。雙序列 DP 的原型。<b>還原方案</b>：從 dp[n][m] 倒走，看每步是哪個轉移貢獻的。</p></details>
+<details><summary>思路</summary><p>若 \(a_i=b_j\)，則 \(\mathrm{dp}[i][j]=\mathrm{dp}[i-1][j-1]+1\)；否則 \(\mathrm{dp}[i][j]=\max\left(\mathrm{dp}[i-1][j],\mathrm{dp}[i][j-1]\right)\)。這是雙序列 DP 的原型。<b>還原方案</b>：從 \(\mathrm{dp}[n][m]\) 倒走，看每步是哪個轉移貢獻的。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int i = 1; i &lt;= n; i++)
     for (int j = 1; j &lt;= m; j++)
         dp[i][j] = (a[i - 1] == b[j - 1]) ? dp[i - 1][j - 1] + 1
-                                          : max(dp[i - 1][j], dp[i][j - 1]);</code></pre></details>
+            : max(dp[i - 1][j], dp[i][j - 1]);</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p1439">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1439" target="_blank">洛谷 P1439 排列 LCS</a><span class="chip">雙序列</span><span class="chip">問題轉化</span></div>
-<p>兩個 1..n 的排列求 LCS，n ≤ 10⁵——O(nm) 過不了。</p>
-<details><summary>思路</summary><p>排列的特殊性：元素兩兩相異。把 B 的每個元素改寫成「它在 A 中的位置」，<b>LCS 就變成 LIS</b>（公共子序列 ⟺ 在兩邊都遞增的位置序列），套 O(n log n)。「利用輸入的特殊結構把模型換掉」是 ★★★ 之後的常態。</p></details>
+<p>兩個 \(1\) 到 \(n\) 的排列求 LCS，\(n \le 10^5\)——\(O(nm)\) 過不了。</p>
+<details><summary>思路</summary><p>排列的特殊性：元素兩兩相異。把 \(B\) 的每個元素改寫成「它在 \(A\) 中的位置」，<b>LCS 就變成 LIS</b>（公共子序列等價於在兩邊都遞增的位置序列），套 \(O(n\log n)\)。「利用輸入的特殊結構把模型換掉」是 ★★★ 之後的常態。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-72">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/edit-distance/" target="_blank">LC 72 編輯距離</a><span class="chip">雙序列</span></div>
 <p>插入/刪除/替換，把 A 變成 B 的最少操作數。</p>
-<details><summary>思路</summary><p>三種操作對應三個轉移：dp[i][j] = min(dp[i−1][j]+1（刪）, dp[i][j−1]+1（插）, dp[i−1][j−1]+[a≠b]（替換/免費）)。邊界 dp[i][0]=i、dp[0][j]=j。工業界（diff、拼寫校正）與競賽通吃的經典。</p></details>
+<details><summary>思路</summary><p>三種操作對應三個轉移：\(\mathrm{dp}[i][j]=\min\left(\mathrm{dp}[i-1][j]+1,\mathrm{dp}[i][j-1]+1,\mathrm{dp}[i-1][j-1]+[a_i\ne b_j]\right)\)，分別是刪除、插入、替換／免費匹配。邊界為 \(\mathrm{dp}[i][0]=i\)、\(\mathrm{dp}[0][j]=j\)。工業界（diff、拼寫校正）與競賽通吃的經典。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-115">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/distinct-subsequences/" target="_blank">LC 115 不同的子序列</a><span class="chip">雙序列</span><span class="chip">計數</span></div>
 <p>A 的子序列中等於 B 的個數。</p>
-<details><summary>思路</summary><p>計數版雙序列：dp[i][j] = A 前 i 個裡湊出 B 前 j 個的方案數 = dp[i−1][j]（不用 a[i]）+ [a[i]==b[j]]·dp[i−1][j−1]（用）。<b>計數 DP 的鐵律：每個方案恰好被一條轉移路徑數到一次</b>——這裡按「a[i] 用不用」分類，天然不重不漏。</p></details>
+<details><summary>思路</summary><p>計數版雙序列：\(\mathrm{dp}[i][j]\) 是 \(A\) 前 \(i\) 個裡湊出 \(B\) 前 \(j\) 個的方案數，轉移為 \(\mathrm{dp}[i][j]=\mathrm{dp}[i-1][j]+[a_i=b_j]\mathrm{dp}[i-1][j-1]\)。兩項分別代表不用或使用 \(a_i\)。<b>計數 DP 的鐵律：每個方案恰好被一條轉移路徑數到一次</b>——這裡按「\(a_i\) 用不用」分類，天然不重不漏。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-44">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/wildcard-matching/" target="_blank">LC 44 萬用字元匹配</a><span class="chip">雙序列</span><span class="chip">匹配</span></div>
 <p>模式含 <code>?</code>（單字元）與 <code>*</code>（任意長度串），判斷全串匹配。</p>
-<details><summary>思路</summary><p>dp[i][j] = s 前 i 個能否匹配 p 前 j 個。<code>*</code> 的轉移：dp[i][j] = dp[i][j−1]（* 匹配空）|| dp[i−1][j]（* 多吞一個字元）。難度再上一級的 LC 10 正則版：<code>x*</code> 是整體單位，轉移分「匹配零次」dp[i][j−2] 與「再吞一個」dp[i−1][j]（需 s[i] 與 x 相容）。</p></details>
+<details><summary>思路</summary><p>\(\mathrm{dp}[i][j]\) 表示 \(s\) 前 \(i\) 個能否匹配 \(p\) 前 \(j\) 個。<code>*</code> 的轉移為 \(\mathrm{dp}[i][j]=\mathrm{dp}[i][j-1]\lor\mathrm{dp}[i-1][j]\)，兩項分別代表匹配空字串與多吞一個字元。難度再上一級的 LC 10 正則版：<code>x*</code> 是整體單位，轉移分「匹配零次」\(\mathrm{dp}[i][j-2]\) 與「再吞一個」\(\mathrm{dp}[i-1][j]\)（需 \(s_i\) 與 \(x\) 相容）。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">dp[0][0] = true;
 for (int j = 1; j &lt;= m; j++)
@@ -122,7 +124,7 @@ for (int i = 1; i &lt;= n; i++)
 <div class="problem" data-problem-id="lc-97">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/interleaving-string/" target="_blank">LC 97 交錯字串</a><span class="chip">雙序列</span></div>
 <p>C 能否由 A、B 保序交錯而成？</p>
-<details><summary>思路</summary><p>狀態設計練習：C 的前 i+j 個由 A 前 i 個與 B 前 j 個組成——<b>第三條序列的下標是導出量，不用進狀態</b>。dp[i][j] = (dp[i−1][j] &amp;&amp; a[i]==c[i+j]) || (dp[i][j−1] &amp;&amp; b[j]==c[i+j])。貪心（誰匹配就先吃誰）在這題有反例，值得親手構造。</p></details>
+<details><summary>思路</summary><p>狀態設計練習：\(C\) 的前 \(i+j\) 個由 \(A\) 前 \(i\) 個與 \(B\) 前 \(j\) 個組成——<b>第三條序列的下標是導出量，不用進狀態</b>。轉移為 \(\mathrm{dp}[i][j]=\left(\mathrm{dp}[i-1][j]\land a_i=c_{i+j}\right)\lor\left(\mathrm{dp}[i][j-1]\land b_j=c_{i+j}\right)\)。貪心（誰匹配就先吃誰）在這題有反例，值得親手構造。</p></details>
 </div>
 
 <div class="pagenav">
@@ -130,7 +132,7 @@ for (int i = 1; i &lt;= n; i++)
 <a class="next" href="06-state-machine.html"><span class="dir">下一節 →</span>2.6 狀態機 DP</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

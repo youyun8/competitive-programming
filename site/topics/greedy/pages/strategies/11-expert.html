@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -63,21 +65,21 @@
 <p>擬陣必須驗證遺傳性與交換公理；slope trick 必須先證明值函數保持凸；排序後 DP 必須證明任一選定子集都存在同一鍵值的最優順序。任一前提不成立，短模板都可能產生看似合理的錯解。建議與 DP 的 2.12、2.13 對讀並保留暴力對拍。</p></div>
 
 <h3 id="s2-11-1">2.11.1 擬陣（Matroid）：貪心正確性的統一理論</h3>
-<p>擬陣 <code>M = (E, I)</code>：元素全集 E 與「獨立集」族 I，滿足（1）遺傳性：獨立集的子集獨立；（2）交換公理：|A| &lt; |B| 且皆獨立 ⇒ 存在 x ∈ B\A 使 A∪{x} 獨立。</p>
+<p>擬陣 \(M=(E,\mathcal I)\)：元素全集 \(E\) 與獨立集族 \(\mathcal I\)，滿足：（1）遺傳性：獨立集的子集獨立；（2）交換公理：若 \(|A|<|B|\) 且 \(A,B\in\mathcal I\)，則存在 \(x\in B\setminus A\) 使 \(A\cup\{x\}\in\mathcal I\)。</p>
 <div class="callout proof"><b>🧾 Rado–Edmonds 定理</b>
 <p>在擬陣上「按權重降序、能加就加」的貪心必得最大權基；反之，若一個獨立系統對<b>所有</b>權重函數貪心都正確，它必是擬陣。— 這給了「貪心何時必然正確」的完整刻畫。</p></div>
 <ul>
 <li><b>圖形擬陣</b>（無環邊集）→ Kruskal 正確性。</li>
 <li><b>分割擬陣 / 橫貫擬陣</b> → Job Sequencing（2.9）按報酬降序能排就排的正確性。</li>
-<li><b>擬陣交</b>：兩個擬陣的公共獨立集最大化（如彩色生成樹 = 圖形擬陣 ∩ 分割擬陣），有多項式演算法（增廣路），但已超出貪心 — 知道邊界在哪本身就是專家素養。CF 話題題：CF 1284G。</li>
+<li><b>擬陣交</b>：兩個擬陣的公共獨立集最大化（如彩色生成樹 \(=\) 圖形擬陣 \(\cap\) 分割擬陣），有多項式演算法（增廣路），但已超出貪心 — 知道邊界在哪本身就是專家素養。CF 話題題：CF 1284G。</li>
 </ul>
 
 <h3 id="s2-11-2">2.11.2 Slope Trick：凸函數 DP 的貪心壓縮</h3>
 <div class="problem" data-problem-id="cf-713c">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/713/C" target="_blank">CF 713C Sonya and Problem Wihtout a Legend</a><span class="chip">slope trick</span><span class="chip">堆</span></div>
-<p>每次操作 ±1，把序列改成嚴格遞增，最小總操作數。</p>
-<details><summary>提示</summary><p>嚴格遞增先做變換 <code>a_i −= i</code> 化為非嚴格。定義 <code>f_i(x)</code> = 前 i 項、第 i 項改為 ≤ x 時的最小代價 — 它是關於 x 的凸的分段線性函數。</p></details>
-<details><summary>思路</summary><p>轉移 <code>f_i(x) = min_{y≤x} [f_{i−1}(y)] + |a_i − x|</code>。凸函數的「前綴 min」= 砍掉右半上升段；「+|a−x|」= 左右各加一個斜率轉折點。<b>用大根堆存左半段的斜率轉折點集合</b>：每步 push a_i 兩次、若堆頂 &gt; a_i 則答案累加 <code>top − a_i</code> 並彈出替換。整套操作把 O(n·V) 的 DP 壓成 O(n log n) 貪心。</p></details>
+<p>每次操作 \(\pm1\)，把序列改成嚴格遞增，最小化總操作數。</p>
+<details><summary>提示</summary><p>嚴格遞增先做變換 \(a_i\gets a_i-i\) 化為非嚴格。定義 \(f_i(x)\) 為前 \(i\) 項中，第 \(i\) 項改為 \(\le x\) 時的最小代價；它是關於 \(x\) 的凸分段線性函數。</p></details>
+<details><summary>思路</summary><p>轉移為 \(f_i(x)=\min_{y\le x}f_{i-1}(y)+|a_i-x|\)。凸函數的「前綴最小值」等於砍掉右半上升段；加上 \(|a_i-x|\) 則等於左右各增加一個斜率轉折點。<b>用大根堆存左半段的斜率轉折點集合</b>：每步 push \(a_i\) 兩次、若堆頂 \(>a_i\)，則答案累加 \(\text{top}-a_i\) 並彈出替換。整套操作把 \(O(nV)\) 的 DP 壓成 \(O(n\log n)\) 貪心。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">priority_queue&lt;long long&gt; L;  // 凸函數左半段斜率轉折點
 long long ans = 0;
@@ -94,7 +96,7 @@ for (int i = 0; i &lt; n; i++) {
 <p>進階應用：APIO 2016 烟花表演（樹上 slope trick，用可並堆合併子樹的凸函數）、ABC 217H。辨識特徵：<b>代價為絕對值/分段線性、狀態值域大、DP 關於值域是凸的</b>。</p>
 
 <h3 id="s2-11-3">2.11.3 交換論證 × DP 的一般化</h3>
-<p>2.3 的「Tower」模式推廣：當問題 =「選子集 + 定順序」時，先用相鄰交換論證證明<b>存在最優解按某鍵有序</b>，把順序維度消掉，再對排序後的序列 DP。訓練重點是推導鍵值的代數功力：把「i 在 j 前可行/更優」的條件化成 <code>g(i) ≤ g(j)</code> 的形式。同型：洛谷 P1417 烹調方案（鍵 b_i·c_j 交叉比較）、CF 1203F。</p>
+<p>2.3 的「Tower」模式推廣：當問題是「選子集 + 定順序」時，先用相鄰交換論證證明<b>存在最優解按某鍵有序</b>，把順序維度消掉，再對排序後的序列 DP。訓練重點是推導鍵值的代數功力：把「\(i\) 在 \(j\) 前可行／更優」的條件化成 \(g(i)\le g(j)\) 的形式。同型：洛谷 P1417 烹調方案（鍵 \(b_ic_j\) 交叉比較）、CF 1203F。</p>
 
 <h3 id="s2-11-4">2.11.4 對抗式貪心（博弈中的貪心）</h3>
 <p>輪流行動的博弈裡，「雙方都貪心拿當前最大」在<b>可加性目標</b>下常是最優（如 CF 談判分糖果：排序後輪流取），證明用策略交換。但存在後手結構（取走影響未來選項）時貪心失效需要博弈 DP — 分辨兩者的試金石：<b>你的選擇會不會改變對手未來選項的「相對」價值</b>。例：LC 1690、CF 1539E。</p>
@@ -102,8 +104,8 @@ for (int i = 0; i &lt; n; i++) {
 <h3 id="s2-11-5">2.11.5 反悔貪心 ⇄ 模擬費用流</h3>
 <div class="problem" data-problem-id="cf-802o">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P6122" target="_blank">洛谷 P6122 [NOI Online #1] 隊長的技能 / CF 802O April Fools' Problem</a><span class="chip">模擬費用流</span><span class="chip">反悔貪心</span><span class="chip">二分</span></div>
-<p>CF 802O：n 天中選 k 天準備（費 a_i）、k 天列印（費 b_j），準備日 ≤ 對應列印日，最小總費。</p>
-<details><summary>思路</summary><p>費用流建模顯然但跑不動（n ≤ 5×10⁵）。<b>模擬費用流</b>：逐天掃描，遇 b_j 時與「堆中最小的未配對 a」成交；成交後把 <code>−(a_i)+b_j</code> 類型的「反悔券」推回堆，允許未來更便宜的 a 替換掉這次的 a、或更貴的 b 被換掉 — 每一張反悔券精確對應殘量網路的一條反向邊。k 的限制用 <b>wqs 二分</b>（帶懲罰的拉格朗日鬆弛）處理。反悔貪心（2.4）是本技術的單反向邊特例；掌握「彈出成交 → 推回反悔券」的對應，即可自行推導新題的模擬費用流。</p></details>
+<p>CF 802O：\(n\) 天中選 \(k\) 天準備（費用 \(a_i\)）、\(k\) 天列印（費用 \(b_j\)），準備日 \(\le\) 對應列印日，最小化總費用。</p>
+<details><summary>思路</summary><p>費用流建模顯然但跑不動（\(n\le5\times10^5\)）。<b>模擬費用流</b>：逐天掃描，遇 \(b_j\) 時與「堆中最小的未配對 \(a_i\)」成交；成交後把 \(-a_i+b_j\) 類型的「反悔券」推回堆，允許未來更便宜的 \(a\) 替換掉這次的 \(a\)、或更貴的 \(b\) 被換掉 — 每一張反悔券精確對應殘量網路的一條反向邊。\(k\) 的限制用 <b>wqs 二分</b>（帶懲罰的拉格朗日鬆弛）處理。反悔貪心（2.4）是本技術的單反向邊特例；掌握「彈出成交 \(\Rightarrow\) 推回反悔券」的對應，即可自行推導新題的模擬費用流。</p></details>
 </div>
 
 <div class="pagenav">
@@ -111,7 +113,7 @@ for (int i = 0; i &lt; n; i++) {
 <a class="next" href="../pitfalls.html"><span class="dir">下一節 →</span>3. 經典「假貪心」陷阱</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

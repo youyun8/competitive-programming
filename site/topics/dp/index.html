@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../assets/site.css">
 <script src="../../assets/site.js"></script>
+<script src="../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../assets/supabase-config.js"></script>
 <script src="../../assets/progress.js"></script>
 </head>
@@ -73,8 +75,8 @@
 <tr><td>單一序列逐項決策</td><td>2.1 線性、2.6 狀態機</td><td>是否需要記「最後元素／目前模式」</td></tr>
 <tr><td>總成本受限地選物</td><td>2.3 背包</td><td>每件可用幾次、是否恰好用滿</td></tr>
 <tr><td>相鄰合併／消去</td><td>2.4 區間</td><td>能否枚舉最後一次合併</td></tr>
-<tr><td>兩序列對齊</td><td>2.5 雙序列</td><td>O(nm) 是否可承受</td></tr>
-<tr><td>n ≤ 20 的任意子集</td><td>2.7 狀壓</td><td>狀態是否真的只需集合</td></tr>
+<tr><td>兩序列對齊</td><td>2.5 雙序列</td><td>\(O(nm)\) 是否可承受</td></tr>
+<tr><td>\(n \le 20\) 的任意子集</td><td>2.7 狀壓</td><td>狀態是否真的只需集合</td></tr>
 <tr><td>樹／DAG／數字範圍</td><td>2.8、2.11／2.9</td><td>依賴是否無環、前綴限制是否可記憶化</td></tr>
 <tr><td>方程正確但超時</td><td>2.12 優化</td><td>瓶頸是哪一層決策枚舉</td></tr>
 </table></div>
@@ -91,7 +93,7 @@
 </table></div>
 
 <div class="callout idea"><b>💡 一句話判斷「這題是不是 DP」</b>
-<p>問自己：「如果我知道<b>某個規模更小的同型問題</b>的答案，能不能組合出原問題的答案？」能——而且小問題會被重複用到——就是 DP。競賽中更實用的訊號是<b>資料範圍</b>：n ≤ 20 想狀壓、n ≤ 500 想區間 O(n³)、n ≤ 5000 想 O(n²)、n 到 10⁵ 以上就要想 O(n log n) 的優化轉移。</p></div>
+<p>問自己：「如果我知道<b>某個規模更小的同型問題</b>的答案，能不能組合出原問題的答案？」能——而且小問題會被重複用到——就是 DP。競賽中更實用的訊號是<b>資料範圍</b>：\(n \le 20\) 想狀壓、\(n \le 500\) 想區間 \(O(n^3)\)、\(n \le 5000\) 想 \(O(n^2)\)、\(n\) 到 \(10^5\) 以上就要想 \(O(n \log n)\) 的優化轉移。</p></div>
 
 <h3>難度分級</h3>
 <div class="tbl-wrap"><table>
@@ -141,7 +143,7 @@
 <a class="next" href="pages/theory.html"><span class="dir">下一節 →</span>1. 理論基礎</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

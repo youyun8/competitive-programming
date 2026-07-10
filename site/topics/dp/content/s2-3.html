@@ -1,7 +1,7 @@
 <h2>2.3 背包九講：九個主題逐一拆解</h2>
 
 <div class="callout idea"><b>📚 先統一符號</b>
-<p>共有 <var>n</var> 件物品，背包容量為 <var>W</var>；物品 <var>i</var> 的費用為 <var>w<sub>i</sub></var>、價值為 <var>v<sub>i</sub></var>。除非小節另有說明，費用皆為正整數，目標是在容量限制內最大化總價值。以下九節各自給出狀態、算式和 C++ 實作，可以獨立閱讀。</p></div>
+<p>共有 \(n\) 件物品，背包容量為 \(W\)；物品 \(i\) 的費用為 \(w_i\)、價值為 \(v_i\)。除非小節另有說明，費用皆為正整數，目標是在容量限制內最大化總價值。以下九節各自給出狀態、算式和 C++ 實作，可以獨立閱讀。</p></div>
 
 <div class="tbl-wrap"><table>
 <tr><th>講次</th><th>主題</th><th>一眼辨認</th><th>核心技巧</th></tr>
@@ -18,9 +18,14 @@
 
 <section class="knapsack-topic" id="knapsack-zero-one">
 <h3>第一講：0/1 背包</h3>
-<p><b>限制：</b>每件物品只有「不選」或「選一次」兩種決策。令 <var>F<sub>i</sub>(c)</var> 表示只考慮前 <var>i</var> 件物品、容量上限為 <var>c</var> 時的最大價值。</p>
-<div class="formula">F<sub>i</sub>(c) = max(F<sub>i−1</sub>(c), F<sub>i−1</sub>(c − w<sub>i</sub>) + v<sub>i</sub>)　（c ≥ w<sub>i</sub>）
-F<sub>0</sub>(c) = 0</div>
+<p><b>限制：</b>每件物品只有「不選」或「選一次」兩種決策。令 \(F_i(c)\) 表示只考慮前 \(i\) 件物品、容量上限為 \(c\) 時的最大價值。</p>
+<div class="formula">\[
+\begin{aligned}
+F_i(c) &amp;= \max\left(F_{i-1}(c), F_{i-1}(c-w_i)+v_i\right)
+    &amp; (c \ge w_i), \\
+F_0(c) &amp;= 0.
+\end{aligned}
+\]</div>
 <p>壓成一維後，<code>dp[c - item.weight]</code> 必須仍是「還沒使用本件物品」的舊值，所以容量由大到小更新。正序會讀到本輪剛寫入的狀態，等於讓同一件物品重複出現。</p>
 <details open><summary>實作（C++）</summary>
 <pre><code class="lang-cpp">struct Item {
@@ -38,15 +43,20 @@ long long SolveZeroOneKnapsack(const std::vector&lt;Item&gt;&amp; items, int cap
     }
     return dp[capacity];
 }</code></pre></details>
-<p><b>複雜度：</b>時間 <var>O(nW)</var>，空間 <var>O(W)</var>。代表題：<a href="https://www.luogu.com.cn/problem/P1048" target="_blank">洛谷 P1048 採藥</a>。</p>
+<p><b>複雜度：</b>時間 \(O(nW)\)，空間 \(O(W)\)。代表題：<a href="https://www.luogu.com.cn/problem/P1048" target="_blank">洛谷 P1048 採藥</a>。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-complete">
 <h3>第二講：完全背包</h3>
 <p><b>限制：</b>每種物品可選任意非負次。直接枚舉選幾件的式子如下；把「再選一件同種物品」留在本階段，就能化成第二式。</p>
-<div class="formula">F<sub>i</sub>(c) = max<sub>0 ≤ k ≤ ⌊c / w<sub>i</sub>⌋</sub>(F<sub>i−1</sub>(c − kw<sub>i</sub>) + kv<sub>i</sub>)
-F<sub>i</sub>(c) = max(F<sub>i−1</sub>(c), F<sub>i</sub>(c − w<sub>i</sub>) + v<sub>i</sub>)</div>
-<p>右式需要讀同一階段的 <var>F<sub>i</sub></var>，因此一維陣列要由小到大更新。這會讓較小容量剛得到的結果繼續傳到較大容量，恰好代表再拿一件。</p>
+<div class="formula">\[
+\begin{aligned}
+F_i(c) &amp;= \max_{0 \le k \le \lfloor c / w_i \rfloor}
+    \left(F_{i-1}(c - kw_i) + kv_i\right), \\
+F_i(c) &amp;= \max\left(F_{i-1}(c), F_i(c - w_i) + v_i\right).
+\end{aligned}
+\]</div>
+<p>右式需要讀同一階段的 \(F_i\)，因此一維陣列要由小到大更新。這會讓較小容量剛得到的結果繼續傳到較大容量，恰好代表再拿一件。</p>
 <details><summary>實作（C++）</summary>
 <pre><code class="lang-cpp">struct Item {
     int weight;
@@ -63,15 +73,17 @@ long long SolveCompleteKnapsack(const std::vector&lt;Item&gt;&amp; items, int ca
     }
     return dp[capacity];
 }</code></pre></details>
-<p><b>複雜度：</b>時間 <var>O(nW)</var>，空間 <var>O(W)</var>。代表題：<a href="https://www.luogu.com.cn/problem/P1616" target="_blank">洛谷 P1616 瘋狂的採藥</a>。</p>
+<p><b>複雜度：</b>時間 \(O(nW)\)，空間 \(O(W)\)。代表題：<a href="https://www.luogu.com.cn/problem/P1616" target="_blank">洛谷 P1616 瘋狂的採藥</a>。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-bounded">
 <h3>第三講：多重背包</h3>
-<p><b>限制：</b>物品 <var>i</var> 最多有 <var>m<sub>i</sub></var> 件。最直接的轉移會再枚舉使用數量 <var>k</var>：</p>
-<div class="formula">F<sub>i</sub>(c) = max<sub>0 ≤ k ≤ min(m<sub>i</sub>, ⌊c / w<sub>i</sub>⌋)</sub>
-(F<sub>i−1</sub>(c − kw<sub>i</sub>) + kv<sub>i</sub>)</div>
-<p>直接做需 <var>O(WΣm<sub>i</sub>)</var>。常用優化是把數量拆成 <var>1, 2, 4, …</var> 和最後餘數；每一包只能選一次，而且任何 <var>0..m<sub>i</sub></var> 的件數都能由這些包組成，問題便轉成 0/1 背包。</p>
+<p><b>限制：</b>物品 \(i\) 最多有 \(m_i\) 件。最直接的轉移會再枚舉使用數量 \(k\)：</p>
+<div class="formula">\[
+F_i(c)=\max_{0 \le k \le \min\left(m_i,\lfloor c/w_i \rfloor\right)}
+    \left(F_{i-1}(c-kw_i)+kv_i\right).
+\]</div>
+<p>直接做需 \(O\left(W\sum_i m_i\right)\)。常用優化是把數量拆成 \(1,2,4,\ldots\) 和最後餘數；每一包只能選一次，而且任何 \(0\) 到 \(m_i\) 的件數都能由這些包組成，問題便轉成 0/1 背包。</p>
 <details><summary>二進位拆分實作（C++）</summary>
 <pre><code class="lang-cpp">struct BoundedItem {
     int weight;
@@ -80,7 +92,7 @@ long long SolveCompleteKnapsack(const std::vector&lt;Item&gt;&amp; items, int ca
 };
 
 long long SolveBoundedKnapsack(const std::vector&lt;BoundedItem&gt;&amp; items,
-                               int capacity) {
+    int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     for (const BoundedItem&amp; item : items) {
         int remaining = item.count;
@@ -97,16 +109,20 @@ long long SolveBoundedKnapsack(const std::vector&lt;BoundedItem&gt;&amp; items,
     }
     return dp[capacity];
 }</code></pre></details>
-<p><b>複雜度：</b>時間 <var>O(WΣlog(m<sub>i</sub> + 1))</var>，空間 <var>O(W)</var>。若資料要求 <var>O(nW)</var>，再使用<a href="#s2-12">單調佇列優化</a>。代表題：<a href="https://www.luogu.com.cn/problem/P1776" target="_blank">洛谷 P1776 寶物篩選</a>。</p>
+<p><b>複雜度：</b>時間 \(O\left(W\sum_i \log(m_i+1)\right)\)，空間 \(O(W)\)。若資料要求 \(O(nW)\)，再使用<a href="#s2-12">單調佇列優化</a>。代表題：<a href="https://www.luogu.com.cn/problem/P1776" target="_blank">洛谷 P1776 寶物篩選</a>。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-mixed">
 <h3>第四講：混合三種背包</h3>
 <p><b>限制：</b>有些物品只能選一次、有些可選無限次、有些有數量上限。它沒有新的狀態方程；每處理一種物品，就依該物品的限制選用前三講的轉移。</p>
-<div class="formula">limit<sub>i</sub> = 1：使用 0/1 背包轉移
-limit<sub>i</sub> = ∞：使用完全背包轉移
-1 &lt; limit<sub>i</sub> &lt; ∞：使用多重背包轉移</div>
-<p>不變量是：處理完第 <var>i</var> 種物品後，<code>dp[current]</code> 已是只使用前 <var>i</var> 種物品的最佳答案。只要每種更新本身維持這個語意，三種方式就能安全混用。</p>
+<div class="formula">\[
+\begin{array}{ccl}
+\mathrm{limit}_i=1 &amp;:&amp; \text{使用 0/1 背包轉移}, \\
+\mathrm{limit}_i=\infty &amp;:&amp; \text{使用完全背包轉移}, \\
+1&lt;\mathrm{limit}_i&lt;\infty &amp;:&amp; \text{使用多重背包轉移}.
+\end{array}
+\]</div>
+<p>不變量是：處理完第 \(i\) 種物品後，<code>dp[current]</code> 已是只使用前 \(i\) 種物品的最佳答案。只要每種更新本身維持這個語意，三種方式就能安全混用。</p>
 <details><summary>實作（C++）</summary>
 <pre><code class="lang-cpp">enum class ItemKind {
     kZeroOne,
@@ -122,7 +138,7 @@ struct MixedItem {
 };
 
 long long SolveMixedKnapsack(const std::vector&lt;MixedItem&gt;&amp; items,
-                             int capacity) {
+    int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     const auto update_zero_one = [&amp;dp, capacity](int weight, long long value) {
         for (int current = capacity; current &gt;= weight; --current) {
@@ -134,7 +150,7 @@ long long SolveMixedKnapsack(const std::vector&lt;MixedItem&gt;&amp; items,
         if (item.kind == ItemKind::kComplete) {
             for (int current = item.weight; current &lt;= capacity; ++current) {
                 dp[current] = std::max(dp[current],
-                                       dp[current - item.weight] + item.value);
+                    dp[current - item.weight] + item.value);
             }
             continue;
         }
@@ -151,14 +167,16 @@ long long SolveMixedKnapsack(const std::vector&lt;MixedItem&gt;&amp; items,
     }
     return dp[capacity];
 }</code></pre></details>
-<p><b>複雜度：</b>0/1 與完全物品各做 <var>O(W)</var>，數量為 <var>m</var> 的多重物品做 <var>O(Wlog(m + 1))</var>；空間 <var>O(W)</var>。</p>
+<p><b>複雜度：</b>0/1 與完全物品各做 \(O(W)\)，數量為 \(m\) 的多重物品做 \(O\left(W\log(m+1)\right)\)；空間 \(O(W)\)。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-two-costs">
 <h3>第五講：二維費用背包</h3>
-<p><b>限制：</b>每件物品同時消耗兩種資源，例如金錢與時間。令費用為 <span class="math-inline">(a<sub>i</sub>, b<sub>i</sub>)</span>，兩種容量上限為 <span class="math-inline">(A, B)</span>。</p>
-<div class="formula">F<sub>i</sub>(x, y) = max(F<sub>i−1</sub>(x, y),
-F<sub>i−1</sub>(x − a<sub>i</sub>, y − b<sub>i</sub>) + v<sub>i</sub>)</div>
+<p><b>限制：</b>每件物品同時消耗兩種資源，例如金錢與時間。令費用為 \((a_i,b_i)\)，兩種容量上限為 \((A,B)\)。</p>
+<div class="formula">\[
+F_i(x,y)=\max\left(F_{i-1}(x,y),
+F_{i-1}(x-a_i,y-b_i)+v_i\right).
+\]</div>
 <p>若物品是 0/1 次，兩個容量維都倒序；若物品可無限次，兩維都正序。方向仍然只在控制右式讀到上一階段還是本階段。</p>
 <details><summary>0/1 二維費用實作（C++）</summary>
 <pre><code class="lang-cpp">struct TwoCostItem {
@@ -168,13 +186,13 @@ F<sub>i−1</sub>(x − a<sub>i</sub>, y − b<sub>i</sub>) + v<sub>i</sub>)</di
 };
 
 long long SolveTwoCostKnapsack(const std::vector&lt;TwoCostItem&gt;&amp; items,
-                               int first_capacity, int second_capacity) {
+    int first_capacity, int second_capacity) {
     std::vector&lt;std::vector&lt;long long&gt;&gt; dp(
         first_capacity + 1, std::vector&lt;long long&gt;(second_capacity + 1, 0));
     for (const TwoCostItem&amp; item : items) {
         for (int first = first_capacity; first &gt;= item.first_cost; --first) {
             for (int second = second_capacity; second &gt;= item.second_cost;
-                 --second) {
+                --second) {
                 dp[first][second] = std::max(
                     dp[first][second],
                     dp[first - item.first_cost][second - item.second_cost] +
@@ -184,14 +202,19 @@ long long SolveTwoCostKnapsack(const std::vector&lt;TwoCostItem&gt;&amp; items,
     }
     return dp[first_capacity][second_capacity];
 }</code></pre></details>
-<p><b>複雜度：</b>時間 <var>O(nAB)</var>，空間 <var>O(AB)</var>。代表題：<a href="https://leetcode.com/problems/ones-and-zeroes/" target="_blank">LeetCode 474 Ones and Zeroes</a>。</p>
+<p><b>複雜度：</b>時間 \(O(nAB)\)，空間 \(O(AB)\)。代表題：<a href="https://leetcode.com/problems/ones-and-zeroes/" target="_blank">LeetCode 474 Ones and Zeroes</a>。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-grouped">
 <h3>第六講：分組背包</h3>
-<p><b>限制：</b>物品被分成若干組，每組最多選一件。令 <var>G<sub>g</sub></var> 為第 <var>g</var> 組；處理一整組時，所有候選都必須從進入這組以前的狀態轉移。</p>
-<div class="formula">F<sub>g</sub>(c) = max(F<sub>g−1</sub>(c),
-max<sub>i ∈ G<sub>g</sub>, w<sub>i</sub> ≤ c</sub>(F<sub>g−1</sub>(c − w<sub>i</sub>) + v<sub>i</sub>))</div>
+<p><b>限制：</b>物品被分成若干組，每組最多選一件。令 \(G_g\) 為第 \(g\) 組；處理一整組時，所有候選都必須從進入這組以前的狀態轉移。</p>
+<div class="formula">\[
+F_g(c)=\max\left(
+    F_{g-1}(c),
+    \max_{\substack{i\in G_g\\w_i\le c}}
+        \left(F_{g-1}(c-w_i)+v_i\right)
+\right).
+\]</div>
 <p>實作直接保留 <code>previous</code>，能清楚保證同一組不會連選兩件。若追求常數，也可用「組在外、容量倒序、組內物品在內」原地更新。</p>
 <details><summary>實作（C++）</summary>
 <pre><code class="lang-cpp">struct Item {
@@ -200,7 +223,7 @@ max<sub>i ∈ G<sub>g</sub>, w<sub>i</sub> ≤ c</sub>(F<sub>g−1</sub>(c − w
 };
 
 long long SolveGroupedKnapsack(const std::vector&lt;std::vector&lt;Item&gt;&gt;&amp; groups,
-                               int capacity) {
+    int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     for (const std::vector&lt;Item&gt;&amp; group : groups) {
         const std::vector&lt;long long&gt; previous = dp;
@@ -209,23 +232,27 @@ long long SolveGroupedKnapsack(const std::vector&lt;std::vector&lt;Item&gt;&gt;&
                 if (item.weight &lt;= current) {
                     dp[current] =
                         std::max(dp[current],
-                                 previous[current - item.weight] + item.value);
+                            previous[current - item.weight] + item.value);
                 }
             }
         }
     }
     return dp[capacity];
 }</code></pre></details>
-<p><b>複雜度：</b>時間 <var>O(W × 總物品數)</var>，空間 <var>O(W)</var>。代表題：<a href="https://www.luogu.com.cn/problem/P1757" target="_blank">洛谷 P1757 通天之分組背包</a>。</p>
+<p><b>複雜度：</b>時間 \(O(W \times \text{總物品數})\)，空間 \(O(W)\)。代表題：<a href="https://www.luogu.com.cn/problem/P1757" target="_blank">洛谷 P1757 通天之分組背包</a>。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-dependent">
 <h3>第七講：有依賴的背包</h3>
 <p><b>限制：</b>選一件物品前必須先選它的父物品，依賴關係形成森林。若每個主件只有少量附件，可列舉「主件 + 附件子集」後做分組背包；一般情況則是樹上背包。</p>
-<p>令 <var>D<sub>u</sub>(c)</var> 表示<b>已選節點 u</b>，並在其子樹恰好使用 <var>c</var> 容量的最大價值。先只放入 <var>u</var>；合併孩子 <var>v</var> 時，枚舉有多少容量分給孩子：</p>
-<div class="formula">D<sub>u</sub>(w<sub>u</sub>) = v<sub>u</sub>
-D′<sub>u</sub>(c + x) = max(D′<sub>u</sub>(c + x), D<sub>u</sub>(c) + D<sub>v</sub>(x))</div>
-<p><var>x = 0</var> 代表整棵孩子子樹都不選；若 <var>x &gt; 0</var>，<var>D<sub>v</sub>(x)</var> 已保證先選孩子 <var>v</var>，因此依賴不會被破壞。加一個費用與價值皆為 0 的虛擬根，就能統一處理森林。</p>
+<p>令 \(D_u(c)\) 表示<b>已選節點 \(u\)</b>，並在其子樹恰好使用 \(c\) 容量的最大價值。先只放入 \(u\)；合併孩子 \(v\) 時，枚舉有多少容量分給孩子：</p>
+<div class="formula">\[
+\begin{aligned}
+D_u(w_u) &amp;= v_u, \\
+D'_u(c+x) &amp;= \max\left(D'_u(c+x),D_u(c)+D_v(x)\right).
+\end{aligned}
+\]</div>
+<p>\(x=0\) 代表整棵孩子子樹都不選；若 \(x&gt;0\)，\(D_v(x)\) 已保證先選孩子 \(v\)，因此依賴不會被破壞。加一個費用與價值皆為 \(0\) 的虛擬根，就能統一處理森林。</p>
 <details><summary>一般樹形依賴實作（C++）</summary>
 <pre><code class="lang-cpp">struct DependentItem {
     int weight;
@@ -234,7 +261,7 @@ D′<sub>u</sub>(c + x) = max(D′<sub>u</sub>(c + x), D<sub>u</sub>(c) + D<sub>
 };
 
 long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; items,
-                                 int capacity) {
+    int capacity) {
     constexpr long long kNegativeInfinity =
         std::numeric_limits&lt;long long&gt;::lowest() / 4;
     const int root = static_cast&lt;int&gt;(items.size());
@@ -261,13 +288,13 @@ long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; ite
                     continue;
                 }
                 for (int child_cost = 1; child_cost + used &lt;= capacity;
-                     ++child_cost) {
+                    ++child_cost) {
                     if (child_dp[child_cost] == kNegativeInfinity) {
                         continue;
                     }
                     next[used + child_cost] =
                         std::max(next[used + child_cost],
-                                 dp[used] + child_dp[child_cost]);
+                            dp[used] + child_dp[child_cost]);
                 }
             }
             dp = std::move(next);
@@ -278,14 +305,17 @@ long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; ite
     const std::vector&lt;long long&gt; answer = dfs(root);
     return *std::max_element(answer.begin(), answer.end());
 }</code></pre></details>
-<p><b>複雜度：</b>上述通用寫法最壞時間 <var>O(nW²)</var>、空間 <var>O(nW)</var>（含遞迴期間的 DP 陣列）；可依子樹大小限制枚舉範圍。附件特例代表題：<a href="https://www.luogu.com.cn/problem/P1064" target="_blank">洛谷 P1064 金明的預算方案</a>。</p>
+<p><b>複雜度：</b>上述通用寫法最壞時間 \(O(nW^2)\)、空間 \(O(nW)\)（含遞迴期間的 DP 陣列）；可依子樹大小限制枚舉範圍。附件特例代表題：<a href="https://www.luogu.com.cn/problem/P1064" target="_blank">洛谷 P1064 金明的預算方案</a>。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-generalized">
 <h3>第八講：泛化物品</h3>
-<p><b>觀點：</b>普通物品只有「不選」與「付 <var>w</var> 得 <var>v</var>」；泛化物品則是一個函數 <var>f(c)</var>，表示分配恰好 <var>c</var> 容量給它可得到的最大價值。分組選項、整棵子樹的方案表，都可以先整理成一個泛化物品。</p>
-<div class="formula">new(c) = max<sub>0 ≤ x ≤ c</sub>(dp(c − x) + f(x))</div>
-<p>這是 max-plus 卷積：枚舉總容量如何切給「既有物品」和「新泛化物品」。不可用的費用方案設成負無限；<var>f(0) = 0</var> 表示可以不選。</p>
+<p><b>觀點：</b>普通物品只有「不選」與「付 \(w\) 得 \(v\)」；泛化物品則是一個函數 \(f(c)\)，表示分配恰好 \(c\) 容量給它可得到的最大價值。分組選項、整棵子樹的方案表，都可以先整理成一個泛化物品。</p>
+<div class="formula">\[
+\mathrm{new}(c)=\max_{0\le x\le c}
+    \left(\mathrm{dp}(c-x)+f(x)\right).
+\]</div>
+<p>這是 max-plus 卷積：枚舉總容量如何切給「既有物品」和「新泛化物品」。不可用的費用方案設成負無限；\(f(0)=0\) 表示可以不選。</p>
 <details><summary>實作（C++）</summary>
 <pre><code class="lang-cpp">long long SolveGeneralizedKnapsack(
     const std::vector&lt;std::vector&lt;long long&gt;&gt;&amp; gain_by_cost, int capacity) {
@@ -298,8 +328,8 @@ long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; ite
         std::vector&lt;long long&gt; next(capacity + 1, kNegativeInfinity);
         for (int total = 0; total &lt;= capacity; ++total) {
             for (int cost = 0;
-                 cost &lt;= total &amp;&amp; cost &lt; static_cast&lt;int&gt;(gain.size());
-                 ++cost) {
+                cost &lt;= total &amp;&amp; cost &lt; static_cast&lt;int&gt;(gain.size());
+                ++cost) {
                 if (dp[total - cost] == kNegativeInfinity ||
                     gain[cost] == kNegativeInfinity) {
                     continue;
@@ -312,7 +342,7 @@ long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; ite
     }
     return *std::max_element(dp.begin(), dp.end());
 }</code></pre></details>
-<p><b>複雜度：</b>若每個泛化物品列出 <var>0..W</var> 的方案，時間 <var>O(nW²)</var>、空間 <var>O(W)</var>。它的價值在於統一建模；實際題目通常利用方案稀疏、單調性或特殊結構加速。</p>
+<p><b>複雜度：</b>若每個泛化物品列出 \(0\) 到 \(W\) 的方案，時間 \(O(nW^2)\)、空間 \(O(W)\)。它的價值在於統一建模；實際題目通常利用方案稀疏、單調性或特殊結構加速。</p>
 </section>
 
 <section class="knapsack-topic" id="knapsack-questions">
@@ -320,15 +350,19 @@ long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; ite
 <p>背包不只問最大價值。骨架相同，但 <code>dp[current]</code> 的語意、初始值、合併運算與答案位置必須一起改，不能只把 <code>std::max</code> 隨手換掉。</p>
 <div class="tbl-wrap"><table>
 <tr><th>問法</th><th>狀態語意</th><th>轉移</th><th>初始值</th></tr>
-<tr><td>容量內最大價值</td><td>費用至多 c 的最大值</td><td><span class="math-inline">max(dp(c), dp(c−w)+v)</span></td><td>全部為 0</td></tr>
-<tr><td>恰好裝滿的最大價值</td><td>費用恰為 c 的最大值</td><td>同上，不可達狀態不轉移</td><td><span class="math-inline">dp(0)=0</span>，其餘為 −∞</td></tr>
-<tr><td>能否恰好湊出</td><td>費用 c 是否可達</td><td><span class="math-inline">reachable(c) ∨ reachable(c−w)</span></td><td>只有 0 為真</td></tr>
-<tr><td>恰好湊出的方案數</td><td>費用 c 的不同選法數</td><td><span class="math-inline">ways(c) + ways(c−w)</span></td><td><span class="math-inline">ways(0)=1</span></td></tr>
-<tr><td>輸出一組方案</td><td>保留前 i 件的最優值</td><td>比較選與不選</td><td>保留二維表後倒推</td></tr>
+<tr><td>容量內最大價值</td><td>費用至多 \(c\) 的最大值</td><td>\(\max\left(\mathrm{dp}(c),\mathrm{dp}(c-w)+v\right)\)</td><td>全部為 \(0\)</td></tr>
+<tr><td>恰好裝滿的最大價值</td><td>費用恰為 \(c\) 的最大值</td><td>同上，不可達狀態不轉移</td><td>\(\mathrm{dp}(0)=0\)，其餘為 \(-\infty\)</td></tr>
+<tr><td>能否恰好湊出</td><td>費用 \(c\) 是否可達</td><td>\(\mathrm{reachable}(c)\lor\mathrm{reachable}(c-w)\)</td><td>只有 \(0\) 為真</td></tr>
+<tr><td>恰好湊出的方案數</td><td>費用 \(c\) 的不同選法數</td><td>\(\mathrm{ways}(c)+\mathrm{ways}(c-w)\)</td><td>\(\mathrm{ways}(0)=1\)</td></tr>
+<tr><td>輸出一組方案</td><td>保留前 \(i\) 件的最優值</td><td>比較選與不選</td><td>保留二維表後倒推</td></tr>
 </table></div>
-<div class="formula">恰好裝滿：E<sub>i</sub>(c) = max(E<sub>i−1</sub>(c), E<sub>i−1</sub>(c − w<sub>i</sub>) + v<sub>i</sub>)
-計數：Q<sub>i</sub>(c) = Q<sub>i−1</sub>(c) + Q<sub>i−1</sub>(c − w<sub>i</sub>)</div>
-<p>下面的 0/1 範例一次算出「容量內最大值、恰好裝滿最大值、恰好裝滿方案數」，並在可達時還原一組恰好裝滿的方案。方案數以 <span class="math-inline">1,000,000,007</span> 取模。</p>
+<div class="formula">\[
+\begin{aligned}
+E_i(c) &amp;= \max\left(E_{i-1}(c),E_{i-1}(c-w_i)+v_i\right), \\
+Q_i(c) &amp;= Q_{i-1}(c)+Q_{i-1}(c-w_i).
+\end{aligned}
+\]</div>
+<p>下面的 0/1 範例一次算出「容量內最大值、恰好裝滿最大值、恰好裝滿方案數」，並在可達時還原一組恰好裝滿的方案。方案數以 \(1{,}000{,}000{,}007\) 取模。</p>
 <details><summary>綜合實作（C++）</summary>
 <pre><code class="lang-cpp">struct Item {
     int weight;
@@ -343,7 +377,7 @@ struct KnapsackAnswers {
 };
 
 KnapsackAnswers AnalyzeZeroOneKnapsack(const std::vector&lt;Item&gt;&amp; items,
-                                       int capacity) {
+    int capacity) {
     constexpr long long kMod = 1'000'000'007;
     constexpr long long kNegativeInfinity =
         std::numeric_limits&lt;long long&gt;::lowest() / 4;
@@ -395,7 +429,7 @@ KnapsackAnswers AnalyzeZeroOneKnapsack(const std::vector&lt;Item&gt;&amp; items,
     std::reverse(answer.chosen_indices.begin(), answer.chosen_indices.end());
     return answer;
 }</code></pre></details>
-<p><b>複雜度：</b>為了還原方案保留二維表，時間 <var>O(nW)</var>、空間 <var>O(nW)</var>；若只問數值或計數，可壓回 <var>O(W)</var>。完全背包計數時還要先決定要數「組合」或「排列」：物品在外層通常數組合，容量在外層通常數排列。</p>
+<p><b>複雜度：</b>為了還原方案保留二維表，時間 \(O(nW)\)、空間 \(O(nW)\)；若只問數值或計數，可壓回 \(O(W)\)。完全背包計數時還要先決定要數「組合」或「排列」：物品在外層通常數組合，容量在外層通常數排列。</p>
 </section>
 
 <div class="callout warn"><b>⚠ 寫完背包的五項自檢</b>
@@ -404,5 +438,5 @@ KnapsackAnswers AnalyzeZeroOneKnapsack(const std::vector&lt;Item&gt;&amp; items,
 <li>每件物品可用幾次，容量枚舉方向是否對應？</li>
 <li>不可達狀態是否使用正確的初始值與哨兵？</li>
 <li>計數是在數組合還是排列，迴圈順序是否吻合？</li>
-<li><var>nW</var> 是否能通過；若容量過大，能否改以價值作狀態、使用 bitset 或 meet-in-the-middle？</li>
+<li>\(nW\) 是否能通過；若容量過大，能否改以價值作狀態、使用 bitset 或 meet-in-the-middle？</li>
 </ol></div>

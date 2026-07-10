@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -55,26 +57,26 @@
 <h2>2.7 位元狀壓 DP</h2>
 
 <div class="callout idea"><b>🔢 mask 的語意比位元技巧重要</b>
-<p>先用一句話固定 <code>mask</code>：它究竟表示「已選集合」、「可用集合」、還是「上一列的佔用情況」？再決定轉移是加一個元素、刪一個元素或換到下一列。常用操作：判第 k 位 <code>mask&gt;&gt;k&amp;1</code>、加入 <code>mask|1&lt;&lt;k</code>、刪除 <code>mask^1&lt;&lt;k</code>（已知該位為 1）、枚舉子集 <code>sub=(sub-1)&amp;mask</code>。</p></div>
+<p>先用一句話固定 <code>mask</code>：它究竟表示「已選集合」、「可用集合」、還是「上一列的佔用情況」？再決定轉移是加一個元素、刪一個元素或換到下一列。常用操作：判第 \(k\) 位 <code>(mask &gt;&gt; k) &amp; 1</code>、加入 <code>mask | (1 &lt;&lt; k)</code>、刪除 <code>mask ^ (1 &lt;&lt; k)</code>（已知該位為 \(1\)）、枚舉子集 <code>sub = (sub - 1) &amp; mask</code>。</p></div>
 
 <div class="tbl-wrap"><table>
 <tr><th>骨架</th><th>狀態數 × 轉移</th><th>大約適用</th><th>代表</th></tr>
-<tr><td>集合＋最後元素</td><td>2ⁿ × n²</td><td>n ≲ 20</td><td>TSP</td></tr>
-<tr><td>集合配對／加一元素</td><td>2ⁿ × n</td><td>n ≲ 22</td><td>完美匹配計數</td></tr>
-<tr><td>枚舉 mask 的所有 sub</td><td>3ⁿ</td><td>n ≲ 15–17</td><td>集合劃分</td></tr>
+<tr><td>集合＋最後元素</td><td>\(2^n \times n^2\)</td><td>\(n \lesssim 20\)</td><td>TSP</td></tr>
+<tr><td>集合配對／加一元素</td><td>\(2^n \times n\)</td><td>\(n \lesssim 22\)</td><td>完美匹配計數</td></tr>
+<tr><td>枚舉 mask 的所有 sub</td><td>\(3^n\)</td><td>\(n \lesssim 15\text{--}17\)</td><td>集合劃分</td></tr>
 <tr><td>逐列輪廓</td><td>列數 × 合法 mask 對</td><td>寬度小、長度大</td><td>互不侵犯、炮兵陣地</td></tr>
 </table></div>
 
 <div class="callout warn"><b>⚠ 先算上界再開陣列</b>
-<p><code>2^20≈10^6</code>，再乘 20 已是兩千萬次；<code>2^25≈3.3×10^7</code>，單一 int 陣列就約 128 MB。若狀態還乘位置、步數或多測，必須先估記憶體。稀疏狀態才考慮 map／unordered_map；稠密狀態用連續陣列通常快得多。</p></div>
+<p>\(2^{20}\approx10^6\)，再乘 \(20\) 已是兩千萬次；\(2^{25}\approx3.3\times10^7\)，單一 <code>int</code> 陣列就約 \(128\ \mathrm{MB}\)。若狀態還乘位置、步數或多測，必須先估記憶體。稀疏狀態才考慮 <code>map</code>／<code>unordered_map</code>；稠密狀態用連續陣列通常快得多。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>n ≤ 20 時，「哪些元素已處理」的<b>集合</b>本身塞進狀態：一個 n 位二進位整數。轉移就是位運算。兩大家族：<b>集合推進型</b>（dp[S]，按 S 從小到大）與<b>行輪廓型</b>（dp[i][S]，S 是第 i 行的放置狀態）。</p></div>
+<p>\(n \le 20\) 時，「哪些元素已處理」的<b>集合</b>本身塞進狀態：一個 \(n\) 位二進位整數。轉移就是位運算。兩大家族：<b>集合推進型</b>（\(\mathrm{dp}[S]\)，按 \(S\) 從小到大）與<b>行輪廓型</b>（\(\mathrm{dp}[i][S]\)，\(S\) 是第 \(i\) 行的放置狀態）。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
-<li>n ≤ 20（2ⁿ 狀態）或棋盤寬 ≤ 20（每行 2^m 種輪廓）。</li>
-<li>「每個元素用一次、順序可任意」的排列/配對問題——用集合代替排列，n! 降成 2ⁿ。</li>
+<li>\(n \le 20\)（\(2^n\) 狀態）或棋盤寬度不超過 \(20\)（每行 \(2^m\) 種輪廓）。</li>
+<li>「每個元素用一次、順序可任意」的排列／配對問題——用集合代替排列，將 \(n!\) 降成 \(2^n\)。</li>
 </ul></div>
 
 <pre><code class="lang-cpp">// 位運算工具箱
@@ -86,8 +88,8 @@ for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */
 
 <div class="problem" data-problem-id="atcoder-dp-o">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_o" target="_blank">AtCoder DP O - Matching</a><span class="chip">狀壓</span><span class="chip">配對計數</span></div>
-<p>n 男 n 女相容關係給定，求完美匹配數（n ≤ 21）。</p>
-<details><summary>思路</summary><p>dp[S] = 前 popcount(S) 個男生與女生集合 S 完成配對的方案數。<b>關鍵洞見：第 i 個男生配誰不用記「哪些男生用過」——按順序處理，男生編號 = popcount(S)</b>，一維集合就夠。轉移枚舉 S 的每個位。O(2ⁿ·n)。</p></details>
+<p>\(n\) 男 \(n\) 女相容關係給定，求完美匹配數（\(n \le 21\)）。</p>
+<details><summary>思路</summary><p>\(\mathrm{dp}[S]\) 是前 \(\operatorname{popcount}(S)\) 個男生與女生集合 \(S\) 完成配對的方案數。<b>關鍵洞見：第 \(i\) 個男生配誰不用記「哪些男生用過」——按順序處理，男生編號就是 \(\operatorname{popcount}(S)\)</b>，一維集合就夠。轉移枚舉 \(S\) 的每個位，複雜度為 \(O(2^n n)\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">dp[0] = 1;
 for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
@@ -100,26 +102,26 @@ for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
 
 <div class="problem" data-problem-id="luogu-p1171">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1171" target="_blank">洛谷 P1171 售貨員的難題（TSP）</a><span class="chip">狀壓</span><span class="chip">TSP</span></div>
-<p>訪問所有村莊一次並回起點的最短路程（n ≤ 20）。</p>
-<details><summary>思路</summary><p>經典 TSP：dp[S][v] = 已訪問集合 S、目前在 v 的最短距離，轉移枚舉下一站。O(2ⁿ·n²)。<b>「已訪問集合 + 目前位置」是狀壓最常用的狀態骨架</b>——位置必須進狀態，因為它決定後續代價（無後效性）。</p></details>
+<p>訪問所有村莊一次並回起點的最短路程（\(n \le 20\)）。</p>
+<details><summary>思路</summary><p>經典 TSP：\(\mathrm{dp}[S][v]\) 是已訪問集合 \(S\)、目前在 \(v\) 的最短距離，轉移枚舉下一站，複雜度為 \(O(2^n n^2)\)。<b>「已訪問集合 + 目前位置」是狀壓最常用的狀態骨架</b>——位置必須進狀態，因為它決定後續代價（無後效性）。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p1896">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1896" target="_blank">洛谷 P1896 互不侵犯（SCOI2005）</a><span class="chip">狀壓</span><span class="chip">行輪廓</span></div>
-<p>n×n 棋盤放 k 個國王，互不攻擊（八方向相鄰），方案數。</p>
-<details><summary>思路</summary><p>行輪廓型模板：dp[i][j][S] = 前 i 行放 j 個、第 i 行狀態 S。預處理所有「行內無相鄰 1」的合法行狀態（n=9 時僅數十個），行間檢查 <code>S &amp; T</code>、<code>S &amp; (T&lt;&lt;1)</code>、<code>S &amp; (T&gt;&gt;1)</code> 皆空。<b>先枚舉合法行再兩兩配對</b>，比枚舉全部 2ⁿ×2ⁿ 快得多。</p></details>
+<p>\(n\times n\) 棋盤放 \(k\) 個國王，互不攻擊（八方向相鄰），求方案數。</p>
+<details><summary>思路</summary><p>行輪廓型模板：\(\mathrm{dp}[i][j][S]\) 表示前 \(i\) 行放 \(j\) 個、第 \(i\) 行狀態為 \(S\)。預處理所有「行內無相鄰 \(1\)」的合法行狀態（\(n=9\) 時僅數十個），行間檢查 <code>S &amp; T</code>、<code>S &amp; (T &lt;&lt; 1)</code>、<code>S &amp; (T &gt;&gt; 1)</code> 皆空。<b>先枚舉合法行再兩兩配對</b>，比枚舉全部 \(2^n\times2^n\) 快得多。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p2704">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2704" target="_blank">洛谷 P2704 炮兵陣地（NOI 2001）</a><span class="chip">狀壓</span><span class="chip">行輪廓</span></div>
 <p>炮兵攻擊範圍上下左右各兩格，地形限制部署位置，最多放幾個？</p>
-<details><summary>思路</summary><p>影響跨<b>兩</b>行 → 狀態記兩行：dp[i][S_i][S_{i−1}]。合法狀態數少，實際跑得動。<b>「影響範圍多遠，輪廓就記多深」</b>——這個原則推到極致就是專家章的輪廓線/插頭 DP（<a href="13-expert.html">2.13.1</a>）。</p></details>
+<details><summary>思路</summary><p>影響跨<b>兩</b>行，所以狀態記兩行：\(\mathrm{dp}[i][S_i][S_{i-1}]\)。合法狀態數少，實際跑得動。<b>「影響範圍多遠，輪廓就記多深」</b>——這個原則推到極致就是專家章的輪廓線／插頭 DP（<a href="13-expert.html">2.13.1</a>）。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p2831">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2831" target="_blank">洛谷 P2831 憤怒的小鳥（NOIP 2016）</a><span class="chip">狀壓</span><span class="chip">預處理覆蓋</span></div>
-<p>每條過原點的拋物線可消滅其上所有豬（n ≤ 18），最少幾條拋物線？</p>
-<details><summary>思路</summary><p>先預處理：每對豬決定一條拋物線 → 它能覆蓋的豬集合 cover[i][j]。然後最小集合覆蓋：dp[S] = 已消滅集合 S 的最少線數，<b>轉移時固定 S 中最小的未消滅豬</b>——它必屬於某條線，只枚舉包含它的線，避免同一組合被枚舉多次，複雜度從 3ⁿ 降到 2ⁿ·n。</p></details>
+<p>每條過原點的拋物線可消滅其上所有豬（\(n \le 18\)），最少幾條拋物線？</p>
+<details><summary>思路</summary><p>先預處理：每對豬決定一條拋物線，得到它能覆蓋的豬集合 \(\mathrm{cover}[i][j]\)。然後做最小集合覆蓋：\(\mathrm{dp}[S]\) 是已消滅集合 \(S\) 的最少線數，<b>轉移時固定 \(S\) 中最小的未消滅豬</b>——它必屬於某條線，只枚舉包含它的線，避免同一組合被枚舉多次，複雜度從 \(3^n\) 降到 \(2^n n\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int S = 0; S &lt; (1 &lt;&lt; n); S++) {
     if (dp[S] == INF)
@@ -138,7 +140,7 @@ for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
 <a class="next" href="08-tree.html"><span class="dir">下一節 →</span>2.8 樹上 DP</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

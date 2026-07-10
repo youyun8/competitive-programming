@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -73,21 +75,21 @@
 <h3>2.13.1 輪廓線 DP 與插頭 DP</h3>
 <div class="problem" data-problem-id="poj-2411">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="http://poj.org/problem?id=2411" target="_blank">POJ 2411 蒙德里安的夢想（骨牌鋪滿）</a><span class="chip">輪廓線</span></div>
-<p>1×2 骨牌鋪滿 n×m 棋盤的方案數。</p>
-<details><summary>思路</summary><p>逐<b>格</b>轉移（不是逐行）：狀態 = 掃描線上 m 個格子的「突出」情況（輪廓線）。每格三選一：豎放（在輪廓上留一個突出）、橫放、不放（吃掉上方突出）。行寬 m ≤ 20 時 2^m 狀態逐格滾動。行輪廓 DP（互不侵犯）看的是「整行」，輪廓線把粒度細化到「格」，狀態利用率高得多。</p></details>
+<p>用 \(1\times2\) 骨牌鋪滿 \(n\times m\) 棋盤，求方案數。</p>
+<details><summary>思路</summary><p>逐<b>格</b>轉移（不是逐行）：狀態是掃描線上 \(m\) 個格子的「突出」情況（輪廓線）。每格三選一：豎放（在輪廓上留一個突出）、橫放、不放（吃掉上方突出）。行寬 \(m\le20\) 時，以 \(2^m\) 個狀態逐格滾動。行輪廓 DP（互不侵犯）看的是「整行」，輪廓線把粒度細化到「格」，狀態利用率高得多。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p5056">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5056" target="_blank">洛谷 P5056 插頭 DP 模板（迴路計數）</a><span class="chip">插頭</span></div>
 <p>統計棋盤上經過所有可用格的哈密頓迴路數。</p>
-<details><summary>思路</summary><p>輪廓線上不只記「有沒有突出」，還記<b>插頭的配對關係</b>（哪兩個插頭屬於同一條路徑段）——用括號表示法（左括號/右括號/無）3 進位壓縮。轉移分「延伸、合併、新開」三類，合併左右括號時要防提前成環。用雜湊表只存出現過的狀態。競賽 DP 的技術巔峰之一，第一次寫建議對照模板逐行理解。</p></details>
+<details><summary>思路</summary><p>輪廓線上不只記「有沒有突出」，還記<b>插頭的配對關係</b>（哪兩個插頭屬於同一條路徑段）——用括號表示法（左括號／右括號／無）做三進位壓縮。轉移分「延伸、合併、新開」三類，合併左右括號時要防提前成環。用雜湊表只存出現過的狀態。競賽 DP 的技術巔峰之一，第一次寫建議對照模板逐行理解。</p></details>
 </div>
 
 <h3>2.13.2 SOS DP（Sum over Subsets / 高維前綴和）</h3>
 <div class="problem" data-problem-id="cf-165e">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/165/E" target="_blank">CF 165E Compatible Numbers</a><span class="chip">SOS</span></div>
-<p>對每個 a_i 找任一 a_j 使 a_i &amp; a_j = 0。</p>
-<details><summary>思路</summary><p>「與 a_i 相容」⟺「是 ~a_i 的子集」。<b>SOS 模板：對每一位做一次鬆弛 f[S] |= f[S ^ (1&lt;&lt;b)]（若 S 含 b 位）</b>，O(2ⁿ·n) 算出「每個 S 的所有子集中是否存在元素」。本質是 n 維超立方體上的前綴和——比 3ⁿ 的子集枚舉快一個量級。計數/最值版同模板。</p></details>
+<p>對每個 \(a_i\) 找任一 \(a_j\)，使 \(a_i\mathbin{\&amp;}a_j=0\)。</p>
+<details><summary>思路</summary><p>「與 \(a_i\) 相容」等價於「是 \(\mathord{\sim}a_i\) 的子集」。SOS 模板是對每一位做一次鬆弛 <code>f[S] |= f[S ^ (1 &lt;&lt; b)]</code>（若 \(S\) 含第 \(b\) 位），用 \(O(2^n n)\) 算出「每個 \(S\) 的所有子集中是否存在元素」。本質是 \(n\) 維超立方體上的前綴和——比 \(3^n\) 的子集枚舉快一個量級。計數／最值版同模板。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">// f[S] = S 的子集中任一個存在的元素（0 表示無）
 for (int b = 0; b &lt; n; b++)
@@ -100,39 +102,39 @@ for (int b = 0; b &lt; n; b++)
 <div class="problem" data-problem-id="luogu-p5999">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5999" target="_blank">洛谷 P5999 Kangaroo（CEOI 2016）</a><span class="chip">連通塊插入</span><span class="chip">計數</span></div>
 <p>數「相鄰兩步方向必須交替（之字形）」且首尾固定的排列個數。</p>
-<details><summary>思路</summary><p>換一個維度掃描：<b>按值從小到大插入</b>，狀態 dp[i][j] = 插完前 i 個值、目前形成 j 個「連通段」的方案數。插入新值時：新開一段（j+1）、接在某段端點、或合併兩段（j−1）——係數是組合計數。之字形約束恰好由「按值插入」自動滿足。此技巧通吃一大類「相鄰差約束的排列計數」（CF 1515E、AT dwango 的同型題）。</p></details>
+<details><summary>思路</summary><p>換一個維度掃描：<b>按值從小到大插入</b>，狀態 \(\mathrm{dp}[i][j]\) 表示插完前 \(i\) 個值、目前形成 \(j\) 個「連通段」的方案數。插入新值時可以新開一段（\(j+1\)）、接在某段端點，或合併兩段（\(j-1\)），係數由組合計數決定。之字形約束恰好由「按值插入」自動滿足。此技巧通吃一大類「相鄰差約束的排列計數」（CF 1515E、AtCoder dwango 的同型題）。</p></details>
 </div>
 
 <h3>2.13.4 動態 DP（DDP）</h3>
 <div class="problem" data-problem-id="luogu-p4719">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4719" target="_blank">洛谷 P4719 動態 DP 模板</a><span class="chip">DDP</span><span class="chip">樹鏈剖分</span></div>
-<p>樹上最大權獨立集，帶 m 次單點改權。</p>
-<details><summary>思路</summary><p>把樹 DP 的轉移寫成<b>廣義矩陣乘法</b>（(min,+) 或 (max,+) 半環——結合律成立即可），重鏈剖分後每條鏈的轉移是矩陣連乘，用線段樹維護乘積；單點修改只動 O(log²n) 個矩陣。<b>「DP + 修改」的通解：轉移代數化 + 資料結構維護</b>。全域平衡二叉樹可壓到 O(n log n)。</p></details>
+<p>樹上最大權獨立集，帶 \(m\) 次單點改權。</p>
+<details><summary>思路</summary><p>把樹 DP 的轉移寫成<b>廣義矩陣乘法</b>，例如 \((\min,+)\) 或 \((\max,+)\) 半環，只要結合律成立即可。重鏈剖分後每條鏈的轉移是矩陣連乘，用線段樹維護乘積；單點修改只動 \(O(\log^2 n)\) 個矩陣。<b>「DP + 修改」的通解：轉移代數化 + 資料結構維護</b>。全域平衡二叉樹可壓到 \(O(n\log n)\)。</p></details>
 </div>
 
 <h3>2.13.5 凸優化視角：slope trick</h3>
 <div class="problem" data-problem-id="cf-713c">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/713/C" target="_blank">CF 713C 嚴格遞增最小代價</a><span class="chip">slope trick</span></div>
-<p>每次 ±1 花 1 元，把序列改成嚴格遞增的最小花費。</p>
-<details><summary>思路</summary><p>dp_i(x) = 前 i 項、第 i 項改成 x 的最小代價——<b>整個函數關於 x 是凸的分段線性函數</b>，只用一個大根堆維護「左半斜率的轉折點」。取前綴 min = 砍掉右半；加 |x − a_i| = 插兩個轉折點。嚴格遞增先做 a_i −= i 化成不降。這是「函數整體當 DP 值」的入門，與貪心指南的 slope trick 章相互印證。</p></details>
+<p>每次加減 \(1\) 花 \(1\) 元，把序列改成嚴格遞增的最小花費。</p>
+<details><summary>思路</summary><p>\(\mathrm{dp}_i(x)\) 表示前 \(i\) 項且第 \(i\) 項改成 \(x\) 的最小代價。<b>整個函數關於 \(x\) 是凸的分段線性函數</b>，只用一個大根堆維護「左半斜率的轉折點」。取前綴最小值等於砍掉右半；加上 \(|x-a_i|\) 等於插入兩個轉折點。嚴格遞增可先做 <code>a[i] -= i</code> 化成不降。這是「函數整體當 DP 值」的入門，與貪心指南的 slope trick 章相互印證。</p></details>
 </div>
 
 <h3>2.13.6 DP 套 DP</h3>
 <div class="problem" data-problem-id="luogu-p4590">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4590" target="_blank">洛谷 P4590 遊園會（TJOI 2018）</a><span class="chip">DP 套 DP</span></div>
-<p>對每個 k 統計：與給定串 B 的 LCS 恰為 k、且不含 "NOI" 的串 A 的個數。</p>
-<details><summary>思路</summary><p>內層：LCS 的 DP 一整排 dp[0..m] 相鄰差只有 0/1 → <b>差分後壓成 2^m 的位元狀態，LCS 自動機就此誕生</b>。外層：dp[i][自動機狀態][NOI 匹配位] 計數。「把內層 DP 的整排值壓縮成外層的狀態」= DP 套 DP 的定義；見過一次，之後所有「統計與模式串的 DP 值恰為 k 的字串數」都是同一招。</p></details>
+<p>對每個 \(k\) 統計：與給定串 \(B\) 的 LCS 恰為 \(k\)，且不含 <code>NOI</code> 的串 \(A\) 的個數。</p>
+<details><summary>思路</summary><p>內層：LCS 的一整排 \(\mathrm{dp}[0\ldots m]\) 相鄰差只有 \(0/1\)，因此<b>差分後可壓成 \(2^m\) 的位元狀態，LCS 自動機就此誕生</b>。外層用 \(\mathrm{dp}[i][\text{自動機狀態}][\text{NOI 匹配位}]\) 計數。「把內層 DP 的整排值壓縮成外層的狀態」就是 DP 套 DP 的定義；見過一次，之後所有「統計與模式串的 DP 值恰為 \(k\) 的字串數」都是同一招。</p></details>
 </div>
 
 <div class="callout when"><b>🧭 下一步</b>
-<p>這些專題彼此獨立，建議按「輪廓線 → SOS → wqs（2.12.6）→ 連通塊插入 → DDP → DP 套 DP」的順序各刷 2–3 題。搭配<a href="../roadmap.html">路線圖</a>第四階段的清單。</p></div>
+<p>這些專題彼此獨立，建議按「輪廓線 → SOS → wqs（2.12.6）→ 連通塊插入 → DDP → DP 套 DP」的順序各刷 \(2\) 到 \(3\) 題。搭配<a href="../roadmap.html">路線圖</a>第四階段的清單。</p></div>
 
 <div class="pagenav">
 <a class="prev" href="12-optimization.html"><span class="dir">← 上一節</span>2.12 DP 優化技術</a>
 <a class="next" href="../pitfalls.html"><span class="dir">下一節 →</span>3. 常見錯誤與除錯</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

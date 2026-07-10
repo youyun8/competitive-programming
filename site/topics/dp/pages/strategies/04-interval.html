@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -56,82 +58,88 @@
 
 <div class="tbl-wrap"><table>
 <tr><th>模型</th><th>如何拆</th><th>常見複雜度</th><th>代表</th></tr>
-<tr><td>枚舉分割點</td><td>[l,k] 與 [k+1,r] 合併</td><td>O(n³)</td><td>石子合併、矩陣鏈乘</td></tr>
-<tr><td>處理兩端</td><td>刪／配 l、r，縮成更短區間</td><td>O(n²)</td><td>迴文子序列、區間博弈</td></tr>
-<tr><td>枚舉最後消失者</td><td>最後一步固定區間外鄰居</td><td>O(n³)</td><td>戳氣球、能量項鍊</td></tr>
-<tr><td>帶外部資訊</td><td><code>dp[l][r][k]</code> 記區間外對未來的影響</td><td>依附加維而定</td><td>移除盒子</td></tr>
+<tr><td>枚舉分割點</td><td>\([l,k]\) 與 \([k+1,r]\) 合併</td><td>\(O(n^3)\)</td><td>石子合併、矩陣鏈乘</td></tr>
+<tr><td>處理兩端</td><td>刪／配 \(l,r\)，縮成更短區間</td><td>\(O(n^2)\)</td><td>迴文子序列、區間博弈</td></tr>
+<tr><td>枚舉最後消失者</td><td>最後一步固定區間外鄰居</td><td>\(O(n^3)\)</td><td>戳氣球、能量項鍊</td></tr>
+<tr><td>帶外部資訊</td><td>\(\mathrm{dp}[l][r][k]\) 記區間外對未來的影響</td><td>依附加維而定</td><td>移除盒子</td></tr>
 </table></div>
 
 <div class="callout proof"><b>🔁 為什麼一定按長度遞增？</b>
-<p>任何轉移都應只讀更短區間，因此外層枚舉 <code>len=1..n</code>，內層枚舉 l，再算 <code>r=l+len-1</code>。若用遞迴，區間長度就是天然下降量。判斷是否適合區間 DP 時，試著問：「固定最後一次操作後，剩下部分是否切成互不影響的連續段？」若仍需知道段外元素，表示 <code>dp[l][r]</code> 資訊不足，需改枚舉方向或加維。</p></div>
+<p>任何轉移都應只讀更短區間，因此外層枚舉 <code>len = 1..n</code>，內層枚舉 \(l\)，再算 <code>r = l + len - 1</code>。若用遞迴，區間長度就是天然下降量。判斷是否適合區間 DP 時，試著問：「固定最後一次操作後，剩下部分是否切成互不影響的連續段？」若仍需知道段外元素，表示 \(\mathrm{dp}[l][r]\) 資訊不足，需改枚舉方向或加維。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>dp[l][r] = 區間 [l, r] 的答案，由更短的子區間合併而來。計算順序<b>按區間長度遞增</b>枚舉（或記憶化搜尋）。轉移通常是枚舉分割點 k：dp[l][r] = min/max over k of dp[l][k] + dp[k+1][r] + 合併代價，複雜度 O(n³)。</p></div>
+<p>\(\mathrm{dp}[l][r]\) 是區間 \([l,r]\) 的答案，由更短的子區間合併而來。計算順序<b>按區間長度遞增</b>枚舉（或記憶化搜尋）。轉移通常枚舉分割點 \(k\)：</p>
+<div class="formula">\[
+\mathrm{dp}[l][r]=
+\operatorname*{opt}_{l\le k&lt;r}
+\left(\mathrm{dp}[l][k]+\mathrm{dp}[k+1][r]+\mathrm{cost}(l,k,r)\right),
+\]</div>
+<p>其中 \(\operatorname*{opt}\) 依題意取最小或最大，複雜度為 \(O(n^3)\)。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
 <li>操作發生在<b>相鄰</b>元素之間（合併、消除、插入），使得子區間彼此獨立。</li>
-<li>n ≤ 500 左右（O(n³) 的容忍範圍）。</li>
+<li>\(n \le 500\) 左右（\(O(n^3)\) 的容忍範圍）。</li>
 <li>元素順序不能重排——能重排的合併問題往往是 Huffman 貪心。</li>
 </ul></div>
 
 <div class="problem" data-problem-id="luogu-p1880">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1880" target="_blank">洛谷 P1880 石子合併（環形）</a><span class="chip">區間</span><span class="chip">環形</span></div>
 <p>環形排列的石子堆，每次合併相鄰兩堆、代價為兩堆之和，求總代價最小/最大。</p>
-<details><summary>思路</summary><p>直鏈版是區間 DP 開山題：dp[l][r] = min(dp[l][k] + dp[k+1][r]) + sum(l, r)。<b>環形拆鏈</b>：把序列複製一倍接在後面（長 2n），對每個起點取長度 n 的區間答案取最優。注意與合併果子的區別：那裡可以合併<b>任意</b>兩堆所以貪心（Huffman）成立，這裡只能合併<b>相鄰</b>兩堆所以必須 DP。</p></details>
+<details><summary>思路</summary><p>直鏈版是區間 DP 開山題：\(\mathrm{dp}[l][r]=\min_{l\le k&lt;r}\left(\mathrm{dp}[l][k]+\mathrm{dp}[k+1][r]\right)+\mathrm{sum}(l,r)\)。<b>環形拆鏈</b>：把序列複製一倍接在後面（長 \(2n\)），對每個起點取長度 \(n\) 的區間答案取最優。注意與合併果子的區別：那裡可以合併<b>任意</b>兩堆所以貪心（Huffman）成立，這裡只能合併<b>相鄰</b>兩堆所以必須 DP。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int len = 2; len &lt;= n; len++)
     for (int l = 1; l + len - 1 &lt;= 2 * n - 1; l++) {
         int r = l + len - 1;
         for (int k = l; k &lt; r; k++)
             dp[l][r] = min(dp[l][r],
-                           dp[l][k] + dp[k + 1][r] + S(l, r));  // S = 前綴和差
+                dp[l][k] + dp[k + 1][r] + S(l, r));  // S = 前綴和差
     }
-// 答案 = min over i of dp[i][i+n-1]</code></pre></details>
+// 答案 = min over i of dp[i][i + n - 1]</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="lc-516">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/longest-palindromic-subsequence/" target="_blank">LC 516 最長迴文子序列</a><span class="chip">區間</span><span class="chip">迴文</span></div>
 <p>字串中最長的迴文子序列長度。</p>
-<details><summary>思路</summary><p>dp[l][r]：兩端相等 → dp[l+1][r−1] + 2；否則 max(dp[l+1][r], dp[l][r−1])。迴文類的轉移看<b>兩端字元</b>而非分割點，複雜度 O(n²)。洛谷 P1435（最少插入幾個字元變迴文）答案 = n − 本題。</p></details>
+<details><summary>思路</summary><p>若兩端相等，\(\mathrm{dp}[l][r]=\mathrm{dp}[l+1][r-1]+2\)；否則 \(\mathrm{dp}[l][r]=\max\left(\mathrm{dp}[l+1][r],\mathrm{dp}[l][r-1]\right)\)。迴文類的轉移看<b>兩端字元</b>而非分割點，複雜度 \(O(n^2)\)。洛谷 P1435（最少插入幾個字元變迴文）答案為 \(n-\text{本題答案}\)。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-312">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/burst-balloons/" target="_blank">LC 312 戳氣球</a><span class="chip">區間</span><span class="chip">枚舉最後一步</span></div>
-<p>戳破氣球 i 得 a[l]·a[i]·a[r] 分（l、r 為當時的鄰居），最大化總分。</p>
-<details><summary>思路</summary><p>正著想（枚舉第一個戳誰）子問題會互相糾纏——戳掉後兩側變鄰居。<b>逆向：枚舉區間內「最後一個」被戳的氣球 k</b>，此時 k 的鄰居必然是 l−1 與 r+1（固定！），左右子區間完全獨立：dp[l][r] = max(dp[l][k−1] + dp[k+1][r] + a[l−1]·a[k]·a[r+1])。「枚舉最後一步」是區間 DP 解耦子問題的招牌手法，能量項鍊（P1063）同理。</p></details>
+<p>戳破氣球 \(i\) 得 \(a_l a_i a_r\) 分（\(l,r\) 為當時的鄰居），最大化總分。</p>
+<details><summary>思路</summary><p>正著想（枚舉第一個戳誰）子問題會互相糾纏——戳掉後兩側變鄰居。<b>逆向：枚舉區間內「最後一個」被戳的氣球 \(k\)</b>，此時 \(k\) 的鄰居必然是 \(l-1\) 與 \(r+1\)（固定！），左右子區間完全獨立：\(\mathrm{dp}[l][r]=\max_{l\le k\le r}\left(\mathrm{dp}[l][k-1]+\mathrm{dp}[k+1][r]+a_{l-1}a_k a_{r+1}\right)\)。「枚舉最後一步」是區間 DP 解耦子問題的招牌手法，能量項鍊（P1063）同理。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">// a[0] = a[n+1] = 1 哨兵
+<pre><code class="lang-cpp">// a[0] = a[n + 1] = 1 哨兵
 for (int len = 1; len &lt;= n; len++)
     for (int l = 1; l + len - 1 &lt;= n; l++) {
         int r = l + len - 1;
         for (int k = l; k &lt;= r; k++)
             dp[l][r] = max(dp[l][r], dp[l][k - 1] + dp[k + 1][r] +
-                                         a[l - 1] * a[k] * a[r + 1]);
+                a[l - 1] * a[k] * a[r + 1]);
     }</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="atcoder-dp-n">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_n" target="_blank">AtCoder DP N - Slimes</a><span class="chip">區間</span></div>
-<p>直鏈版石子合併（n ≤ 400），標準模板題。</p>
+<p>直鏈版石子合併（\(n \le 400\)），標準模板題。</p>
 <details><summary>思路</summary><p>檢核模板正確性的裸題。寫完可以順手驗證：把 min 換 max、代價換乘法，模板都不變——區間 DP 的骨架與具體代價函數是解耦的。</p></details>
 </div>
 
 <div class="problem" data-problem-id="lc-546">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://leetcode.cn/problems/remove-boxes/" target="_blank">LC 546 移除盒子</a><span class="chip">區間</span><span class="chip">狀態加維</span></div>
-<p>每次移除連續同色段，得分 = 段長平方，最大化總分。</p>
-<details><summary>思路</summary><p>dp[l][r] 不夠：r 右側可能有同色盒子「留著跟 [l,r] 裡的一起消」——這是後效性。解法是把缺的資訊加進狀態：<b>dp[l][r][k] = 區間 [l,r] 且右側已黏了 k 個與 a[r] 同色的盒子</b>。轉移：要嘛立刻消掉 a[r] 那段（(k+1)²），要嘛在區間內找同色的 a[m] 與之會合（dp[l][m][k+1] + dp[m+1][r−1][0]）。<b>「狀態不夠就加維」的教科書級示範。</b></p></details>
+<p>每次移除連續同色段，得分為段長平方，最大化總分。</p>
+<details><summary>思路</summary><p>\(\mathrm{dp}[l][r]\) 不夠：\(r\) 右側可能有同色盒子「留著跟 \([l,r]\) 裡的一起消」——這是後效性。解法是把缺的資訊加進狀態：\(\mathrm{dp}[l][r][k]\) 表示區間 \([l,r]\) 且右側已黏了 \(k\) 個與 \(a_r\) 同色的盒子。轉移：要嘛立刻消掉 \(a_r\) 那段，取得 \((k+1)^2\)；要嘛在區間內找同色的 \(a_m\) 與之會合，使用 \(\mathrm{dp}[l][m][k+1]+\mathrm{dp}[m+1][r-1][0]\)。<b>「狀態不夠就加維」的教科書級示範。</b></p></details>
 </div>
 
 <div class="callout when"><b>⏫ 優化預告</b>
-<p>石子合併類的 O(n³) 可用<b>四邊形不等式（Knuth 優化）</b>降到 O(n²)——決策點單調：opt(l, r−1) ≤ opt(l, r) ≤ opt(l+1, r)。見 <a href="12-optimization.html">2.12.4</a>。</p></div>
+<p>石子合併類的 \(O(n^3)\) 可用<b>四邊形不等式（Knuth 優化）</b>降到 \(O(n^2)\)——決策點單調：\(\mathrm{opt}(l,r-1)\le\mathrm{opt}(l,r)\le\mathrm{opt}(l+1,r)\)。見 <a href="12-optimization.html">2.12.4</a>。</p></div>
 
 <div class="pagenav">
 <a class="prev" href="03-knapsack.html"><span class="dir">← 上一節</span>2.3 背包全家桶</a>
 <a class="next" href="05-two-sequences.html"><span class="dir">下一節 →</span>2.5 雙序列 DP</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

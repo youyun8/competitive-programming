@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -55,21 +57,21 @@
 <h2>2.8 樹上 DP</h2>
 
 <div class="callout idea"><b>🌳 樹上 DP 的計算單位</b>
-<p>任選根後，父子關係把無向樹變成 DAG。DFS 先算完所有孩子，再把孩子資訊合併到父親：<b>子樹內部已經最優，父節點只需知道子樹對外暴露的少量介面</b>。沒有容量維時常是每個孩子 O(1) 合併；有「子樹選幾個／花多少容量」時，就變成泛化物品的背包合併。</p></div>
+<p>任選根後，父子關係把無向樹變成 DAG。DFS 先算完所有孩子，再把孩子資訊合併到父親：<b>子樹內部已經最優，父節點只需知道子樹對外暴露的少量介面</b>。沒有容量維時常是每個孩子 \(O(1)\) 合併；有「子樹選幾個／花多少容量」時，就變成泛化物品的背包合併。</p></div>
 
 <div class="tbl-wrap"><table>
 <tr><th>題型</th><th>父節點需要孩子回報</th><th>代表狀態</th></tr>
-<tr><td>選／不選相鄰互斥</td><td>孩子選與不選的兩個最優值</td><td><code>dp[u][0/1]</code></td></tr>
-<tr><td>路徑／直徑</td><td>向下延伸的最好一條或兩條鏈</td><td><code>down[u]</code></td></tr>
-<tr><td>子樹選 k 個</td><td>不同容量下的最優值</td><td><code>dp[u][k]</code></td></tr>
+<tr><td>選／不選相鄰互斥</td><td>孩子選與不選的兩個最優值</td><td>\(\mathrm{dp}[u][0/1]\)</td></tr>
+<tr><td>路徑／直徑</td><td>向下延伸的最好一條或兩條鏈</td><td>\(\mathrm{down}[u]\)</td></tr>
+<tr><td>子樹選 \(k\) 個</td><td>不同容量下的最優值</td><td>\(\mathrm{dp}[u][k]\)</td></tr>
 <tr><td>換根答案</td><td>子樹貢獻與子樹外貢獻</td><td>第一次向下彙總，第二次向外傳遞</td></tr>
 </table></div>
 
 <div class="callout warn"><b>⚠ 合併順序與複雜度</b>
-<p>樹上背包要先保留合併前的父狀態，再枚舉已用容量 j 與分給孩子的 k；原地更新方向錯會讓同一棵子樹被用多次。不要只看到三層迴圈就斷言 O(n³)：每對節點只在其 LCA 對應的合併中貢獻，許多模板可用子樹大小限制把總量壓到 O(nK) 或 O(n²)，但必須逐題證明。</p></div>
+<p>樹上背包要先保留合併前的父狀態，再枚舉已用容量 \(j\) 與分給孩子的 \(k\)；原地更新方向錯會讓同一棵子樹被用多次。不要只看到三層迴圈就斷言 \(O(n^3)\)：每對節點只在其 LCA 對應的合併中貢獻，許多模板可用子樹大小限制把總量壓到 \(O(nK)\) 或 \(O(n^2)\)，但必須逐題證明。</p></div>
 
 <div class="callout idea"><b>💡 核心想法</b>
-<p>dp[u][狀態] 由所有子節點的答案合併而來，DFS 後序遍歷天然就是拓撲序。設計重點永遠是：<b>「關於 u 的子樹，父親需要知道什麼？」</b>——那就是狀態的第二維。</p></div>
+<p>\(\mathrm{dp}[u][\text{狀態}]\) 由所有子節點的答案合併而來，DFS 後序遍歷天然就是拓撲序。設計重點永遠是：<b>「關於 \(u\) 的子樹，父親需要知道什麼？」</b>——那就是狀態的第二維。</p></div>
 
 <div class="callout when"><b>🔎 適用特徵</b>
 <ul>
@@ -80,7 +82,7 @@
 <div class="problem" data-problem-id="luogu-p1352">
 <div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1352" target="_blank">洛谷 P1352 沒有上司的舞會</a><span class="chip">樹上</span><span class="chip">獨立集</span></div>
 <p>直屬上司與下屬不能同時出席，最大化快樂值總和（樹上最大權獨立集）。</p>
-<details><summary>思路</summary><p>dp[u][0/1] = u 不來/來 時子樹的最大快樂值。<b>dp[u][1] = w_u + Σ dp[v][0]；dp[u][0] = Σ max(dp[v][0], dp[v][1])</b>。樹上 DP 的 Hello World，AtCoder DP P（染色計數版）同構。</p></details>
+<details><summary>思路</summary><p>\(\mathrm{dp}[u][0/1]\) 是 \(u\) 不來／來時子樹的最大快樂值。轉移為 \(\mathrm{dp}[u][1]=w_u+\sum_{v\in\mathrm{child}(u)}\mathrm{dp}[v][0]\)、\(\mathrm{dp}[u][0]=\sum_{v\in\mathrm{child}(u)}\max\left(\mathrm{dp}[v][0],\mathrm{dp}[v][1]\right)\)。樹上 DP 的 Hello World，AtCoder DP P（染色計數版）同構。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">void dfs(int u, int fa) {
     dp[u][1] = w[u];
@@ -96,13 +98,13 @@
 <div class="problem" data-problem-id="tree-diameter">
 <div class="p-head"><span class="stars s2">★★</span><span class="p-title">樹的直徑（樹形 DP 解法）</span><span class="chip">樹上</span><span class="chip">路徑</span></div>
 <p>求樹上最長路徑（邊帶權，可為負——負權時兩次 DFS 法失效，DP 法仍正確）。</p>
-<details><summary>思路</summary><p>f[u] = 從 u 往子樹下走的最長鏈。合併時<b>經過 u 的最長路徑 = 最大鏈 + 次大鏈</b>：dfs 中先用 ans = max(ans, f[u] + f[v] + w) 再更新 f[u]。「維護最大 + 次大」是樹上路徑類的通用手筋（換根 DP 也靠它）。</p></details>
+<details><summary>思路</summary><p>\(f[u]\) 是從 \(u\) 往子樹下走的最長鏈。合併時，經過 \(u\) 的最長路徑等於最大鏈加次大鏈；DFS 中先用 \(\mathrm{ans}=\max\left(\mathrm{ans},f[u]+f[v]+w\right)\) 再更新 \(f[u]\)。「維護最大 + 次大」是樹上路徑類的通用手筋（換根 DP 也靠它）。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p2014">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2014" target="_blank">洛谷 P2014 選課（樹上背包）</a><span class="chip">樹上</span><span class="chip">背包</span></div>
-<p>課程有先修樹形依賴，選 m 門學分最大化。</p>
-<details><summary>思路</summary><p>dp[u][j] = u 子樹裡選 j 門（含 u）的最大學分。合併子樹 = <b>分組背包</b>：每個子樹是一組，「給這個子樹分配幾個名額」是組內選項。用 dfs 序 + 「只與已合併大小相乘」的上下界寫法，複雜度是 O(nm) 而非看起來的 O(nm²)。</p></details>
+<p>課程有先修樹形依賴，選 \(m\) 門使學分最大化。</p>
+<details><summary>思路</summary><p>\(\mathrm{dp}[u][j]\) 是 \(u\) 子樹裡選 \(j\) 門（含 \(u\)）的最大學分。合併子樹就是<b>分組背包</b>：每個子樹是一組，「給這個子樹分配幾個名額」是組內選項。用 DFS 序 + 「只與已合併大小相乘」的上下界寫法，複雜度是 \(O(nm)\) 而非看起來的 \(O(nm^2)\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">void dfs(int u) {
     sz[u] = 1;
@@ -120,7 +122,7 @@
 <div class="problem" data-problem-id="luogu-p3478">
 <div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3478" target="_blank">洛谷 P3478 STA-Station（換根 DP）</a><span class="chip">樹上</span><span class="chip">換根</span></div>
 <p>選一個根使所有節點深度總和最大。</p>
-<details><summary>思路</summary><p>換根 DP 三步：① 一次 DFS 算出以 1 為根時每個子樹的大小 sz 與答案 f[1]；② 推「根從 u 移到相鄰的 v」的增量公式：<b>f[v] = f[u] + (n − 2·sz[v])</b>（v 子樹全體近 1 步、其餘遠 1 步）；③ 第二次 DFS 把答案推到所有點。O(n) 回答「每個點當根」的問題。</p></details>
+<details><summary>思路</summary><p>換根 DP 三步：① 一次 DFS 算出以 \(1\) 為根時每個子樹的大小 \(\mathrm{sz}\) 與答案 \(f[1]\)；② 推「根從 \(u\) 移到相鄰的 \(v\)」的增量公式 \(f[v]=f[u]+n-2\mathrm{sz}[v]\)（\(v\) 子樹全體近 \(1\) 步、其餘遠 \(1\) 步）；③ 第二次 DFS 把答案推到所有點。以 \(O(n)\) 回答「每個點當根」的問題。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">void dfs2(int u, int fa) {
     for (int v : g[u])
@@ -133,20 +135,20 @@
 
 <div class="problem" data-problem-id="cf-1187e">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1187/E" target="_blank">CF 1187E Tree Painting</a><span class="chip">樹上</span><span class="chip">換根</span></div>
-<p>第一步染任一點，之後每步染與已染區相鄰的點、得分 = 該點所在未染連通塊大小，最大化總分。</p>
-<details><summary>思路</summary><p>先證：定了起點後最優總分固定 = Σ sz[v]（每個子樹被「等」了 sz 次）。於是問題變成「選根最大化 Σ sz」，套換根：f[v] = f[u] + n − 2·sz[v]。<b>換根 DP 的典型考法：先把問題化簡成「以每個點為根的某個量」。</b></p></details>
+<p>第一步染任一點，之後每步染與已染區相鄰的點，得分為該點所在未染連通塊大小，最大化總分。</p>
+<details><summary>思路</summary><p>先證：定了起點後最優總分固定為 \(\sum_v\mathrm{sz}[v]\)（每個子樹被「等」了 \(\mathrm{sz}\) 次）。於是問題變成「選根最大化 \(\sum_v\mathrm{sz}[v]\)」，套換根式 \(f[v]=f[u]+n-2\mathrm{sz}[v]\)。<b>換根 DP 的典型考法：先把問題化簡成「以每個點為根的某個量」。</b></p></details>
 </div>
 
 <div class="problem" data-problem-id="atcoder-dp-v">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_v" target="_blank">AtCoder DP V - Subtree</a><span class="chip">樹上</span><span class="chip">換根</span><span class="chip">計數</span></div>
-<p>對每個 v 求：包含 v 的連通子圖數（mod M，M 不一定質數）。</p>
-<details><summary>思路</summary><p>下行：f[u] = Π (f[v] + 1)。換根需要「去掉一個兒子的乘積」，但 M 非質數不能除 → 用<b>前綴積 × 後綴積</b>合成兄弟乘積。這是乘積型換根的標準細節，很多人栽在「用逆元」上。</p></details>
+<p>對每個 \(v\) 求包含 \(v\) 的連通子圖數（模 \(M\)，且 \(M\) 不一定是質數）。</p>
+<details><summary>思路</summary><p>下行：\(f[u]=\prod_{v\in\mathrm{child}(u)}(f[v]+1)\)。換根需要「去掉一個兒子的乘積」，但 \(M\) 非質數不能除，因此用<b>前綴積 × 後綴積</b>合成兄弟乘積。這是乘積型換根的標準細節，很多人栽在「用逆元」上。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p2458">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2458" target="_blank">洛谷 P2458 保安站崗（覆蓋三態）</a><span class="chip">樹上</span><span class="chip">最小支配集</span></div>
 <p>每個點可放保安（有費用），每個點必須被自己/父/子的保安看住，最小費用。</p>
-<details><summary>思路</summary><p>三態狀態設計：dp[u][0] 自己放、dp[u][1] 被某個<b>兒子</b>覆蓋、dp[u][2] 被<b>父親</b>覆蓋。難點在 dp[u][1]：所有兒子取 min(dp[v][0], dp[v][1]) 後，若沒有任何兒子取到 dp[v][0]，要補一個最小的「換成放保安」差價。<b>覆蓋/支配類的樹 DP 幾乎都是這套三態 + 補差價。</b></p></details>
+<details><summary>思路</summary><p>三態狀態設計：\(\mathrm{dp}[u][0]\) 自己放、\(\mathrm{dp}[u][1]\) 被某個<b>兒子</b>覆蓋、\(\mathrm{dp}[u][2]\) 被<b>父親</b>覆蓋。難點在 \(\mathrm{dp}[u][1]\)：所有兒子取 \(\min\left(\mathrm{dp}[v][0],\mathrm{dp}[v][1]\right)\) 後，若沒有任何兒子取到 \(\mathrm{dp}[v][0]\)，要補一個最小的「換成放保安」差價。<b>覆蓋／支配類的樹 DP 幾乎都是這套三態 + 補差價。</b></p></details>
 </div>
 
 <div class="pagenav">
@@ -154,7 +156,7 @@
 <a class="next" href="09-digit.html"><span class="dir">下一節 →</span>2.9 數位 DP</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

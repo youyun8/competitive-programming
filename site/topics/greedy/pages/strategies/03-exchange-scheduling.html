@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
 <link rel="stylesheet" href="../../../../assets/site.css">
 <script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="../../../../assets/supabase-config.js"></script>
 <script src="../../../../assets/progress.js"></script>
 </head>
@@ -54,24 +56,33 @@
 
 <div class="tbl-wrap"><table>
 <tr><th>排程目標</th><th>局部比較</th><th>得到的規則</th><th>限制</th></tr>
-<tr><td>ΣC<sub>i</sub></td><td>兩任務誰短先做</td><td>p 遞增（SJF）</td><td>單機、全部同時可用</td></tr>
-<tr><td>Σw<sub>i</sub>C<sub>i</sub></td><td><span class="math-inline">p<sub>i</sub>w<sub>j</sub> ≤ p<sub>j</sub>w<sub>i</sub></span></td><td>p/w 遞增（Smith）</td><td>w 為正；無 release time</td></tr>
+<tr><td>\(\sum_i C_i\)</td><td>兩任務誰短先做</td><td>\(p\) 遞增（SJF）</td><td>單機、全部同時可用</td></tr>
+<tr><td>\(\sum_i w_iC_i\)</td><td>\(p_iw_j \le p_jw_i\)</td><td>\(p/w\) 遞增（Smith）</td><td>\(w>0\)；無 release time</td></tr>
 <tr><td>兩機 flow shop makespan</td><td>比較相鄰工件在 A、B 的等待</td><td>Johnson：前組 a 遞增、後組 b 遞減</td><td>每件都先 A 後 B</td></tr>
 <tr><td>選子集再排順序</td><td>先證明選定集合存在固定最優序</td><td>排序後再 DP／背包</td><td>排序關係不得依「選了哪些其他項」改變</td></tr>
 </table></div>
 
 <div class="callout proof"><b>🧮 Smith's Rule：一步一步比較兩種順序</b>
-<p>假設前面的工作都一樣，做完它們已經花了 <var>T</var>。現在只比較相鄰的工作 <var>i</var>、<var>j</var>；後面的工作無論交換前後都在同一時間開始，所以也不受影響。</p>
-<p><b>先做 i 再做 j：</b><var>i</var> 在 <var>T + p<sub>i</sub></var> 完成，<var>j</var> 在 <var>T + p<sub>i</sub> + p<sub>j</sub></var> 完成。</p>
-<div class="formula">cost(i, j)
-= w<sub>i</sub>(T + p<sub>i</sub>) + w<sub>j</sub>(T + p<sub>i</sub> + p<sub>j</sub>)
-= (w<sub>i</sub> + w<sub>j</sub>)T + w<sub>i</sub>p<sub>i</sub> + w<sub>j</sub>p<sub>i</sub> + w<sub>j</sub>p<sub>j</sub></div>
-<p><b>先做 j 再做 i：</b></p>
-<div class="formula">cost(j, i)
-= (w<sub>i</sub> + w<sub>j</sub>)T + w<sub>i</sub>p<sub>i</sub> + w<sub>i</sub>p<sub>j</sub> + w<sub>j</sub>p<sub>j</sub></div>
-<p>兩式都有 <span class="math-inline">(w<sub>i</sub> + w<sub>j</sub>)T</span>、<span class="math-inline">w<sub>i</sub>p<sub>i</sub></span>、<span class="math-inline">w<sub>j</sub>p<sub>j</sub></span>；這就是「共同項」。相減後只剩：</p>
-<div class="formula">cost(i, j) − cost(j, i) = w<sub>j</sub>p<sub>i</sub> − w<sub>i</sub>p<sub>j</sub></div>
-<p>若先做 <var>i</var> 不會比較差，左邊必須 ≤ 0，因此 <span class="math-inline">p<sub>i</sub>w<sub>j</sub> ≤ p<sub>j</sub>w<sub>i</sub></span>。當權重皆為正時，兩邊除以 <span class="math-inline">w<sub>i</sub>w<sub>j</sub></span>，便得到 <span class="math-inline">p<sub>i</sub>/w<sub>i</sub> ≤ p<sub>j</sub>/w<sub>j</sub></span>：依 <var>p/w</var> 由小到大排序。</p>
+<p>假設前面的工作都一樣，做完它們已經花了 \(T\)。現在只比較相鄰的工作 \(i,j\)；後面的工作無論交換前後都在同一時間開始，所以也不受影響。</p>
+<p><b>先做 \(i\) 再做 \(j\)：</b>\(i\) 在 \(T+p_i\) 完成，\(j\) 在 \(T+p_i+p_j\) 完成。</p>
+<div class="formula">\[
+\begin{aligned}
+\operatorname{cost}(i,j)
+    &amp;= w_i(T+p_i)+w_j(T+p_i+p_j) \\
+    &amp;= (w_i+w_j)T+w_ip_i+w_jp_i+w_jp_j.
+\end{aligned}
+\]</div>
+<p><b>先做 \(j\) 再做 \(i\)：</b></p>
+<div class="formula">\[
+\operatorname{cost}(j,i)
+    = (w_i+w_j)T+w_ip_i+w_ip_j+w_jp_j.
+\]</div>
+<p>兩式都有 \((w_i+w_j)T\)、\(w_ip_i\)、\(w_jp_j\)；這就是「共同項」。相減後只剩：</p>
+<div class="formula">\[
+\operatorname{cost}(i,j)-\operatorname{cost}(j,i)
+    = w_jp_i-w_ip_j.
+\]</div>
+<p>若先做 \(i\) 不會比較差，左邊必須 \(\le 0\)，因此 \(p_iw_j \le p_jw_i\)。當權重皆為正時，兩邊除以 \(w_iw_j\)，便得到 \(p_i/w_i \le p_j/w_j\)：依 \(p/w\) 由小到大排序。</p>
 <p>若某一對順序違反這條規則，交換它們不會增加成本；重複交換所有逆序對，就會得到排序後的最優序列。等號表示兩種順序同價。</p></div>
 
 <details><summary>C++ 比較器：用交叉相乘避免浮點誤差</summary>
@@ -96,31 +107,31 @@ std::sort(jobs.begin(), jobs.end(), SmithOrder);</code></pre>
 <p><code>__int128</code> 是 GNU C++ 擴充型別，兩邊都先轉型再相乘，避免 <code>long long</code> 乘法先溢位。最後用原輸入位置打破同價平手，只是讓輸出固定，不會改變目標值。</p></details>
 
 <details><summary>數值例：為什麼「工時短」不一定先做？</summary>
-<p>任務 A=(p=3,w=100)、B=(p=1,w=1)。A 先的成本為 100×3+1×4=304；B 先為 1×1+100×4=401。雖然 B 更短，A 的權重極高，Smith 比值 A=0.03、B=1，會正確地把 A 放前面。這也說明排序鍵必須從目標函數推導，而不是只憑「短作業優先」直覺。</p></details>
+<p>任務 \(A=(p=3,w=100)\)、\(B=(p=1,w=1)\)。\(A\) 先的成本為 \(100\cdot3+1\cdot4=304\)；\(B\) 先為 \(1\cdot1+100\cdot4=401\)。雖然 \(B\) 更短，\(A\) 的權重極高，Smith 比值分別為 \(0.03\) 與 \(1\)，會正確地把 \(A\) 放前面。這也說明排序鍵必須從目標函數推導，而不是只憑「短作業優先」直覺。</p></details>
 
 <div class="callout idea"><b>💡 核心想法</b>
 <p>單機/多機排程問題的統一解法：假設最優序列中相鄰兩個任務 i、j 交換，寫出兩種順序的目標值，令「i 在前不劣」解出不等式 — 這個不等式就是排序鍵。</p></div>
 
 <div class="callout proof"><b>🧾 推導模板</b>
-<p>設 i 在 j 前、其餘不動。因為只有 i、j 的完成時刻改變，比較兩種順序下這兩項的目標貢獻即可。得到形如 <code>f(i,j) ≤ f(j,i)</code> 的可傳遞關係後，直接 <code>sort</code>。<b>務必檢查關係可傳遞</b>（通常能改寫成單一實數鍵值比較，如 p/w、min(a,b) 分類）。</p></div>
+<p>設 \(i\) 在 \(j\) 前、其餘不動。因為只有 \(i,j\) 的完成時刻改變，比較兩種順序下這兩項的目標貢獻即可。得到形如 \(f(i,j) \le f(j,i)\) 的可傳遞關係後，直接 <code>sort</code>。<b>務必檢查關係可傳遞</b>（通常能改寫成單一實數鍵值比較，如 \(p/w\)、\(\min(a,b)\) 分類）。</p></div>
 
 <div class="problem" data-problem-id="misc-02">
 <div class="p-head"><span class="stars s3">★★★</span><span class="p-title">最小化加權完成時間（Smith's Rule）</span><span class="chip">排程</span><span class="chip">交換論證</span></div>
-<p>單機 n 個任務，任務 i 耗時 p_i、權 w_i，最小化 Σ w_i × C_i（C_i 為完成時刻）。對應：洛谷 P1248 加工生產調度前置、AtCoder 各 ABC 排程題。</p>
-<details><summary>推導</summary><p>相鄰交換 i、j：i 在前時兩者貢獻差為 <code>w_j·p_i − w_i·p_j</code>。令 i 在前不劣 ⇒ <code>p_i/w_i ≤ p_j/w_j</code>。所以按 <b>p/w 遞增</b>（性價比：短且重要優先）排序。特例 w 全等 → SJF 最短工時優先；p 全等 → 權大優先。</p></details>
+<p>單機 \(n\) 個任務，任務 \(i\) 耗時 \(p_i\)、權重 \(w_i\)，最小化 \(\sum_i w_iC_i\)（\(C_i\) 為完成時刻）。對應：洛谷 P1248 加工生產調度前置、AtCoder 各 ABC 排程題。</p>
+<details><summary>推導</summary><p>相鄰交換 \(i,j\)：\(i\) 在前時兩者貢獻差為 \(w_jp_i-w_ip_j\)。令 \(i\) 在前不劣，便有 \(p_i/w_i \le p_j/w_j\)。所以按 <b>\(p/w\) 遞增</b>（性價比：短且重要優先）排序。特例 \(w\) 全等 \(\Rightarrow\) SJF 最短工時優先；\(p\) 全等 \(\Rightarrow\) 權大優先。</p></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p1248">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1248" target="_blank">洛谷 P1248 加工生產調度（Johnson's Rule）</a><span class="chip">排程</span><span class="chip">交換論證</span></div>
-<p>每個工件先過機器 A（耗時 a_i）再過機器 B（耗時 b_i），兩台機器各自序列處理，最小化總完工時間（makespan）。</p>
-<details><summary>思路</summary><p><b>Johnson's Rule</b>：<code>min(a_i, b_j) ≤ min(a_j, b_i)</code> 時 i 排 j 前。實作：把工件分兩組 — <code>a &lt; b</code> 的按 a 遞增排在前，<code>a ≥ b</code> 的按 b 遞減排在後。直覺：A 快 B 慢的先上（讓 B 早點有活幹且不斷流），A 慢 B 快的殿後（結尾時 B 不用等）。這是三機以上 NP-hard、兩機卻有優美貪心的經典分界。</p></details>
+<p>每個工件先過機器 A（耗時 \(a_i\)）再過機器 B（耗時 \(b_i\)），兩台機器各自序列處理，最小化總完工時間（makespan）。</p>
+<details><summary>思路</summary><p><b>Johnson's Rule</b>：\(\min(a_i,b_j) \le \min(a_j,b_i)\) 時 \(i\) 排 \(j\) 前。實作：把工件分兩組 — \(a<b\) 的按 \(a\) 遞增排在前，\(a\ge b\) 的按 \(b\) 遞減排在後。直覺：A 快 B 慢的先上（讓 B 早點有活幹且不斷流），A 慢 B 快的殿後（結尾時 B 不用等）。這是三機以上 NP-hard、兩機卻有優美貪心的經典分界。</p></details>
 </div>
 
 <div class="problem" data-problem-id="atcoder-dp-x">
 <div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_x" target="_blank">AtCoder DP Contest X - Tower</a><span class="chip">排程</span><span class="chip">交換論證</span><span class="chip">貪心+DP</span></div>
-<p>每個箱子有重量 w、承重 s、價值 v，疊塔使塔上每箱之上的總重 ≤ 其承重，最大化總價值。</p>
+<p>每個箱子有重量 \(w\)、承重 \(s\)、價值 \(v\)，疊塔使塔上每箱之上的總重 \(\le\) 其承重，最大化總價值。</p>
 <details><summary>提示</summary><p>價值使純貪心失效（要選子集）— 但「選定子集後的最佳疊放順序」可以先用交換論證定死，再對這個順序做背包 DP。</p></details>
-<details><summary>思路</summary><p>相鄰交換：i 疊在 j 下方可行性更寬 ⟺ <code>w_i + s_i ≥ w_j + s_j</code>。按 <b>w+s 遞增</b>排序（小的在上/先考慮），然後 <code>dp[承重餘量] = 最大價值</code> 做 0/1 背包。這是「<b>交換論證定順序 + DP 選子集</b>」的代表套路，競賽出現率極高（同型：CF 開會安排、洛谷 P1417 烹調方案）。</p></details>
+<details><summary>思路</summary><p>相鄰交換：\(i\) 疊在 \(j\) 下方可行性更寬 \(\Longleftrightarrow w_i+s_i \ge w_j+s_j\)。按 <b>\(w+s\) 遞增</b>排序（小的在上／先考慮），然後用 \(\mathrm{dp}[\text{承重餘量}]=\text{最大價值}\) 做 0/1 背包。這是「<b>交換論證定順序 + DP 選子集</b>」的代表套路，競賽出現率極高（同型：CF 開會安排、洛谷 P1417 烹調方案）。</p></details>
 </div>
 
 <div class="pagenav">
@@ -128,7 +139,7 @@ std::sort(jobs.begin(), jobs.end(), SmithOrder);</code></pre>
 <a class="next" href="04-regret.html"><span class="dir">下一節 →</span>2.4 反悔貪心</a>
 </div>
 <footer class="site-footer">
-  <p>演算法策略圖鑑 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>演算法策略圖鑑 · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>

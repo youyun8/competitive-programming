@@ -326,6 +326,7 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
     """所有頁面（站級首頁／題目總表／各主題的頁面）共用的最外層版面骨架。"""
     css = rel(path, "assets/site.css")
     js = rel(path, "assets/site.js")
+    math_config = rel(path, "assets/math-config.js")
     supabase_cfg = rel(path, "assets/supabase-config.js")
     progress_js = rel(path, "assets/progress.js")
     extra_script = ""
@@ -351,6 +352,8 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
 <link rel="icon" href="{favicon}">
 <link rel="stylesheet" href="{css}">
 <script src="{js}"></script>
+<script src="{math_config}"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 <script src="{supabase_cfg}"></script>
 <script src="{progress_js}"></script>
 </head>
@@ -377,7 +380,7 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
 {body}
 {pagenav}
 <footer class="site-footer">
-  <p>{site_name} · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>{site_name} · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>
@@ -388,6 +391,7 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
 </html>
 """.format(
         title=full_title, desc=desc, favicon=FAVICON, css=css, js=js,
+        math_config=math_config,
         supabase_cfg=supabase_cfg, progress_js=progress_js, pid=page_id, topic_attr=topic_attr,
         home=rel(path, "index.html"), site_name=SITE_NAME, tagline=SITE_TAGLINE,
         switcher=render_topic_switcher(path, topic["id"] if topic else None),

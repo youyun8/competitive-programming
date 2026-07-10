@@ -209,15 +209,13 @@ code{font-family:"JetBrains Mono","Cascadia Code",Consolas,"Courier New",monospa
 p code,li code,td code{
   background:var(--chip-bg); border-radius:5px; padding:1px 6px; font-size:.9em; color:var(--fg);
 }
-.math-inline,var{
-  font-family:"Times New Roman",Cambria,serif; font-style:italic; letter-spacing:.01em;
-}
 .formula{
   margin:10px 0; padding:10px 14px; overflow-x:auto;
   border:1px solid var(--border); border-radius:8px; background:var(--bg2);
-  font-family:"Times New Roman",Cambria,serif; font-style:italic; line-height:1.8;
-  white-space:pre-line;
+  line-height:1.8; text-align:center;
 }
+.formula mjx-container[display="true"]{margin:.35em 0 !important}
+mjx-container{color:inherit}
 .knapsack-topic{
   margin:28px 0; padding-top:4px; scroll-margin-top:18px;
 }
