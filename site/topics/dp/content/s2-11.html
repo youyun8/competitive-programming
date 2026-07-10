@@ -1,5 +1,17 @@
 <h2>2.11 圖上 DP 與博弈 DP</h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>依賴結構</th><th>應用方法</th><th>計算順序</th></tr>
+<tr><td>DAG</td><td>直接做最值／計數 DP</td><td>拓撲序或記憶化 DFS</td></tr>
+<tr><td>一般有向圖，但環內可視為整體</td><td>SCC 縮點後 DP</td><td>縮點 DAG 的拓撲序</td></tr>
+<tr><td>非負權最短路</td><td>Dijkstra，而非普通 DP</td><td>依目前最短距離動態決定</td></tr>
+<tr><td>有限步數／特權次數</td><td>加入層數，把環沿新維度展開</td><td>按層或最短路</td></tr>
+<tr><td>兩人零和博弈</td><td>勝負、差值或 minimax DP</td><td>從終局逆推</td></tr>
+</table></div>
+
+<div class="callout proof"><b>🎮 博弈狀態的三種常用值</b>
+<p>只問勝負時，<b>存在一個必敗後繼就是必勝；所有後繼都必勝才是必敗</b>。問分差時，若目前拿 x 分後交給對手，轉移常寫成 <code>dp[s]=max(x-dp[next])</code>，因為對手的優勢要從自己的收益中扣掉。若不是零和、資訊不完全或可能無限循環，這個簡單倒推不一定成立，需另建模型。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>DP 要求依賴關係無環。圖上做 DP 的三條路：① 圖本身是 <b>DAG</b> → 拓撲序即計算順序；② 有環 → <b>SCC 縮點</b>成 DAG，或改用最短路演算法（鬆弛 = 帶環的 DP）；③ 博弈 → 狀態=「局面＋輪到誰」，從終局倒推勝負/最優值。</p></div>
 

@@ -54,6 +54,16 @@
 <main>
 <h2>2.1 線性 DP（入門三件套與 LIS 家族）</h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>狀態視角</th><th>典型定義</th><th>答案位置</th><th>代表題</th></tr>
+<tr><td>前 i 個</td><td><code>dp[i]</code> = 前 i 個元素的完整答案</td><td><code>dp[n]</code></td><td>爬樓梯、打家劫舍</td></tr>
+<tr><td>必須以 i 結尾</td><td><code>dp[i]</code> = 以 a[i] 作最後元素的答案</td><td><code>max(dp[i])</code></td><td>LIS、最大子段和</td></tr>
+<tr><td>值域作狀態</td><td><code>best[x]</code> = 結尾值為 x 時的最優解</td><td>值域取最優</td><td>值域小或可用 BIT 優化的 LIS 變形</td></tr>
+</table></div>
+
+<div class="callout proof"><b>🧠 選狀態的判斷法</b>
+<p>如果只知道「前 i 個的最優值」就足以接上第 i+1 個，用前綴狀態；如果未來能否接元素取決於最後值、最後位置或最後類型，就把它固定在狀態裡。例：LIS 若只存前 i 個的最長長度，無法判斷 a[i+1] 能否接上，因為長度相同的序列可能有不同尾值；改成「以 i 結尾」後，尾值就是 a[i]，轉移才無後效。空間滾動前也要先確認右式只依賴固定幾個較早狀態。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>狀態沿著序列一維推進。兩種最常用的視角：<b>「前 i 個的答案」</b>（答案在 dp[n]）與<b>「以 i 結尾的答案」</b>（答案是所有 dp[i] 取 max）。分不清用哪個時，看轉移是否需要「最後一個元素是誰」——需要就用「以 i 結尾」。</p></div>
 

@@ -54,6 +54,17 @@
 <main>
 <h2>2.4 區間 DP</h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>模型</th><th>如何拆</th><th>常見複雜度</th><th>代表</th></tr>
+<tr><td>枚舉分割點</td><td>[l,k] 與 [k+1,r] 合併</td><td>O(n³)</td><td>石子合併、矩陣鏈乘</td></tr>
+<tr><td>處理兩端</td><td>刪／配 l、r，縮成更短區間</td><td>O(n²)</td><td>迴文子序列、區間博弈</td></tr>
+<tr><td>枚舉最後消失者</td><td>最後一步固定區間外鄰居</td><td>O(n³)</td><td>戳氣球、能量項鍊</td></tr>
+<tr><td>帶外部資訊</td><td><code>dp[l][r][k]</code> 記區間外對未來的影響</td><td>依附加維而定</td><td>移除盒子</td></tr>
+</table></div>
+
+<div class="callout proof"><b>🔁 為什麼一定按長度遞增？</b>
+<p>任何轉移都應只讀更短區間，因此外層枚舉 <code>len=1..n</code>，內層枚舉 l，再算 <code>r=l+len-1</code>。若用遞迴，區間長度就是天然下降量。判斷是否適合區間 DP 時，試著問：「固定最後一次操作後，剩下部分是否切成互不影響的連續段？」若仍需知道段外元素，表示 <code>dp[l][r]</code> 資訊不足，需改枚舉方向或加維。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>dp[l][r] = 區間 [l, r] 的答案，由更短的子區間合併而來。計算順序<b>按區間長度遞增</b>枚舉（或記憶化搜尋）。轉移通常是枚舉分割點 k：dp[l][r] = min/max over k of dp[l][k] + dp[k+1][r] + 合併代價，複雜度 O(n³)。</p></div>
 

@@ -54,6 +54,20 @@
 <main>
 <h2>2.9 數位 DP</h2>
 
+<div class="callout idea"><b>🔍 數位 DP 在數什麼？</b>
+<p>把區間問題改成前綴函數 <code>solve(x)</code> = [0,x] 中合法數量，答案為 <code>solve(R)-solve(L-1)</code>。從高位到低位填數字，狀態至少含位置 pos 與描述限制所需的資訊；<code>tight</code> 表示目前前綴是否仍等於上界，<code>started</code> 表示是否已放過非前導零。只有 <code>tight=false</code> 的狀態能跨不同 x 的分支安全記憶化。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>參數</th><th>作用</th><th>常見錯法</th></tr>
+<tr><td><code>pos</code></td><td>目前填到哪一位</td><td>位數方向與 base case 不一致</td></tr>
+<tr><td><code>tight</code></td><td>本位上限是 digit[pos] 還是 9</td><td>下一層寫成 <code>d==limit</code>，忘了還要且上原 tight</td></tr>
+<tr><td><code>started</code></td><td>區分前導零與數字中的 0</td><td>把 0007 的零當真實數位計數</td></tr>
+<tr><td>問題狀態</td><td>前一位、餘數、出現集合、自動機節點等</td><td>漏掉會影響未來合法性的歷史</td></tr>
+</table></div>
+
+<div class="callout warn"><b>⚠ 0 是否算入答案？</b>
+<p>DFS 全程都不 started 的分支代表數字 0。它是否符合題意要在終點明確決定，不能靠前導零轉移碰運氣。含負區間也要先把正、負部分拆開，再依數位性質是否對絕對值對稱處理。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>統計區間 [l, r] 內「數位滿足某性質」的數：差分成 solve(r) − solve(l−1)，然後<b>從最高位往低位逐位填數字</b>，狀態記「數位相關的性質」＋兩面旗：<b>tight</b>（前綴是否貼著上界，貼著則本位最多填到上界位）與 <b>lead</b>(前導零，尚未開始的數不該計入性質)。</p></div>
 

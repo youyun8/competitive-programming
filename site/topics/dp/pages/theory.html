@@ -54,6 +54,18 @@
 <main>
 <h2><span class="sec-no">1</span>理論基礎：DP 思考框架</h2>
 
+<div class="callout proof"><b>🧪 一個方程如何從無到有：打家劫舍</b>
+<p>先定義 <code>dp[i]</code> = 只看前 i 家能得到的最大金額。最優解對第 i 家只有兩種互斥情況：不偷它，答案是 <code>dp[i-1]</code>；偷它，第 i−1 家不能偷，答案是 <code>dp[i-2]+a[i]</code>。兩類覆蓋所有合法方案且不重疊，所以 <code>dp[i]=max(dp[i-1],dp[i-2]+a[i])</code>。正確性可按 i 歸納：假設較短前綴已最優，任一前 i 家的最優方案依「是否含 i」必落入上述其中一類，取較大者即全域最優。<b>狀態定義、分類最後決策、證明分類完整</b>就是大多數 DP 推導的骨架。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>檢查點</th><th>必須說清楚的句子</th><th>說不清時的警訊</th></tr>
+<tr><td>狀態</td><td><code>dp[...]</code> 精確代表哪些選項範圍與哪種答案</td><td>同一格可能代表兩種歷史</td></tr>
+<tr><td>轉移</td><td>用哪個「最後決策」把所有方案互斥分類</td><td>漏情況或重複計數</td></tr>
+<tr><td>順序</td><td>右式的每個狀態為何已經算好</td><td>依賴成環或原地更新污染</td></tr>
+<tr><td>邊界</td><td>空集合／空前綴的答案為何是該初值</td><td>靠特判勉強跑過樣例</td></tr>
+<tr><td>複雜度</td><td>合法狀態有幾個、每格枚舉幾個決策</td><td>只看迴圈層數卻漏掉轉移成本</td></tr>
+</table></div>
+
 <h3>1.1 三大前提</h3>
 <div class="tbl-wrap"><table>
 <tr><th>性質</th><th>意義</th><th>缺了會怎樣</th></tr>

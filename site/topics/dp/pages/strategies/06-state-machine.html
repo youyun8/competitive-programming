@@ -54,6 +54,17 @@
 <main>
 <h2>2.6 狀態機 DP</h2>
 
+<div class="callout proof"><b>✏️ 先畫圖，再寫式子</b>
+<p>每個節點是一種「處理完前 i 個元素後的身分」，每條邊標上本步行動與收益；<code>next[to] = max(next[to], old[from] + gain)</code> 就是完整模板。股票題的節點可為空手、持股、冷凍；字串限制題的節點可為已匹配的模式長度。初始時只有起始節點可達，其餘設 −INF；答案只在題目允許的終止節點中取最優。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>實作檢查</th><th>原因</th></tr>
+<tr><td>本輪一律從 <code>old</code> 轉到 <code>next</code></td><td>避免同一天連走多條本不允許的邊</td></tr>
+<tr><td>把「交易次數」定義成買入或賣出其中一種</td><td>兩種定義都可，但轉移與答案必須一致</td></tr>
+<tr><td>不可達狀態設 −INF</td><td>不能讓「憑空持股」等非法歷史參與 max</td></tr>
+<tr><td>狀態數固定時可用矩陣表示轉移</td><td>步數極大可接矩陣快速冪</td></tr>
+</table></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>把「目前處於哪種<b>模式</b>」顯式列成有限狀態機：dp[i][state]，轉移方程就是自動機的邊。適合「同一時刻你只能處於少數幾種身分」的問題——持股/空手、健康/冷凍期、匹配到模式串第幾位。</p></div>
 

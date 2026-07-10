@@ -1,5 +1,17 @@
 <h2>2.1 排序貪心（Sort &amp; Sweep）</h2>
 
+<div class="callout proof"><b>🔑 排序鍵不是從樣例猜出來的</b>
+<p>先只看相鄰兩個元素 i、j，比較順序 <code>ij</code> 與 <code>ji</code> 對目標的貢獻；把「ij 不劣」化成單鍵 <code>key(i)≤key(j)</code>，再證明任何逆序都可交換。若關係會依第三個元素或目前累積量改變，就未必能用一次全域排序解決。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>實作風險</th><th>安全做法</th></tr>
+<tr><td>用浮點比較比值</td><td>用 <code>a.x*b.y &lt; b.x*a.y</code> 交叉相乘，並用 128 位防溢位</td></tr>
+<tr><td>比較器在相等時仍回 true</td><td>相等必回 false；需要穩定次序就顯式加 tie-break</td></tr>
+<tr><td>只按一鍵排序卻未處理同鍵</td><td>檢查同鍵是否任意順序等價，否則推導第二鍵</td></tr>
+<tr><td>lambda 捕捉會變動的外部狀態</td><td>比較結果必須固定且滿足 strict weak ordering</td></tr>
+<tr><td>排序後掃描的等號寫錯</td><td>先確認區間是閉、開或半開，手測相切端點</td></tr>
+</table></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>找到正確的<b>排序鍵</b>，排序後從頭到尾線性掃描，每一步的決策變得顯然。80% 的貪心題第一步都是排序 — 問題只剩「按什麼排」。</p></div>
 

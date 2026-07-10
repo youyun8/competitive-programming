@@ -1,5 +1,16 @@
 <h2>2.5 雙序列 DP</h2>
 
+<div class="callout idea"><b>🧭 把 dp 表看成「對齊路徑」</b>
+<p>在 (n+1)×(m+1) 的格點圖上，<code>(i,j)</code> 表示兩序列各消耗了 i、j 個元素。向下代表跳過 A[i]，向右代表跳過 B[j]，斜走代表把兩個元素配對或替換。LCS 是在斜走且字元相等時得 1 分；編輯距離則讓橫、直、斜三種操作各有成本。這個幾何觀點能直接推導轉移，也能用倒走格點路徑還原一組對齊方案。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>問題</th><th>斜走</th><th>橫／直走</th><th>邊界</th></tr>
+<tr><td>LCS</td><td>相等才配對並 +1</td><td>跳過其中一端</td><td>任一空序列答案 0</td></tr>
+<tr><td>編輯距離</td><td>相等 +0，否則替換 +1</td><td>插入／刪除 +1</td><td><code>dp[i][0]=i</code>、<code>dp[0][j]=j</code></td></tr>
+<tr><td>交錯字串</td><td>不使用</td><td>從 A 或 B 取下一字元</td><td>由 <code>i+j</code> 推出第三下標</td></tr>
+<tr><td>雙序列計數</td><td>依配對規則加／乘</td><td>必須設計去重規則</td><td>空前綴常是唯一空方案</td></tr>
+</table></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>dp[i][j] = 「序列 A 的前 i 個」與「序列 B 的前 j 個」的答案。轉移枚舉兩序列末端字元的處置方式（配對 / 各自跳過），永遠只有常數種，複雜度 O(nm)。</p></div>
 

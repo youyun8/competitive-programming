@@ -52,6 +52,21 @@
 <main>
 <h2>2.9 貪心 × 資料結構</h2>
 
+<div class="callout idea"><b>🧰 把「策略」與「查詢器」分開</b>
+<p>先在不考慮效率時寫出每步真正想找的對象，再選資料結構加速。資料結構不改變貪心規則，也不提供正確性；證明仍針對「為何應選這個對象」，複雜度才針對「如何快速找到它」。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>每步需要的操作</th><th>常用工具</th><th>典型用途</th></tr>
+<tr><td>找 ≤x 的最晚未占位置並刪除</td><td>並查集跳點</td><td>截止期限任務排槽</td></tr>
+<tr><td>前綴／區間計數與第 k 個</td><td>BIT／線段樹</td><td>判斷資源、選順位</td></tr>
+<tr><td>找前驅／後繼並任意刪除</td><td>set／multiset</td><td>配對、分配最接近資源</td></tr>
+<tr><td>區間批量占用、查下一空位</td><td>並查集或線段樹</td><td>離線配置</td></tr>
+<tr><td>動態維護最小／最大候選</td><td>heap</td><td>掃描線候選池、反悔</td></tr>
+</table></div>
+
+<div class="callout warn"><b>⚠ 更新必須維持查詢語意</b>
+<p>例如 DSU 跳點的 <code>find(x)</code> 若定義為「≤x 的最大空位」，占用 t 後就必須令它指向 <code>find(t-1)</code>；若只是 <code>fa[t]=t-1</code> 而 find 沒正確壓縮，語意或效率都可能破壞。先把抽象操作寫成規格，再實作資料結構。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>貪心策略本身簡單，但每一步的決策需要「快速找到／更新某個極值或空位」— 瓶頸在資料結構：並查集跳過已佔用位置、BIT/線段樹維護區間資訊、multiset 支援任意刪除。</p></div>
 

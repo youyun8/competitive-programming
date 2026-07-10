@@ -52,6 +52,20 @@
 <main>
 <h2>2.3 交換論證排程（Scheduling by Exchange Argument）</h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>排程目標</th><th>局部比較</th><th>得到的規則</th><th>限制</th></tr>
+<tr><td>ΣC<sub>i</sub></td><td>兩任務誰短先做</td><td>p 遞增（SJF）</td><td>單機、全部同時可用</td></tr>
+<tr><td>Σw<sub>i</sub>C<sub>i</sub></td><td><code>p_i w_j ≤ p_j w_i</code></td><td>p/w 遞增（Smith）</td><td>w 非負；無 release time</td></tr>
+<tr><td>兩機 flow shop makespan</td><td>比較相鄰工件在 A、B 的等待</td><td>Johnson：前組 a 遞增、後組 b 遞減</td><td>每件都先 A 後 B</td></tr>
+<tr><td>選子集再排順序</td><td>先證明選定集合存在固定最優序</td><td>排序後再 DP／背包</td><td>排序關係不得依「選了哪些其他項」改變</td></tr>
+</table></div>
+
+<div class="callout proof"><b>🧮 Smith's Rule 完整推導</b>
+<p>設 i、j 前已有共同耗時 T。順序 ij 的相關成本是 <code>w_i(T+p_i)+w_j(T+p_i+p_j)</code>；順序 ji 是 <code>w_j(T+p_j)+w_i(T+p_j+p_i)</code>。消去共同項後，ij 不劣當且僅當 <code>w_j p_i≤w_i p_j</code>，即 <code>p_i/w_i≤p_j/w_j</code>。因此所有逆序對都可逐一交換而不增成本，最後得到排序序列。程式不要做浮點除法，應用 <code>__int128(p_i)*w_j &lt; __int128(p_j)*w_i</code>，相等代表兩種次序同價。</p></div>
+
+<details><summary>數值例：為什麼「工時短」不一定先做？</summary>
+<p>任務 A=(p=3,w=100)、B=(p=1,w=1)。A 先的成本為 100×3+1×4=304；B 先為 1×1+100×4=401。雖然 B 更短，A 的權重極高，Smith 比值 A=0.03、B=1，會正確地把 A 放前面。這也說明排序鍵必須從目標函數推導，而不是只憑「短作業優先」直覺。</p></details>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>單機/多機排程問題的統一解法：假設最優序列中相鄰兩個任務 i、j 交換，寫出兩種順序的目標值，令「i 在前不劣」解出不等式 — 這個不等式就是排序鍵。</p></div>
 

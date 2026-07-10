@@ -54,6 +54,17 @@
 <main>
 <h2>2.2 網格與座標 DP</h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>目標</th><th>常用轉移</th><th>不可達格</th><th>初值</th></tr>
+<tr><td>路徑數</td><td>前驅方案數相加</td><td>0</td><td>起點 = 1</td></tr>
+<tr><td>最小代價</td><td>前驅取 min 再加本格</td><td>+INF</td><td>起點 = 本格代價</td></tr>
+<tr><td>最大收益</td><td>前驅取 max 再加本格</td><td>−INF</td><td>起點 = 本格收益</td></tr>
+<tr><td>多人同步</td><td>同一步數下枚舉每人的前驅</td><td>越界／衝突依題意處理</td><td>所有人同在起點</td></tr>
+</table></div>
+
+<div class="callout warn"><b>⚠ 網格不等於一定能 DP</b>
+<p>真正的判準是移動關係能否排成拓撲序。只能右／下時，<code>i+j</code> 每步嚴格增加，所以依賴無環；四方向自由移動時，同一格可能繞回，應改成 BFS／Dijkstra。若題目另給「步數 k」且每次 k 增加，則即使座標能回頭，狀態 <code>(k,i,j)</code> 仍可能無環。初始化時推薦在表外放哨兵（最小化放 +INF、最大化放 −INF），避免第一行第一列充滿分支特判。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>狀態就是座標 (i, j)，轉移來自固定方向的鄰居（上方、左方）。只要移動方向不構成環（只能往右/往下），網格天然就是一張 DAG，按行列順序填表即可。</p></div>
 

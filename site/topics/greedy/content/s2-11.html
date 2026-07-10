@@ -1,5 +1,15 @@
 <h2>2.11 專家專題 <span class="stars s5">★★★★★</span></h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>專題</th><th>把哪個巨大物件壓縮了</th><th>先備能力</th></tr>
+<tr><td>擬陣貪心</td><td>所有可行子集壓成「可增廣的獨立集系統」</td><td>交換論證、線性獨立／圖形擬陣</td></tr>
+<tr><td>slope trick</td><td>整個凸分段線性 DP 函數壓成斜率轉折點</td><td>凸性、heap、DP 轉移</td></tr>
+<tr><td>排序後 DP</td><td>先用交換論證消掉排列維度</td><td>相鄰交換、背包／線性 DP</td></tr>
+</table></div>
+
+<div class="callout warn"><b>⚠ 專家技巧的名稱不是適用條件</b>
+<p>擬陣必須驗證遺傳性與交換公理；slope trick 必須先證明值函數保持凸；排序後 DP 必須證明任一選定子集都存在同一鍵值的最優順序。任一前提不成立，短模板都可能產生看似合理的錯解。建議與 DP 的 2.12、2.13 對讀並保留暴力對拍。</p></div>
+
 <h3 id="s2-11-1">2.11.1 擬陣（Matroid）：貪心正確性的統一理論</h3>
 <p>擬陣 <code>M = (E, I)</code>：元素全集 E 與「獨立集」族 I，滿足（1）遺傳性：獨立集的子集獨立；（2）交換公理：|A| &lt; |B| 且皆獨立 ⇒ 存在 x ∈ B\A 使 A∪{x} 獨立。</p>
 <div class="callout proof"><b>🧾 Rado–Edmonds 定理</b>

@@ -52,6 +52,20 @@
 <main>
 <h2>2.8 圖上貪心</h2>
 
+<div class="tbl-wrap"><table>
+<tr><th>演算法</th><th>已確定集合</th><th>每步安全選擇</th><th>安全性的前提</th></tr>
+<tr><td>Kruskal</td><td>目前森林中的連通塊</td><td>跨不同塊的最小剩餘邊</td><td>Cut Property</td></tr>
+<tr><td>Prim</td><td>已進樹的頂點</td><td>跨割的最小邊</td><td>Cut Property</td></tr>
+<tr><td>Dijkstra</td><td>最短距離已定案的點</td><td>dist 最小的未定點</td><td>所有邊權非負</td></tr>
+<tr><td>Borůvka</td><td>目前每個連通塊</td><td>每塊最便宜的外連邊</td><td>可對多個割同時用 Cut Property</td></tr>
+</table></div>
+
+<div class="callout proof"><b>✂️ 「割」是 MST 變形題的共同語言</b>
+<p>對任何把頂點分成兩側的割，跨割最輕邊 e 都存在於某棵 MST：若目前 MST 沒有 e，加 e 會成環，環上另有跨割邊 f，且 w(e)≤w(f)，換邊不劣。這個交換動作同時解釋 Kruskal、Prim、Borůvka，也告訴你何時可改成最大生成樹或瓶頸目標。</p></div>
+
+<div class="callout warn"><b>⚠ Dijkstra 的非負權不是實作限制，而是證明前提</b>
+<p>有負邊時，剛取出的最近點仍可能被一條先繞到較遠點、再走負邊的路徑改善。例如 s→a=2、s→b=5、b→a=−10；a 被提早定案為 2，但真正最短是 −5。此時改用 Bellman–Ford／SPFA（依題目限制），不能只把 visited 拿掉假裝修好。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>MST 與 Dijkstra 本質上都是貪心，正確性由兩條圖論性質保證：<b>Cut Property</b>（跨越任意割的最小邊必在某棵 MST 中）與<b>非負權下最近未定點的距離已收斂</b>。把它們當作貪心來理解，才能在變體題中正確遷移。</p></div>
 

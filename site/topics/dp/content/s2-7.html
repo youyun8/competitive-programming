@@ -1,5 +1,19 @@
 <h2>2.7 位元狀壓 DP</h2>
 
+<div class="callout idea"><b>🔢 mask 的語意比位元技巧重要</b>
+<p>先用一句話固定 <code>mask</code>：它究竟表示「已選集合」、「可用集合」、還是「上一列的佔用情況」？再決定轉移是加一個元素、刪一個元素或換到下一列。常用操作：判第 k 位 <code>mask&gt;&gt;k&amp;1</code>、加入 <code>mask|1&lt;&lt;k</code>、刪除 <code>mask^1&lt;&lt;k</code>（已知該位為 1）、枚舉子集 <code>sub=(sub-1)&amp;mask</code>。</p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>骨架</th><th>狀態數 × 轉移</th><th>大約適用</th><th>代表</th></tr>
+<tr><td>集合＋最後元素</td><td>2ⁿ × n²</td><td>n ≲ 20</td><td>TSP</td></tr>
+<tr><td>集合配對／加一元素</td><td>2ⁿ × n</td><td>n ≲ 22</td><td>完美匹配計數</td></tr>
+<tr><td>枚舉 mask 的所有 sub</td><td>3ⁿ</td><td>n ≲ 15–17</td><td>集合劃分</td></tr>
+<tr><td>逐列輪廓</td><td>列數 × 合法 mask 對</td><td>寬度小、長度大</td><td>互不侵犯、炮兵陣地</td></tr>
+</table></div>
+
+<div class="callout warn"><b>⚠ 先算上界再開陣列</b>
+<p><code>2^20≈10^6</code>，再乘 20 已是兩千萬次；<code>2^25≈3.3×10^7</code>，單一 int 陣列就約 128 MB。若狀態還乘位置、步數或多測，必須先估記憶體。稀疏狀態才考慮 map／unordered_map；稠密狀態用連續陣列通常快得多。</p></div>
+
 <div class="callout idea"><b>💡 核心想法</b>
 <p>n ≤ 20 時，「哪些元素已處理」的<b>集合</b>本身塞進狀態：一個 n 位二進位整數。轉移就是位運算。兩大家族：<b>集合推進型</b>（dp[S]，按 S 從小到大）與<b>行輪廓型</b>（dp[i][S]，S 是第 i 行的放置狀態）。</p></div>
 
