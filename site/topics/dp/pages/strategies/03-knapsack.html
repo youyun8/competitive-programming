@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.3 背包全家桶（背包九講精華） — 演算法上分攻略</title>
+<meta name="description" content="0/1、完全、多重、分組、依賴、二維費用、計數與退背包">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s03" data-topic="dp">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法上分攻略<span>策略分類 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="active" data-topic="dp" href="../../index.html">📈 DP</a>
+    </div>
+  <a class="lv1 sitewide" href="../../../../pages/problems.html#topic=dp">📋 全站題目總表</a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 動態規劃 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-linear.html">2.1 線性 DP</a>
+    <a class="lv2" data-page="s02" href="02-grid.html">2.2 網格與座標 DP</a>
+    <a class="lv2" data-page="s03" href="03-knapsack.html">2.3 背包全家桶</a>
+    <a class="lv2" data-page="s04" href="04-interval.html">2.4 區間 DP</a>
+    <a class="lv2" data-page="s05" href="05-two-sequences.html">2.5 雙序列 DP</a>
+    <a class="lv2" data-page="s06" href="06-state-machine.html">2.6 狀態機 DP</a>
+    <a class="lv2" data-page="s07" href="07-bitmask.html">2.7 位元狀壓 DP</a>
+    <a class="lv2" data-page="s08" href="08-tree.html">2.8 樹上 DP</a>
+    <a class="lv2" data-page="s09" href="09-digit.html">2.9 數位 DP</a>
+    <a class="lv2" data-page="s10" href="10-counting-expectation.html">2.10 計數與期望 DP</a>
+    <a class="lv2" data-page="s11" href="11-graph-game.html">2.11 圖上與博弈 DP</a>
+    <a class="lv2" data-page="s12" href="12-optimization.html">2.12 DP 優化技術</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與除錯</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 狀態設計方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.3 背包全家桶（背包九講精華）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>「容量」是狀態、「物品」是階段：dp[j] = 容量 j 時的最優值，逐件物品更新。全家桶的分野只有一個問題：<b>每件物品能用幾次</b>——一次（0/1）、無限（完全）、k 次（多重）、同組互斥（分組）、有前置（依賴）。而在一維寫法裡，這個差異全部濃縮在<b>容量的枚舉方向</b>上。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「在總量限制下選一個子集，最大化價值 / 統計方案 / 判斷可行」。</li>
+<li>「總量」不一定是重量：時間、金錢、下標和、甚至「差值」都可以當容量。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="luogu-p1048">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1048" target="_blank">洛谷 P1048 採藥（0/1 背包）</a><span class="chip">背包</span></div>
+<p>T 分鐘內採藥，每株耗時 t_i、價值 v_i，各最多採一次，最大化總價值。</p>
+<details><summary>思路</summary><p>二維：dp[i][j] = 前 i 株、耗時 j 的最大價值 = max(dp[i−1][j], dp[i−1][j−t] + v)。壓一維後必須<b>倒序枚舉 j</b>：保證 dp[j−t] 還是「上一排」的值，否則同一株會被用兩次。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">vector&lt;int&gt; dp(T + 1, 0);
+for (int i = 0; i &lt; n; i++)
+    for (int j = T; j &gt;= t[i]; j--)          // 0/1：倒序
+        dp[j] = max(dp[j], dp[j - t[i]] + v[i]);
+return dp[T];                                 // 「不超過 T」：初始化全 0</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1616">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1616" target="_blank">洛谷 P1616 疯狂的采药（完全背包）</a><span class="chip">背包</span></div>
+<p>同上，但每株可採無限次。</p>
+<details><summary>思路</summary><p>只改一個字：<b>正序枚舉 j</b>。此時 dp[j−t] 已是「本排」的值，物品天然可重複選。理解這一字之差，等於理解一維背包的全部語意。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">for (int i = 0; i &lt; n; i++)
+    for (long long j = t[i]; j &lt;= T; j++)     // 完全：正序
+        dp[j] = max(dp[j], dp[j - t[i]] + v[i]);</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1776">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1776" target="_blank">洛谷 P1776 寶物篩選（多重背包）</a><span class="chip">背包</span><span class="chip">二進位拆分</span></div>
+<p>每種物品有 m_i 件，容量 4×10⁴、Σm 很大。</p>
+<details><summary>思路</summary><p><b>二進位拆分</b>：把 m 件拆成 1, 2, 4, …, 2^k, 剩餘 這些「打包件」，任意 0..m 都能由它們組合出來，然後當 0/1 背包做——O(ΣlogM · W)。極限資料要用單調佇列優化到 O(nW)（<a href="12-optimization.html">2.12.2</a>）。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">for (每種物品 w, v, m) {
+    for (int k = 1; m &gt; 0; k &lt;&lt;= 1) {
+        int c = min(k, m); m -= c;
+        items.push_back({w * c, v * c});      // 打包成 0/1 物品
+    }
+}
+// 之後照 0/1 背包倒序做</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1757">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1757" target="_blank">洛谷 P1757 通天之分組背包</a><span class="chip">背包</span><span class="chip">分組</span></div>
+<p>物品分組，每組最多選一件。</p>
+<details><summary>思路</summary><p>枚舉順序是關鍵：<b>組在外、容量居中（倒序）、組內物品在最內</b>——這樣每個容量對每組只做一次決策，天然保證「每組至多一件」。樹上背包（<a href="08-tree.html">2.8.3</a>）本質就是「每個子樹是一組」的分組背包。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">for (auto&amp; grp : groups)
+    for (int j = W; j &gt;= 0; j--)              // 容量倒序在中層
+        for (auto&amp; [w, v] : grp)
+            if (j &gt;= w) dp[j] = max(dp[j], dp[j - w] + v);</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="lc-474">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/ones-and-zeroes/" target="_blank">LC 474 一和零（二維費用）</a><span class="chip">背包</span><span class="chip">二維費用</span></div>
+<p>每個字串消耗若干個 0 與 1，兩種資源都有上限，最多選幾個字串？</p>
+<details><summary>思路</summary><p>費用變成向量 → 狀態多一維：dp[j][k]，兩維都倒序枚舉。洛谷 P1855（金錢+時間）同型。<b>「兩個上限」是二維費用的直接訊號。</b></p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1064">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1064" target="_blank">洛谷 P1064 金明的預算方案（依賴背包）</a><span class="chip">背包</span><span class="chip">依賴</span></div>
+<p>附件必須跟著主件買，每個主件至多兩個附件。</p>
+<details><summary>思路</summary><p>附件數少 → 把「主件 / 主+附1 / 主+附2 / 主+附1+附2」四種打包當作<b>同組互斥物品</b>，退化成分組背包。依賴關係一般化（樹狀）就是樹上背包。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-494">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/target-sum/" target="_blank">LC 494 目標和（計數背包）</a><span class="chip">背包</span><span class="chip">計數</span></div>
+<p>給每個數填 +/−，使總和為 target 的方案數。</p>
+<details><summary>思路</summary><p>設正號集合和為 s，則 s = (sum + target) / 2 —— 轉成「選子集湊出 s 的方案數」：dp[j] += dp[j−a]，倒序枚舉。<b>計數版把 max 換成 +=，初始 dp[0]=1</b>。同型：LC 416 分割等和子集（可行性版，用 bool 或 bitset）。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">int s = accumulate(a.begin(), a.end(), 0) + target;
+if (s &lt; 0 || s % 2) return 0;
+s /= 2;
+vector&lt;int&gt; dp(s + 1, 0); dp[0] = 1;
+for (int x : a)
+    for (int j = s; j &gt;= x; j--) dp[j] += dp[j - x];
+return dp[s];</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p5020">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5020" target="_blank">洛谷 P5020 貨幣系統（NOIP 2018）</a><span class="chip">背包</span><span class="chip">可行性</span></div>
+<p>找最小的等價貨幣系統：能表出的金額集合完全相同。</p>
+<details><summary>思路</summary><p>結論：答案 = 原系統中<b>不能被其他面額湊出來</b>的面額個數。排序後跑可行性完全背包，若 a_i 已能被更小面額表出則它是冗餘的。<b>「判斷能否湊出」= 完全背包的 bool 版</b>，是很多構造題的子件。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4141">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4141" target="_blank">洛谷 P4141 消失之物（退背包）</a><span class="chip">背包</span><span class="chip">撤銷</span></div>
+<p>對每個 i 回答：不用第 i 件物品時，湊出每個體積的方案數。</p>
+<details><summary>思路</summary><p>先算全體的計數背包 f。<b>退背包</b>：因為加入物品的運算（卷積）可交換，「刪掉物品 i」可以逆運算：g[j] = f[j] − g[j − w_i]（<b>正序</b>枚舉 j）。避免對每個 i 重算 O(nW)。撤銷思想在「強制不選某物」類題目通用（另一路是前後綴背包合併）。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">// f 為含全部物品的計數背包
+for (int i = 0; i &lt; n; i++) {
+    g = f;                                    // g = 去掉物品 i 的背包
+    for (int j = w[i]; j &lt;= W; j++) g[j] = (g[j] - g[j - w[i]] + MOD) % MOD;
+    // g[1..W] 即答案
+}</code></pre></details>
+</div>
+
+<div class="callout warn"><b>⚠ 「恰好裝滿」的初始化</b>
+<p>求「不超過容量」：dp 全初始化 0。求「<b>恰好</b>裝滿」：dp[0] = 0、其餘 −INF（計數則 dp[0]=1、其餘 0）——−INF 的語意是「此容量不可達」，讓非法狀態永遠不會勝出。詳見<a href="../pitfalls.html">第 3 章</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="02-grid.html"><span class="dir">← 上一節</span>2.2 網格與座標 DP</a>
+<a class="next" href="04-interval.html"><span class="dir">下一節 →</span>2.4 區間 DP</a>
+</div>
+<footer class="site-footer">
+  <p>演算法上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.10 計數 DP 與期望 DP — 演算法上分攻略</title>
+<meta name="description" content="不重不漏的計數、逆推期望、對稱性壓縮與二次期望">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s10" data-topic="dp">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法上分攻略<span>策略分類 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="active" data-topic="dp" href="../../index.html">📈 DP</a>
+    </div>
+  <a class="lv1 sitewide" href="../../../../pages/problems.html#topic=dp">📋 全站題目總表</a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 動態規劃 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-linear.html">2.1 線性 DP</a>
+    <a class="lv2" data-page="s02" href="02-grid.html">2.2 網格與座標 DP</a>
+    <a class="lv2" data-page="s03" href="03-knapsack.html">2.3 背包全家桶</a>
+    <a class="lv2" data-page="s04" href="04-interval.html">2.4 區間 DP</a>
+    <a class="lv2" data-page="s05" href="05-two-sequences.html">2.5 雙序列 DP</a>
+    <a class="lv2" data-page="s06" href="06-state-machine.html">2.6 狀態機 DP</a>
+    <a class="lv2" data-page="s07" href="07-bitmask.html">2.7 位元狀壓 DP</a>
+    <a class="lv2" data-page="s08" href="08-tree.html">2.8 樹上 DP</a>
+    <a class="lv2" data-page="s09" href="09-digit.html">2.9 數位 DP</a>
+    <a class="lv2" data-page="s10" href="10-counting-expectation.html">2.10 計數與期望 DP</a>
+    <a class="lv2" data-page="s11" href="11-graph-game.html">2.11 圖上與博弈 DP</a>
+    <a class="lv2" data-page="s12" href="12-optimization.html">2.12 DP 優化技術</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與除錯</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 狀態設計方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.10 計數 DP 與期望 DP</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p><b>計數</b>：max 換成加法，鐵律是「每個方案恰好被數一次」——狀態設計要讓不同方案走不同的轉移路徑。<b>期望</b>：利用線性性 E[X+Y] = E[X] + E[Y] 拆解；「到終點的期望步數」類問題通常<b>逆推</b>（從終點往回），因為起點的期望才是問的東西、終點的期望是 0。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「方案數 mod 998244353 / 10⁹+7」——計數；「期望值」「機率」——期望 DP。</li>
+<li>期望題若過程有隨機轉移（擲骰、隨機選），把「局面」設為狀態、期望值設為 dp 值。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="lc-96">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/unique-binary-search-trees/" target="_blank">LC 96 不同的二叉搜尋樹（卡特蘭數）</a><span class="chip">計數</span></div>
+<p>n 個節點能構成幾種 BST？</p>
+<details><summary>思路</summary><p>枚舉根 = 枚舉「左子樹有幾個節點」：dp[n] = Σ dp[i]·dp[n−1−i]——卡特蘭數的遞推。<b>乘法原理對應「獨立部分的方案數相乘」</b>，這種「枚舉第一層結構 + 兩側獨立」的形狀在計數 DP 反覆出現（合法括號、三角剖分、出棧序列都是它）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1025">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1025" target="_blank">洛谷 P1025 數的劃分</a><span class="chip">計數</span><span class="chip">劃分數</span></div>
+<p>把 n 分成 k 個正整數之和（不計順序）的方案數。</p>
+<details><summary>思路</summary><p>不計順序 → 強制份數非遞減來去重。兩種等價狀態：dp[n][k] = <b>dp[n−1][k−1]（有一份是 1）+ dp[n−k][k]（每份都 ≥ 2，全體減 1）</b>。「不計順序的計數 = 給方案定一個規範順序再數」是通用去重心法。</p></details>
+</div>
+
+<div class="problem" data-problem-id="atcoder-dp-t">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_t" target="_blank">AtCoder DP T - Permutation</a><span class="chip">計數</span><span class="chip">前綴和優化</span></div>
+<p>給定 &lt;/&gt; 序列，數滿足大小關係的 1..n 排列數。</p>
+<details><summary>思路</summary><p>妙狀態：dp[i][j] = 填好前 i 個數、且第 i 個數是「目前已用數字中第 j 小」的方案數——<b>相對名次代替具體數值</b>，未來只關心相對關係（無後效性）。轉移是對 j 的前綴/後綴和，O(n²)。這題把「狀態記相對量」與「前綴和優化轉移」（<a href="12-optimization.html">2.12.1</a>）一次教完。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4316">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4316" target="_blank">洛谷 P4316 綠豆蛙的歸宿</a><span class="chip">期望</span><span class="chip">DAG</span></div>
+<p>DAG 上每步等機率選一條出邊，求起點到終點的期望路徑長。</p>
+<details><summary>思路</summary><p>逆推模板：E[u] = Σ (E[v] + w(u,v)) / outdeg(u)，E[終點] = 0，按<b>反拓撲序</b>遞推。為什麼逆推？「從 u 到終點的期望」與怎麼到 u 的無關（無後效性）；順推的「從起點到 u 的期望」還得除以到達機率，麻煩得多。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">// 反圖拓撲序遞推
+for (int u : topo_reverse) {
+    if (u == T) { E[u] = 0; continue; }
+    double s = 0;
+    for (auto [v, w] : g[u]) s += E[v] + w;
+    E[u] = s / g[u].size();
+}</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="atcoder-dp-j">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://atcoder.jp/contests/dp/tasks/dp_j" target="_blank">AtCoder DP J - Sushi</a><span class="chip">期望</span><span class="chip">對稱性壓縮</span></div>
+<p>n 個盤子各有 1–3 個壽司，每次隨機選盤、有就吃一個，期望幾次吃完？</p>
+<details><summary>思路</summary><p>狀態不是 4ⁿ 個局面——<b>盤子可交換，只有「剩 1/2/3 個的盤子各幾個」重要</b>：dp[a][b][c]，O(n³)。轉移含「選到空盤」的自環，移項解出 dp。對稱性壓縮 + 自環移項，期望 DP 兩大手筋一次到位。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1365">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1365" target="_blank">洛谷 P1365 WJMZBMR 打 OSU!</a><span class="chip">期望</span><span class="chip">線性性</span></div>
+<p>序列 o/x/?（? 各半機率），連續 o 段貢獻長度平方，求期望得分。</p>
+<details><summary>思路</summary><p>平方不能直接線性拆 → <b>多維護一個輔助期望</b>：len = 目前結尾連續 o 長度的期望。x² 展開 (len+1)² = len² + 2len + 1，得分增量的期望 = 2·E[len] + 1。「維護低次矩來推高次貢獻」是期望 DP 處理平方/立方得分的通法。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1850">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1850" target="_blank">洛谷 P1850 換教室（NOIP 2016）</a><span class="chip">期望</span><span class="chip">決策維</span></div>
+<p>n 節課可申請換教室（成功率 p_i），最多申請 m 次，最小化走動距離期望。</p>
+<details><summary>思路</summary><p>先 Floyd 求全對最短路。dp[i][j][0/1] = 前 i 節課、用了 j 次申請、第 i 節是否申請 的最小期望。轉移枚舉上一節申請與否，<b>期望 = 四種（成功×成功…）組合按機率加權</b>。把「決策次數」與「上一步決策」都放進狀態，是期望 × 最優化的標準融合。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4550">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4550" target="_blank">洛谷 P4550 收集郵票</a><span class="chip">期望</span><span class="chip">二次期望</span></div>
+<p>n 種郵票等機率抽，第 k 次購買花費 k 元，求集滿的期望花費。</p>
+<details><summary>思路</summary><p>費用跟「已買次數」相關 → 同時維護 f[i] = 已有 i 種時集滿的期望<b>次數</b>、g[i] = 期望<b>花費</b>。g 的轉移里會用到 f（未來每多等一次，後續所有次數的單價整體 +1）。<b>「期望的期望」：當代價是次數的函數，就得帶著低階期望一起遞推。</b></p></details>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="09-digit.html"><span class="dir">← 上一節</span>2.9 數位 DP</a>
+<a class="next" href="11-graph-game.html"><span class="dir">下一節 →</span>2.11 圖上與博弈 DP</a>
+</div>
+<footer class="site-footer">
+  <p>演算法上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

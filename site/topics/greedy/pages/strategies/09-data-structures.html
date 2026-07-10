@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.9 貪心 × 資料結構 — 演算法上分攻略</title>
+<meta name="description" content="並查集找空位、線段樹/BIT 加速貪心決策">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/firebase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s09" data-topic="greedy">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法上分攻略<span>策略分類 × 競程題單</span></a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="active" data-topic="greedy" href="../../index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    </div>
+  <a class="lv1 sitewide" href="../../../../pages/problems.html#topic=greedy">📋 全站題目總表</a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 貪心演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-sorting.html">2.1 排序貪心</a>
+    <a class="lv2" data-page="s02" href="02-intervals.html">2.2 區間問題全家桶</a>
+    <a class="lv2" data-page="s03" href="03-exchange-scheduling.html">2.3 交換論證排程</a>
+    <a class="lv2" data-page="s04" href="04-regret.html">2.4 反悔貪心</a>
+    <a class="lv2" data-page="s05" href="05-heap.html">2.5 堆積貪心</a>
+    <a class="lv2" data-page="s06" href="06-lexicographic.html">2.6 字典序貪心</a>
+    <a class="lv2" data-page="s07" href="07-math.html">2.7 數學貪心與調整法</a>
+    <a class="lv2" data-page="s08" href="08-graph.html">2.8 圖上貪心</a>
+    <a class="lv2" data-page="s09" href="09-data-structures.html">2.9 貪心 × 資料結構</a>
+    <a class="lv2" data-page="s10" href="10-binary-search.html">2.10 貪心 × 二分答案</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 經典「假貪心」陷阱</a>
+    <a class="lv1" data-page="proofs" href="../proofs.html">4. 證明方法實戰模板</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="menuBtn" aria-label="開啟目錄">☰</button>
+
+<main>
+<h2>2.9 貪心 × 資料結構</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>貪心策略本身簡單，但每一步的決策需要「快速找到／更新某個極值或空位」— 瓶頸在資料結構：並查集跳過已佔用位置、BIT/線段樹維護區間資訊、multiset 支援任意刪除。</p></div>
+
+<div class="problem" data-problem-id="misc-05">
+<div class="p-head"><span class="stars s4">★★★★</span><span class="p-title">截止期限任務調度（Job Sequencing）+ 並查集</span><span class="chip">DSU</span><span class="chip">排程</span></div>
+<p>每個任務一單位時間、截止 d_i、報酬 p_i，最大化總報酬。</p>
+<details><summary>思路</summary><p>按報酬遞減排序，每個任務安排在「≤ d_i 的最晚空閒時槽」（越晚越不擋別人）。找最晚空槽用<b>並查集</b>：<code>find(d)</code> 返回 ≤ d 的最晚空槽，佔用後 <code>fa[t] = t−1</code>，均攤近 O(1)。正確性可用擬陣描述：「可行任務子集」構成 transversal matroid，按權降序能加就加必最優 — 2.11.1 的具體實例。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">sort(jobs.begin(), jobs.end(), [](auto&amp; a, auto&amp; b){ return a.p &gt; b.p; });
+vector&lt;int&gt; fa(maxD + 1); iota(fa.begin(), fa.end(), 0);
+function&lt;int(int)&gt; find = [&amp;](int x){ return fa[x]==x ? x : fa[x]=find(fa[x]); };
+long long ans = 0;
+for (auto&amp; j : jobs) {
+    int t = find(min(j.d, maxD));
+    if (t &gt; 0) { ans += j.p; fa[t] = t - 1; }   // 佔用時槽 t
+}</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1250">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1250" target="_blank">洛谷 P1250 種樹</a><span class="chip">區間</span><span class="chip">差分約束→貪心</span></div>
+<p>區間 [l_i, r_i] 內至少要種 t_i 棵樹，每個位置至多一棵，求最少總棵數。</p>
+<details><summary>思路</summary><p>按<b>右端點遞增</b>排序，每個約束不足時<b>從右端點往左</b>補種（種得越右，越可能被後面的區間重複利用）。交換論證：把任何解中較左的樹右移到區間右端，不影響當前約束、只會幫助後續。加速：BIT 查區間和 + 並查集找「最右空位」。同型進階：洛谷 P2894、CF 志願者/餵牛系列。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-1526c2">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1526/C2" target="_blank">CF 1526C2 Potions（multiset/堆反悔）</a><span class="chip">反悔貪心</span><span class="chip">multiset</span></div>
+<p>從左到右喝藥水（可跳過），生命值不得為負，最多喝幾瓶？</p>
+<details><summary>思路</summary><p>全喝，血量為負時反悔吐掉「已喝中最毒的一瓶」（小根堆取最小負值）。與 LC 630 同構 — 反悔貪心配上不同容器（heap / multiset）反覆出現在 CF Div2 C/D，是性價比最高的訓練題型之一。</p></details>
+</div>
+
+<div class="pagenav">
+<a class="prev" href="08-graph.html"><span class="dir">← 上一節</span>2.8 圖上貪心</a>
+<a class="next" href="10-binary-search.html"><span class="dir">下一節 →</span>2.10 貪心 × 二分答案</a>
+</div>
+<footer class="site-footer">
+  <p>演算法上分攻略 · 純靜態多頁網站 · 無外部依賴 · 深淺色主題自適應</p>
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>
