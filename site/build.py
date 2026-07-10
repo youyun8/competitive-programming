@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-靜態頁面產生器 — 演算法上分攻略
+靜態頁面產生器 — 演算法策略圖鑑
 
 用途：把每個「主題」（貪心、DP、……）底下 topics/<id>/content/ 的內容片段
 套上共用的版面模板（側欄導覽、主題切換器、設定面板、上一頁/下一頁），輸出
@@ -26,7 +26,7 @@ import os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-SITE_NAME = "演算法上分攻略"
+SITE_NAME = "演算法策略圖鑑"
 SITE_TAGLINE = "策略分類 × 競程題單"
 FAVICON = (
     'data:image/svg+xml,'
@@ -332,7 +332,9 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
     if page_id == "problems":
         extra_script = '<script src="%s"></script>\n' % rel(path, "assets/problems-data.js")
 
-    full_title = SITE_NAME if page_id == "index" else (title + " — " + SITE_NAME)
+    # 站級首頁（topic is None）標題就是站名；主題首頁與其他頁面一律帶上站名當後綴，
+    # 否則不同主題的首頁分頁標題會一模一樣，瀏覽器分頁/書籤都分不出是哪個主題。
+    full_title = SITE_NAME if (page_id == "index" and topic is None) else (title + " — " + SITE_NAME)
     topic_attr = ' data-topic="%s"' % topic["id"] if topic else ""
     # 從主題頁面點「全站題目總表」時帶上 #topic=<id>，讓總表預先篩選成目前主題（仍可手動清除篩選）
     problems_href = rel(path, GLOBAL_PAGES["problems"]["path"])
