@@ -38,7 +38,7 @@
     int original_index;
 };
 
-bool SmithOrder(const Job&amp; left, const Job&amp; right) {
+bool smith_order(const Job&amp; left, const Job&amp; right) {
     const __int128 left_product =
         static_cast&lt;__int128&gt;(left.processing_time) * right.weight;
     const __int128 right_product =
@@ -49,7 +49,7 @@ bool SmithOrder(const Job&amp; left, const Job&amp; right) {
     return left.original_index &lt; right.original_index;
 }
 
-std::sort(jobs.begin(), jobs.end(), SmithOrder);</code></pre>
+std::sort(jobs.begin(), jobs.end(), smith_order);</code></pre>
 <p><code>__int128</code> 是 GNU C++ 擴充型別，兩邊都先轉型再相乘，避免 <code>long long</code> 乘法先溢位。最後用原輸入位置打破同價平手，只是讓輸出固定，不會改變目標值。</p></details>
 
 <details><summary>數值例：為什麼「工時短」不一定先做？</summary>

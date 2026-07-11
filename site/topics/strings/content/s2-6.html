@@ -18,13 +18,22 @@
 vector&lt;int&gt; ends[N];               // 節點 u 結束的模式串編號
 void build() {                     // BFS：層序保證 fail[u] 先於 u 處理
     queue&lt;int&gt; q;
-    for (int c = 0; c &lt; 26; c++) if (ch[0][c]) q.push(ch[0][c]);
+    for (int c = 0; c &lt; 26; c++) {
+        if (ch[0][c]) {
+            q.push(ch[0][c]);
+        }
+    }
     while (!q.empty()) {
-        int u = q.front(); q.pop();
+        int u = q.front();
+        q.pop();
         for (int c = 0; c &lt; 26; c++) {
             int&amp; v = ch[u][c];
-            if (v) { fail[v] = ch[fail[u]][c]; q.push(v); }
-            else   v = ch[fail[u]][c];        // 補成 Trie 圖：O(1) 轉移
+            if (v) {
+                fail[v] = ch[fail[u]][c];
+                q.push(v);
+            } else {
+                v = ch[fail[u]][c];        // 補成 Trie 圖：O(1) 轉移
+            }
         }
     }
 }</code></pre></details>

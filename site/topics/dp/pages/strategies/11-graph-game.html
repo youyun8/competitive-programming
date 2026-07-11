@@ -104,12 +104,14 @@
 <p>石堆剩 \(k\) 顆，每步取集合 \(A\) 中的數量，取不了者輸。誰贏？</p>
 <details><summary>思路</summary><p>勝負態遞推：\(\mathrm{win}[k]=\bigvee_{\substack{a\in A\\a\le k}}\neg\mathrm{win}[k-a]\)，也就是存在一個 \(a\in A\) 能把對手推入必敗態時，當前狀態必勝。這是所有公平組合博弈的 DP 原型；推廣到多堆就是 SG 函數與 Nim 的異或定理（本站點到為止，深入請開博弈論專題）。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">for (int k = 1; k &lt;= K; k++)
-    for (int a : A)
+<pre><code class="lang-cpp">for (int k = 1; k &lt;= limit; k++) {
+    for (int a : moves) {
         if (a &lt;= k &amp;&amp; !win[k - a]) {
             win[k] = true;
             break;
-        }</code></pre></details>
+        }
+    }
+}</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="atcoder-dp-l">

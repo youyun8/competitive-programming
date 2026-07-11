@@ -72,17 +72,31 @@
 
 <details><summary>模板（C++)：主席樹（靜態區間第 k 小）</summary>
 <pre><code class="lang-cpp">int rt[N], ls[M], rs[M], cnt[M], tot;      // M = n * (logV + 1) 左右
-int clone(int u) { int v = ++tot; ls[v]=ls[u]; rs[v]=rs[u]; cnt[v]=cnt[u]; return v; }
+int clone(int u) {
+    int v = ++tot;
+    ls[v] = ls[u];
+    rs[v] = rs[u];
+    cnt[v] = cnt[u];
+    return v;
+}
 int insert(int u, int l, int r, int x) {   // 回傳新版本的根
-    u = clone(u); cnt[u]++;
-    if (l == r) return u;
+    u = clone(u);
+    cnt[u]++;
+    if (l == r) {
+        return u;
+    }
     int m = (l + r) &gt;&gt; 1;
-    if (x &lt;= m) ls[u] = insert(ls[u], l, m, x);
-    else        rs[u] = insert(rs[u], m + 1, r, x);
+    if (x &lt;= m) {
+        ls[u] = insert(ls[u], l, m, x);
+    } else {
+        rs[u] = insert(rs[u], m + 1, r, x);
+    }
     return u;
 }
 int kth(int a, int b, int l, int r, int k) {  // 版本 b 減版本 a：樹上二分
-    if (l == r) return l;
+    if (l == r) {
+        return l;
+    }
     int m = (l + r) &gt;&gt; 1, c = cnt[ls[b]] - cnt[ls[a]];
     return k &lt;= c ? kth(ls[a], ls[b], l, m, k)
                   : kth(rs[a], rs[b], m + 1, r, k - c);

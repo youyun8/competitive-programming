@@ -30,23 +30,27 @@
 <pre><code class="lang-cpp">auto ok = [&amp;](long long x) {
     long long last = 0;
     int removed = 0;
-    for (int i = 1; i &lt;= n; i++)
-        if (d[i] - last &lt; x)
+    for (int i = 1; i &lt;= n; i++) {
+        if (d[i] - last &lt; x) {
             removed++;  // 移走第 i 塊
-        else
+        } else {
             last = d[i];
-    if (L - last &lt; x)
+        }
+    }
+    if (length - last &lt; x) {
         return false;  // 終點是牆，不可移
+    }
     return removed &lt;= m;
 };
-long long lo = 0, hi = L, ans = 0;
+long long lo = 0, hi = length, ans = 0;
 while (lo &lt;= hi) {
     long long mid = (lo + hi) / 2;
     if (ok(mid)) {
         ans = mid;
         lo = mid + 1;
-    } else
+    } else {
         hi = mid - 1;
+    }
 }</code></pre></details>
 </div>
 

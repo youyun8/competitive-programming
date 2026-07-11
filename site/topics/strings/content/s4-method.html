@@ -43,15 +43,24 @@
 string gen(mt19937&amp; rng) {
     int n = rng() % 12 + 1, sigma = rng() % 2 + 2;   // 長度 1..12，字元 2..3 種
     string s;
-    for (int i = 0; i &lt; n; i++) s += char('a' + rng() % sigma);
+    for (int i = 0; i &lt; n; i++) {
+        s += char('a' + rng() % sigma);
+    }
     return s;
 }
-int bruteMinPeriod(const string&amp; s) {                // 暴力最小週期
+int brute_min_period(const string&amp; s) {                // 暴力最小週期
     int n = s.size();
     for (int p = 1; p &lt;= n; p++) {
         bool ok = true;
-        for (int i = 0; i + p &lt; n; i++) if (s[i] != s[i+p]) { ok = false; break; }
-        if (ok) return p;
+        for (int i = 0; i + p &lt; n; i++) {
+            if (s[i] != s[i+p]) {
+                ok = false;
+                break;
+            }
+        }
+        if (ok) {
+            return p;
+        }
     }
     return n;
 }
@@ -59,9 +68,12 @@ int main() {
     mt19937 rng(random_device{}());
     for (int t = 0; t &lt; 100000; t++) {
         string s = gen(rng);
-        int a = bruteMinPeriod(s), b = kmpMinPeriod(s);   // 你的模板
-        if (a != b) { cout &lt;&lt; "WA " &lt;&lt; s &lt;&lt; " brute=" &lt;&lt; a
-                           &lt;&lt; " yours=" &lt;&lt; b &lt;&lt; "\n"; return 1; }
+        int a = brute_min_period(s), b = kmp_min_period(s);   // 你的模板
+        if (a != b) {
+            cout &lt;&lt; "WA " &lt;&lt; s &lt;&lt; " brute=" &lt;&lt; a
+                 &lt;&lt; " yours=" &lt;&lt; b &lt;&lt; "\n";
+            return 1;
+        }
     }
     cout &lt;&lt; "all passed\n";
 }</code></pre></details>

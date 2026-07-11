@@ -93,7 +93,7 @@ F_0(c) &amp;= 0.
     long long value;
 };
 
-long long SolveZeroOneKnapsack(const std::vector&lt;Item&gt;&amp; items, int capacity) {
+long long solve_zero_one_knapsack(const std::vector&lt;Item&gt;&amp; items, int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     for (const Item&amp; item : items) {
         for (int current = capacity; current &gt;= item.weight; --current) {
@@ -123,7 +123,7 @@ F_i(c) &amp;= \max\left(F_{i-1}(c), F_i(c - w_i) + v_i\right).
     long long value;
 };
 
-long long SolveCompleteKnapsack(const std::vector&lt;Item&gt;&amp; items, int capacity) {
+long long solve_complete_knapsack(const std::vector&lt;Item&gt;&amp; items, int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     for (const Item&amp; item : items) {
         for (int current = item.weight; current &lt;= capacity; ++current) {
@@ -151,7 +151,7 @@ F_i(c)=\max_{0 \le k \le \min\left(m_i,\lfloor c/w_i \rfloor\right)}
     int count;
 };
 
-long long SolveBoundedKnapsack(const std::vector&lt;BoundedItem&gt;&amp; items,
+long long solve_bounded_knapsack(const std::vector&lt;BoundedItem&gt;&amp; items,
     int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     for (const BoundedItem&amp; item : items) {
@@ -197,7 +197,7 @@ struct MixedItem {
     int count;
 };
 
-long long SolveMixedKnapsack(const std::vector&lt;MixedItem&gt;&amp; items,
+long long solve_mixed_knapsack(const std::vector&lt;MixedItem&gt;&amp; items,
     int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     const auto update_zero_one = [&amp;dp, capacity](int weight, long long value) {
@@ -245,7 +245,7 @@ F_{i-1}(x-a_i,y-b_i)+v_i\right).
     long long value;
 };
 
-long long SolveTwoCostKnapsack(const std::vector&lt;TwoCostItem&gt;&amp; items,
+long long solve_two_cost_knapsack(const std::vector&lt;TwoCostItem&gt;&amp; items,
     int first_capacity, int second_capacity) {
     std::vector&lt;std::vector&lt;long long&gt;&gt; dp(
         first_capacity + 1, std::vector&lt;long long&gt;(second_capacity + 1, 0));
@@ -282,7 +282,7 @@ F_g(c)=\max\left(
     long long value;
 };
 
-long long SolveGroupedKnapsack(const std::vector&lt;std::vector&lt;Item&gt;&gt;&amp; groups,
+long long solve_grouped_knapsack(const std::vector&lt;std::vector&lt;Item&gt;&gt;&amp; groups,
     int capacity) {
     std::vector&lt;long long&gt; dp(capacity + 1, 0);
     for (const std::vector&lt;Item&gt;&amp; group : groups) {
@@ -320,7 +320,7 @@ D'_u(c+x) &amp;= \max\left(D'_u(c+x),D_u(c)+D_v(x)\right).
     int parent;
 };
 
-long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; items,
+long long solve_dependent_knapsack(const std::vector&lt;DependentItem&gt;&amp; items,
     int capacity) {
     constexpr long long kNegativeInfinity =
         std::numeric_limits&lt;long long&gt;::lowest() / 4;
@@ -377,7 +377,7 @@ long long SolveDependentKnapsack(const std::vector&lt;DependentItem&gt;&amp; ite
 \]</div>
 <p>這是 max-plus 卷積：枚舉總容量如何切給「既有物品」和「新泛化物品」。不可用的費用方案設成負無限；\(f(0)=0\) 表示可以不選。</p>
 <details><summary>實作（C++）</summary>
-<pre><code class="lang-cpp">long long SolveGeneralizedKnapsack(
+<pre><code class="lang-cpp">long long solve_generalized_knapsack(
     const std::vector&lt;std::vector&lt;long long&gt;&gt;&amp; gain_by_cost, int capacity) {
     constexpr long long kNegativeInfinity =
         std::numeric_limits&lt;long long&gt;::lowest() / 4;
@@ -436,7 +436,7 @@ struct KnapsackAnswers {
     std::vector&lt;int&gt; chosen_indices;
 };
 
-KnapsackAnswers AnalyzeZeroOneKnapsack(const std::vector&lt;Item&gt;&amp; items,
+KnapsackAnswers analyze_zero_one_knapsack(const std::vector&lt;Item&gt;&amp; items,
     int capacity) {
     constexpr long long kMod = 1'000'000'007;
     constexpr long long kNegativeInfinity =

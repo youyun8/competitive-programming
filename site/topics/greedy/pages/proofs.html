@@ -100,7 +100,7 @@
     int right;
 };
 
-int BruteForce(std::vector&lt;Interval&gt; intervals) {
+int brute_force(std::vector&lt;Interval&gt; intervals) {
     const int interval_count = static_cast&lt;int&gt;(intervals.size());
     int best = 0;
     for (int mask = 0; mask &lt; (1 &lt;&lt; interval_count); ++mask) {
@@ -125,7 +125,7 @@ int BruteForce(std::vector&lt;Interval&gt; intervals) {
     return best;
 }
 
-int Greedy(std::vector&lt;Interval&gt; intervals) {
+int greedy(std::vector&lt;Interval&gt; intervals) {
     std::sort(intervals.begin(), intervals.end(),
         [](const Interval&amp; left, const Interval&amp; right) {
             return left.right &lt; right.right;
@@ -156,7 +156,7 @@ int main() {
             }
             intervals.push_back({left, right});
         }
-        if (BruteForce(intervals) != Greedy(intervals)) {
+        if (brute_force(intervals) != greedy(intervals)) {
             std::cout &lt;&lt; "Counterexample found\n";
             return 0;
         }

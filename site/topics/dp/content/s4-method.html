@@ -50,15 +50,15 @@
 
 <h3>4.4 對拍驗證器（C++）</h3>
 <p>DP 最幸福的一點：<b>暴力遞迴天然就是正確性基準</b>。方程一寫完就對拍，別等大測資 WA。</p>
-<pre><code class="lang-cpp">long long BruteForce(const std::vector&lt;int&gt;&amp; values, int index) {
+<pre><code class="lang-cpp">long long brute_force(const std::vector&lt;int&gt;&amp; values, int index) {
     if (index &lt; 0) {
         return 0;
     }
-    return std::max(BruteForce(values, index - 1),
-                    BruteForce(values, index - 2) + values[index]);
+    return std::max(brute_force(values, index - 1),
+                    brute_force(values, index - 2) + values[index]);
 }
 
-long long SolveDp(const std::vector&lt;int&gt;&amp; values) {
+long long solve_dp(const std::vector&lt;int&gt;&amp; values) {
     long long two_steps_back = 0;
     long long one_step_back = 0;
     for (const int value : values) {
@@ -81,8 +81,8 @@ int main() {
             value = value_distribution(random_engine);
         }
         const long long brute_answer =
-            BruteForce(values, static_cast&lt;int&gt;(values.size()) - 1);
-        const long long dp_answer = SolveDp(values);
+            brute_force(values, static_cast&lt;int&gt;(values.size()) - 1);
+        const long long dp_answer = solve_dp(values);
         if (brute_answer != dp_answer) {
             std::cout &lt;&lt; "Counterexample found\n";
             return 0;

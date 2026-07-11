@@ -105,14 +105,15 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">// 反圖拓撲序遞推
 for (int u : topo_reverse) {
-    if (u == T) {
-        E[u] = 0;
+    if (u == t) {
+        e[u] = 0;
         continue;
     }
     double s = 0;
-    for (auto [v, w] : g[u])
-        s += E[v] + w;
-    E[u] = s / g[u].size();
+    for (auto [v, w] : g[u]) {
+        s += e[v] + w;
+    }
+    e[u] = s / g[u].size();
 }</code></pre></details>
 </div>
 

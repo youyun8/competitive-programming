@@ -71,11 +71,17 @@
 <details><summary>模板（C++）：Z 函數</summary>
 <pre><code class="lang-cpp">// s 為 0-indexed，z[0] = n（慣例）
 void zfunc(const string&amp; s, int* z) {
-    int n = s.size(); z[0] = n;
-    for (int i = 1, L = 0, R = 0; i &lt; n; i++) {   // [L,R] 最右匹配盒
-        z[i] = (i &lt; R) ? min(z[i - L], R - i) : 0; // 盒內先繼承
-        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) z[i]++;
-        if (i + z[i] &gt; R) L = i, R = i + z[i];
+    int n = s.size();
+    z[0] = n;
+    for (int i = 1, l = 0, r = 0; i &lt; n; i++) {   // [l,r] 最右匹配盒
+        z[i] = (i &lt; r) ? min(z[i - l], r - i) : 0; // 盒內先繼承
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) {
+            z[i]++;
+        }
+        if (i + z[i] &gt; r) {
+            l = i;
+            r = i + z[i];
+        }
     }
 }</code></pre></details>
 

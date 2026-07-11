@@ -47,16 +47,25 @@ init_segtree(n);                       // 你的結構
 while (q--) {
     int op = rng() % 2;
     int l = rng() % n + 1, r = rng() % n + 1;
-    if (l &gt; r) swap(l, r);
+    if (l &gt; r) {
+        swap(l, r);
+    }
     if (op == 0) {
         long long v = (long long)(rng() % 21) - 10;
-        for (int i = l; i &lt;= r; i++) a[i] += v;   // 暴力
+        for (int i = l; i &lt;= r; i++) {
+            a[i] += v;   // 暴力
+        }
         update(1, 1, n, l, r, v);                  // 待測
     } else {
         long long s = 0;
-        for (int i = l; i &lt;= r; i++) s += a[i];
+        for (int i = l; i &lt;= r; i++) {
+            s += a[i];
+        }
         long long t = query(1, 1, n, l, r);
-        if (s != t) { dumpCase(); return 1; }      // 印出完整操作序列
+        if (s != t) {
+            dump_case();
+            return 1;      // 印出完整操作序列
+        }
     }
 }</code></pre></details>
 <ul>

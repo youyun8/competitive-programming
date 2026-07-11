@@ -16,22 +16,34 @@
 <details><summary>模板（C++）：PAM 增量構造</summary>
 <pre><code class="lang-cpp">struct PAM {
     int ch[N][26], fail[N], len[N], cnt[N], tot, last;
-    char s[N]; int n;
-    void init() { s[0] = -1; n = 0; tot = 1; last = 0;
-        fail[0] = 1; len[0] = 0; len[1] = -1; }      // 0=偶根, 1=奇根
+    char s[N];
+    int n;
+    void init() {
+        s[0] = -1;
+        n = 0;
+        tot = 1;
+        last = 0;
+        fail[0] = 1;
+        len[0] = 0;
+        len[1] = -1;      // 0=偶根, 1=奇根
+    }
     int getfail(int u) {                             // 找 s[n-len-1]==s[n]
-        while (s[n - len[u] - 1] != s[n]) u = fail[u];
+        while (s[n - len[u] - 1] != s[n]) {
+            u = fail[u];
+        }
         return u;
     }
     void extend(char c) {
         s[++n] = c;
         int p = getfail(last), u = ch[p][c - 'a'];
         if (!u) {
-            u = ++tot; len[u] = len[p] + 2;
+            u = ++tot;
+            len[u] = len[p] + 2;
             fail[u] = ch[getfail(fail[p])][c - 'a']; // 先求 fail 再掛邊！
             ch[p][c - 'a'] = u;
         }
-        last = u; cnt[u]++;                           // 出現次數打點
+        last = u;
+        cnt[u]++;                           // 出現次數打點
     }
     // 最後：按 tot..2 逆序 cnt[fail[u]] += cnt[u]（fail 樹子樹和）
 };</code></pre></details>

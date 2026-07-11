@@ -79,13 +79,13 @@ h(s)=\left(\sum_{i=1}^{n} s_i\cdot B^{\,n-i}\right)\bmod M.
 <details><summary>模板（C++）：前綴 hash + O(1) 子串</summary>
 <pre><code class="lang-cpp">typedef unsigned long long ull;
 const ull MOD = 1e9 + 7;
-ull B, h[N], pw[N];          // B 開賽隨機化
+ull base, h[N], pw[N];          // base 開賽隨機化
 
 void build(const char* s, int n) {         // s 為 1-indexed
     pw[0] = 1;
     for (int i = 1; i &lt;= n; i++) {
-        h[i]  = (h[i-1] * B + s[i]) % MOD;
-        pw[i] = pw[i-1] * B % MOD;
+        h[i]  = (h[i-1] * base + s[i]) % MOD;
+        pw[i] = pw[i-1] * base % MOD;
     }
 }
 ull get(int l, int r) {                    // s[l..r] 的 hash
@@ -126,8 +126,11 @@ ull get(int l, int r) {                    // s[l..r] 的 hash
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">bool ok(int k, int n) {                 // 存在長 k 的重複子串？
     unordered_set&lt;ull&gt; seen;
-    for (int l = 1; l + k - 1 &lt;= n; l++)
-        if (!seen.insert(get(l, l + k - 1)).second) return true;
+    for (int l = 1; l + k - 1 &lt;= n; l++) {
+        if (!seen.insert(get(l, l + k - 1)).second) {
+            return true;
+        }
+    }
     return false;
 }
 // 主程式：對 k 二分，ok(k) 單調</code></pre></details>

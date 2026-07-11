@@ -14,13 +14,22 @@
 </ul></div>
 
 <details><summary>模板（C++）：最小表示法 + Duval</summary>
-<pre><code class="lang-cpp">int minRotation(const string&amp; s) {          // 回傳最小旋轉的起點
+<pre><code class="lang-cpp">int min_rotation(const string&amp; s) {          // 回傳最小旋轉的起點
     int n = s.size(), i = 0, j = 1, k = 0;
     while (i &lt; n &amp;&amp; j &lt; n &amp;&amp; k &lt; n) {
         char a = s[(i + k) % n], b = s[(j + k) % n];
-        if (a == b) { k++; continue; }
-        (a &gt; b ? i : j) += k + 1;           // 批量淘汰
-        if (i == j) j++;
+        if (a == b) {
+            k++;
+            continue;
+        }
+        if (a &gt; b) {                        // 批量淘汰
+            i += k + 1;
+        } else {
+            j += k + 1;
+        }
+        if (i == j) {
+            j++;
+        }
         k = 0;
     }
     return min(i, j);
@@ -29,9 +38,14 @@ void duval(const string&amp; s) {               // 輸出每個 Lyndon 塊的右
     int n = s.size(), i = 0;
     while (i &lt; n) {
         int j = i + 1, k = i;               // 不變量：s[i..k] 是 s[i..j-1] 的
-        while (j &lt; n &amp;&amp; s[k] &lt;= s[j])       // 週期性延伸（w^m + w 的前綴）
-            k = (s[k] &lt; s[j]) ? i : k + 1, j++;
-        while (i &lt;= k) report(i + j - k - 1), i += j - k;  // 切出整塊 w
+        while (j &lt; n &amp;&amp; s[k] &lt;= s[j]) {     // 週期性延伸（w^m + w 的前綴）
+            k = (s[k] &lt; s[j]) ? i : k + 1;
+            j++;
+        }
+        while (i &lt;= k) {                    // 切出整塊 w
+            report(i + j - k - 1);
+            i += j - k;
+        }
     }
 }</code></pre></details>
 

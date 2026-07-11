@@ -16,27 +16,52 @@
 <details><summary>模板（C++）：倍增 + 基數排序 O(n log n)</summary>
 <pre><code class="lang-cpp">// 1-indexed；sa/rk/height；倍增每輪按（第二關鍵字, 第一關鍵字）基數排序
 int sa[N], rk[N], old[N], cnt[N], id[N], height[N];
-void buildSA(const char* s, int n, int m) {     // m = 字元集大小
-    for (int i = 1; i &lt;= n; i++) cnt[rk[i] = s[i]]++;
-    for (int i = 1; i &lt;= m; i++) cnt[i] += cnt[i-1];
-    for (int i = n; i &gt;= 1; i--) sa[cnt[rk[i]]--] = i;
+void build_sa(const char* s, int n, int m) {     // m = 字元集大小
+    for (int i = 1; i &lt;= n; i++) {
+        cnt[rk[i] = s[i]]++;
+    }
+    for (int i = 1; i &lt;= m; i++) {
+        cnt[i] += cnt[i-1];
+    }
+    for (int i = n; i &gt;= 1; i--) {
+        sa[cnt[rk[i]]--] = i;
+    }
     for (int w = 1; w &lt; n; w &lt;&lt;= 1, m = /*新排名數*/ rk[sa[n]]) {
         int p = 0;                               // 第二關鍵字：空後綴最小
-        for (int i = n - w + 1; i &lt;= n; i++) id[++p] = i;
-        for (int i = 1; i &lt;= n; i++) if (sa[i] &gt; w) id[++p] = sa[i] - w;
+        for (int i = n - w + 1; i &lt;= n; i++) {
+            id[++p] = i;
+        }
+        for (int i = 1; i &lt;= n; i++) {
+            if (sa[i] &gt; w) {
+                id[++p] = sa[i] - w;
+            }
+        }
         memset(cnt, 0, sizeof(int) * (m + 1));   // 第一關鍵字基數排序
-        for (int i = 1; i &lt;= n; i++) cnt[rk[i]]++;
-        for (int i = 1; i &lt;= m; i++) cnt[i] += cnt[i-1];
-        for (int i = n; i &gt;= 1; i--) sa[cnt[rk[id[i]]]--] = id[i];
+        for (int i = 1; i &lt;= n; i++) {
+            cnt[rk[i]]++;
+        }
+        for (int i = 1; i &lt;= m; i++) {
+            cnt[i] += cnt[i-1];
+        }
+        for (int i = n; i &gt;= 1; i--) {
+            sa[cnt[rk[id[i]]]--] = id[i];
+        }
         memcpy(old, rk, sizeof(int) * (n + 1));
-        for (int i = 1, p = 0; i &lt;= n; i++)      // 重標排名（相同對併排名）
+        for (int i = 1, p = 0; i &lt;= n; i++) {      // 重標排名（相同對併排名）
             rk[sa[i]] = (old[sa[i]] == old[sa[i-1]] &amp;&amp;
                          old[sa[i]+w] == old[sa[i-1]+w]) ? p : ++p;
-        if (rk[sa[n]] == n) break;               // 排名互異，提前結束
+        }
+        if (rk[sa[n]] == n) {
+            break;               // 排名互異，提前結束
+        }
     }
     for (int i = 1, k = 0; i &lt;= n; i++) {        // height：均攤 O(n)
-        if (k) k--;
-        while (s[i + k] == s[sa[rk[i] - 1] + k]) k++;
+        if (k) {
+            k--;
+        }
+        while (s[i + k] == s[sa[rk[i] - 1] + k]) {
+            k++;
+        }
         height[rk[i]] = k;
     }
 }</code></pre></details>

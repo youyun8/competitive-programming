@@ -17,14 +17,25 @@
 <pre><code class="lang-cpp">// t = "^#a#b#…#$"；p[i] = 以 i 為中心的迴文半徑（含自身）
 int manacher(const string&amp; s, vector&lt;int&gt;&amp; p) {
     string t = "^";
-    for (char c : s) { t += '#'; t += c; }
+    for (char c : s) {
+        t += '#';
+        t += c;
+    }
     t += "#$";
-    int n = t.size(); p.assign(n, 0);
-    int C = 0, R = 0, best = 0;
+    int n = t.size();
+    p.assign(n, 0);
+    int center = 0, r = 0, best = 0;
     for (int i = 1; i &lt; n - 1; i++) {
-        if (i &lt; R) p[i] = min(p[2*C - i], R - i);   // 鏡像繼承
-        while (t[i + p[i] + 1] == t[i - p[i] - 1]) p[i]++;
-        if (i + p[i] &gt; R) C = i, R = i + p[i];
+        if (i &lt; r) {
+            p[i] = min(p[2 * center - i], r - i);   // 鏡像繼承
+        }
+        while (t[i + p[i] + 1] == t[i - p[i] - 1]) {
+            p[i]++;
+        }
+        if (i + p[i] &gt; r) {
+            center = i;
+            r = i + p[i];
+        }
         best = max(best, p[i]);                     // p[i] = 原串迴文長
     }
     return best;
