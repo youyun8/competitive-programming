@@ -69,7 +69,7 @@
 
 <h3>3.1 hash 被卡全家桶</h3>
 <div class="callout warn"><b>⚠ 症狀與修法</b>
-<p><b>自然溢位（mod \(2^{64}\)）</b>：Thue–Morse 串可構造出必碰撞測資，CF 有現成 hack——改用大質數取模。<b>單模數固定 base</b>：出題人能預埋反例——base 開賽用 <code>mt19937(chrono::…now())</code> 隨機。<b>碰撞率估算</b>：單模 \(M\approx 10^9\)、比較 \(k\) 次，錯誤率約 \(k/M\)；\(k\sim 10^6\) 時已達千分之一，正式比賽<b>雙模數</b>是紀律不是潔癖。</p></div>
+<p>① <b>自然溢位（mod \(2^{64}\)）</b>：Thue–Morse 串可構造出必碰撞測資，CF 有現成 hack——改用大質數取模。② <b>單模數固定 base</b>：出題人能預埋反例——base 開賽用 <code>mt19937(chrono::…now())</code> 隨機。③ <b>碰撞率估算</b>：單模 \(M\approx 10^9\)、比較 \(k\) 次，錯誤率約 \(k/M\)；\(k\sim 10^6\) 時已達千分之一，正式比賽<b>雙模數</b>是紀律不是潔癖。</p></div>
 
 <h3>3.2 「KMP 是線性」的兩種誤解</h3>
 <div class="callout warn"><b>⚠ 症狀</b>
@@ -77,15 +77,15 @@
 
 <h3>3.3 Z 與 fail 方向搞反</h3>
 <div class="callout warn"><b>⚠ 症狀</b>
-<p>想沿「所有 border」枚舉卻去讀 z 陣列，或想要「從 i 往後配多長」卻跳 fail 鏈。口訣：<b>fail 以 i 結尾、z 從 i 開始</b>。另一個高頻筆誤：Z 的盒內繼承忘記 <code>min(z[i-L], R-i)</code> 的截斷——超出盒子的部分沒有任何保證。</p></div>
+<p>① 想沿「所有 border」枚舉卻去讀 z 陣列，或想要「從 i 往後配多長」卻跳 fail 鏈。口訣：<b>fail 以 i 結尾、z 從 i 開始</b>。② 另一個高頻筆誤：Z 的盒內繼承忘記 <code>min(z[i-L], R-i)</code> 的截斷——超出盒子的部分沒有任何保證。</p></div>
 
 <h3>3.4 SA 三件套下標災難</h3>
 <div class="callout warn"><b>⚠ 症狀</b>
-<p><code>sa</code>（排名→位置）與 <code>rk</code>（位置→排名）互為反函數，公式裡寫反一個就全錯；\(height[i]\) 定義在「排名 \(i\) 與 \(i-1\)」之間，區間 LCP 是 \(\min(height[i+1..j])\)——<b>左端點要 +1</b>。修法：把三個陣列的定義用註解寫在模板頂端，用「banana」手推一遍對照。</p></div>
+<p>① <code>sa</code>（排名→位置）與 <code>rk</code>（位置→排名）互為反函數，公式裡寫反一個就全錯。② \(height[i]\) 定義在「排名 \(i\) 與 \(i-1\)」之間，區間 LCP 是 \(\min(height[i+1..j])\)——<b>左端點要 +1</b>。修法：把三個陣列的定義用註解寫在模板頂端，用「banana」手推一遍對照。</p></div>
 
 <h3>3.5 SAM／PAM 的統計順序</h3>
 <div class="callout warn"><b>⚠ 症狀</b>
-<p>cnt 沿 parent 樹累加時用了錯誤順序（如按節點編號），深鏈上父節點先被加、子節點的貢獻漏掉。修法：SAM 按 <b>len 基數排序</b>後由長到短；PAM 直接按<b>節點編號逆序</b>（PAM 編號天然拓撲，SAM 因 clone 而不然——這正是兩者的差異點）。clone 節點 cnt 初始為 0 也常被忘。</p></div>
+<p>cnt 沿 parent 樹累加時用了錯誤順序（如按節點編號），深鏈上父節點先被加、子節點的貢獻漏掉。修法：① SAM 按 <b>len 基數排序</b>後由長到短。② PAM 直接按<b>節點編號逆序</b>（PAM 編號天然拓撲，SAM 因 clone 而不然——這正是兩者的差異點）。③ clone 節點 cnt 初始為 0 也常被忘。</p></div>
 
 <h3>3.6 多測清空成本</h3>
 <div class="callout warn"><b>⚠ 症狀</b>

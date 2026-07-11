@@ -54,4 +54,4 @@ int merge(int a, int b) {                     // 前提：a 的值全 ≤ b
 </div>
 
 <div class="callout proof"><b>📎 Splay 與 pb_ds 備忘</b>
-<p><b>Splay</b>：每次訪問後將節點旋到根，均攤 \(O(\log n)\)——競賽中主要作為 <a href="#s2-13">LCT</a> 的底層；單獨使用時 FHQ 幾乎總是更好寫。<b>pb_ds</b>：<code>__gnu_pbds::tree</code> 自帶 order_of_key / find_by_order，普通平衡樹題可以 20 行過——賽場救急合法武器，但區間翻轉這種序列操作救不了。</p></div>
+<p>① <b>Splay</b>：每次訪問後將節點旋到根，均攤 \(O(\log n)\)——競賽中主要作為 <a href="#s2-13">LCT</a> 的底層；單獨使用時 FHQ 幾乎總是更好寫。② <b>pb_ds</b>：<code>__gnu_pbds::tree</code> 自帶 order_of_key / find_by_order，普通平衡樹題可以 20 行過——賽場救急合法武器，但區間翻轉這種序列操作救不了。</p></div>
