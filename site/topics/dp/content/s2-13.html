@@ -35,11 +35,11 @@
 <p>對每個 \(a_i\) 找任一 \(a_j\)，使 \(a_i\mathbin{\&amp;}a_j=0\)。</p>
 <details><summary>思路</summary><p>「與 \(a_i\) 相容」等價於「是 \(\mathord{\sim}a_i\) 的子集」。SOS 模板是對每一位做一次鬆弛 <code>f[S] |= f[S ^ (1 &lt;&lt; b)]</code>（若 \(S\) 含第 \(b\) 位），用 \(O(2^n n)\) 算出「每個 \(S\) 的所有子集中是否存在元素」。本質是 \(n\) 維超立方體上的前綴和——比 \(3^n\) 的子集枚舉快一個量級。計數／最值版同模板。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">// f[s] = s 的子集中任一個存在的元素（0 表示無）
-for (int b = 0; b &lt; n; b++) {
-    for (int s = 0; s &lt; (1 &lt;&lt; n); s++) {
-        if ((s &gt;&gt; b &amp; 1) &amp;&amp; !f[s] &amp;&amp; f[s ^ (1 &lt;&lt; b)]) {
-            f[s] = f[s ^ (1 &lt;&lt; b)];
+<pre><code class="lang-cpp">// f[subset] = subset 的子集中任一個存在的元素（0 表示無）
+for (int bit = 0; bit &lt; n; bit++) {
+    for (int subset = 0; subset &lt; (1 &lt;&lt; n); subset++) {
+        if ((subset &gt;&gt; bit &amp; 1) &amp;&amp; !f[subset] &amp;&amp; f[subset ^ (1 &lt;&lt; bit)]) {
+            f[subset] = f[subset ^ (1 &lt;&lt; bit)];
         }
     }
 }</code></pre></details>

@@ -12,46 +12,48 @@
 
 <details><summary>模板（C++）：FHQ Treap 核心</summary>
 <pre><code class="lang-cpp">int ch[N][2], val[N], pri[N], sz[N], tot;
-int node(int v) {
-    int u = ++tot;
-    val[u] = v;
-    pri[u] = rand();
-    sz[u] = 1;
-    return u;
+int node(int value) {
+    int id = ++tot;
+    val[id] = value;
+    pri[id] = rand();
+    sz[id] = 1;
+    return id;
 }
-void pushup(int u) {
-    sz[u] = sz[ch[u][0]] + sz[ch[u][1]] + 1;
+void pushup(int treap_node) {
+    sz[treap_node] = sz[ch[treap_node][0]] + sz[ch[treap_node][1]] + 1;
 }
-void split(int u, int v, int&amp; a, int&amp; b) {   // 按值：a 全 ≤ v，b 全 &gt; v
-    if (!u) {
-        a = b = 0;
+void split(int treap_node, int value, int&amp; low_root, int&amp; high_root) {
+    // 按值：low_root 全 ≤ value，high_root 全 &gt; value
+    if (!treap_node) {
+        low_root = high_root = 0;
         return;
     }
-    if (val[u] &lt;= v) {
-        a = u;
-        split(ch[u][1], v, ch[u][1], b);
+    if (val[treap_node] &lt;= value) {
+        low_root = treap_node;
+        split(ch[treap_node][1], value, ch[treap_node][1], high_root);
     } else {
-        b = u;
-        split(ch[u][0], v, a, ch[u][0]);
+        high_root = treap_node;
+        split(ch[treap_node][0], value, low_root, ch[treap_node][0]);
     }
-    pushup(u);
+    pushup(treap_node);
 }
-int merge(int a, int b) {                     // 前提：a 的值全 ≤ b
-    if (!a || !b) {
-        return a | b;
+int merge(int low_root, int high_root) {      // 前提：low_root 的值全 ≤ high_root
+    if (!low_root || !high_root) {
+        return low_root | high_root;
     }
-    if (pri[a] &lt; pri[b]) {
-        ch[a][1] = merge(ch[a][1], b);
-        pushup(a);
-        return a;
+    if (pri[low_root] &lt; pri[high_root]) {
+        ch[low_root][1] = merge(ch[low_root][1], high_root);
+        pushup(low_root);
+        return low_root;
     } else {
-        ch[b][0] = merge(a, ch[b][0]);
-        pushup(b);
-        return b;
+        ch[high_root][0] = merge(low_root, ch[high_root][0]);
+        pushup(high_root);
+        return high_root;
     }
 }
-// insert(v): split(root, v, a, b); root = merge(merge(a, node(v)), b);
-// erase(v):  split 出恰等於 v 的樹，merge 掉一個節點
+// insert(value): split(root, value, low_root, high_root);
+//                root = merge(merge(low_root, node(value)), high_root);
+// erase(value):  split 出恰等於 value 的樹，merge 掉一個節點
 // 文藝平衡樹：split 改按 sz（前 k 個），節點加翻轉懶標記 + pushdown</code></pre></details>
 
 <div class="problem" data-problem-id="luogu-p3369">

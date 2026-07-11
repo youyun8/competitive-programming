@@ -72,42 +72,42 @@
 
 <details><summary>模板（C++）：動態開點 + 樹上二分 + 合併</summary>
 <pre><code class="lang-cpp">int ls[M], rs[M], cnt[M], tot;              // M ≈ 插入次數 × logV
-void insert(int&amp; u, int l, int r, int x, int v) {
-    if (!u) {
-        u = ++tot;
+void insert(int&amp; node, int left, int right, int value, int delta) {
+    if (!node) {
+        node = ++tot;
     }
-    cnt[u] += v;
-    if (l == r) {
+    cnt[node] += delta;
+    if (left == right) {
         return;
     }
-    int m = (l + r) &gt;&gt; 1;
-    if (x &lt;= m) {
-        insert(ls[u], l, m, x, v);
+    int mid = (left + right) &gt;&gt; 1;
+    if (value &lt;= mid) {
+        insert(ls[node], left, mid, value, delta);
     } else {
-        insert(rs[u], m + 1, r, x, v);
+        insert(rs[node], mid + 1, right, value, delta);
     }
 }
-int kth(int u, int l, int r, int k) {       // 樹上二分：第 k 小
-    if (l == r) {
-        return l;
+int kth(int node, int left, int right, int k) {       // 樹上二分：第 k 小
+    if (left == right) {
+        return left;
     }
-    int m = (l + r) &gt;&gt; 1;
-    return cnt[ls[u]] &gt;= k ? kth(ls[u], l, m, k)
-                           : kth(rs[u], m + 1, r, k - cnt[ls[u]]);
+    int mid = (left + right) &gt;&gt; 1;
+    return cnt[ls[node]] &gt;= k ? kth(ls[node], left, mid, k)
+                           : kth(rs[node], mid + 1, right, k - cnt[ls[node]]);
 }
-int merge(int a, int b, int l, int r) {     // 線段樹合併
-    if (!a || !b) {
-        return a | b;             // 一邊為空直接接管
+int merge(int root_a, int root_b, int left, int right) {     // 線段樹合併
+    if (!root_a || !root_b) {
+        return root_a | root_b;             // 一邊為空直接接管
     }
-    if (l == r) {
-        cnt[a] += cnt[b];
-        return a;
+    if (left == right) {
+        cnt[root_a] += cnt[root_b];
+        return root_a;
     }
-    int m = (l + r) &gt;&gt; 1;
-    ls[a] = merge(ls[a], ls[b], l, m);
-    rs[a] = merge(rs[a], rs[b], m + 1, r);
-    cnt[a] = cnt[ls[a]] + cnt[rs[a]];
-    return a;
+    int mid = (left + right) &gt;&gt; 1;
+    ls[root_a] = merge(ls[root_a], ls[root_b], left, mid);
+    rs[root_a] = merge(rs[root_a], rs[root_b], mid + 1, right);
+    cnt[root_a] = cnt[ls[root_a]] + cnt[rs[root_a]];
+    return root_a;
 }</code></pre></details>
 
 <div class="problem" data-problem-id="ds-wseg-inversion">

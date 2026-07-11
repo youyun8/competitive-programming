@@ -23,12 +23,12 @@
 <details><summary>思路</summary><p>維護遞增棧：新數字比棧頂小且還有刪除額度時，彈棧頂（高位變小永遠更優 — 這就是字典序的貪心選擇性質）。掃完還有額度就從尾巴刪。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">string st;
-for (char c : num) {
-    while (!st.empty() &amp;&amp; k &amp;&amp; st.back() &gt; c) {
+for (char digit : num) {
+    while (!st.empty() &amp;&amp; k &amp;&amp; st.back() &gt; digit) {
         st.pop_back();
         k--;
     }
-    st.push_back(c);
+    st.push_back(digit);
 }
 st.resize(st.size() - k);
 st.erase(0, st.find_first_not_of('0'));  // 去前導零

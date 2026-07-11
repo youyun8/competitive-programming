@@ -14,11 +14,11 @@
 <pre><code class="lang-cpp">// 對頂堆：lo（大根）存較小半、hi（小根）存較大半，|lo| = |hi| 或 |hi|+1...
 priority_queue&lt;int&gt; lo;
 priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; hi;
-void insert(int x) {
-    if (lo.empty() || x &lt;= lo.top()) {
-        lo.push(x);
+void insert(int value) {
+    if (lo.empty() || value &lt;= lo.top()) {
+        lo.push(value);
     } else {
-        hi.push(x);
+        hi.push(value);
     }
     if (lo.size() &gt; hi.size() + 1) {
         hi.push(lo.top());
@@ -35,8 +35,8 @@ int median() {
 
 // 懶刪除：erase 只記帳，top 時對消
 priority_queue&lt;int&gt; q, del;
-void erase(int x) {
-    del.push(x);
+void erase(int value) {
+    del.push(value);
 }
 int top() {
     while (!del.empty() &amp;&amp; q.top() == del.top()) {

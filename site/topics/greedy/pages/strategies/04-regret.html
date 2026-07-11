@@ -86,13 +86,14 @@
 <p>第 \(i\) 門課耗時 \(d_i\)、截止時間為 \(e_i\)，從時刻 0 開始連續上課，最多修幾門？</p>
 <details><summary>思路</summary><p>按<b>截止時間遞增</b>處理，維護大根堆（已選課程的耗時）與目前總耗時 \(T\)。每門課先選上（\(T\gets T+d_i\)）；若 \(T>e_i\)，就<b>反悔</b>並彈掉堆中耗時最大的課。正確性：修課數相同時總耗時越小越好，彈最大者使 \(T\) 最小化，為未來保留最大餘裕。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">sort(c.begin(), c.end(), [](auto&amp; a, auto&amp; b) { return a[1] &lt; b[1]; });
+<pre><code class="lang-cpp">sort(courses.begin(), courses.end(),
+    [](auto&amp; lhs, auto&amp; rhs) { return lhs[1] &lt; rhs[1]; });
 priority_queue&lt;int&gt; pq;  // 已選課程的耗時，大根堆
 long long total_time = 0;
-for (auto&amp; [d, e] : c) {
-    total_time += d;
-    pq.push(d);
-    if (total_time &gt; e) {
+for (auto&amp; [duration, deadline] : courses) {
+    total_time += duration;
+    pq.push(duration);
+    if (total_time &gt; deadline) {
         total_time -= pq.top();
         pq.pop();
     }  // 反悔：踢掉最耗時的
@@ -137,14 +138,14 @@ return cnt;</code></pre></details>
 <pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq;
 long long profit = 0;
 for (int i = 0; i &lt; n; i++) {
-    long long p;
-    cin &gt;&gt; p;
-    if (!pq.empty() &amp;&amp; pq.top() &lt; p) {
-        profit += p - pq.top();
+    long long price;
+    cin &gt;&gt; price;
+    if (!pq.empty() &amp;&amp; pq.top() &lt; price) {
+        profit += price - pq.top();
         pq.pop();
-        pq.push(p);  // 反悔券：允許未來把這次交易升級
+        pq.push(price);  // 反悔券：允許未來把這次交易升級
     }
-    pq.push(p);
+    pq.push(price);
 }</code></pre></details>
 </div>
 

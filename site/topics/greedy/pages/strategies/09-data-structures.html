@@ -81,19 +81,20 @@
 <p>每個任務耗時一單位、截止時間為 \(d_i\)、報酬為 \(p_i\)，最大化總報酬。</p>
 <details><summary>思路</summary><p>按報酬遞減排序，每個任務安排在「\(\le d_i\) 的最晚空閒時槽」（越晚越不擋別人）。找最晚空槽用<b>並查集</b>：<code>find(d)</code> 返回 \(\le d\) 的最晚空槽，佔用後令 <code>fa[t] = t - 1</code>，均攤複雜度接近 \(O(1)\)。正確性可用擬陣描述：「可行任務子集」構成 transversal matroid，按權降序能加就加必最優 — 2.11.1 的具體實例。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">sort(jobs.begin(), jobs.end(), [](auto&amp; a, auto&amp; b) { return a.p &gt; b.p; });
-vector&lt;int&gt; fa(max_d + 1);
-iota(fa.begin(), fa.end(), 0);
-function&lt;int(int)&gt; find = [&amp;](int x) {
-    return fa[x] == x ? x : fa[x] = find(fa[x]);
+<pre><code class="lang-cpp">sort(jobs.begin(), jobs.end(),
+    [](auto&amp; lhs, auto&amp; rhs) { return lhs.p &gt; rhs.p; });
+vector&lt;int&gt; parent(max_d + 1);
+iota(parent.begin(), parent.end(), 0);
+function&lt;int(int)&gt; find = [&amp;](int slot) {
+    return parent[slot] == slot ? slot : parent[slot] = find(parent[slot]);
 };
 long long ans = 0;
-for (auto&amp; j : jobs) {
-    int t = find(min(j.d, max_d));
-    if (t &gt; 0) {
-        ans += j.p;
-        fa[t] = t - 1;
-    }  // 佔用時槽 t
+for (auto&amp; job : jobs) {
+    int slot = find(min(job.d, max_d));
+    if (slot &gt; 0) {
+        ans += job.p;
+        parent[slot] = slot - 1;
+    }  // 佔用時槽 slot
 }</code></pre></details>
 </div>
 

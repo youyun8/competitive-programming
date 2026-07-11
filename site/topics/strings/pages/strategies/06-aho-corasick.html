@@ -76,21 +76,21 @@
 vector&lt;int&gt; ends[N];               // 節點 u 結束的模式串編號
 void build() {                     // BFS：層序保證 fail[u] 先於 u 處理
     queue&lt;int&gt; q;
-    for (int c = 0; c &lt; 26; c++) {
-        if (ch[0][c]) {
-            q.push(ch[0][c]);
+    for (int letter = 0; letter &lt; 26; letter++) {
+        if (ch[0][letter]) {
+            q.push(ch[0][letter]);
         }
     }
     while (!q.empty()) {
-        int u = q.front();
+        int node = q.front();
         q.pop();
-        for (int c = 0; c &lt; 26; c++) {
-            int&amp; v = ch[u][c];
-            if (v) {
-                fail[v] = ch[fail[u]][c];
-                q.push(v);
+        for (int letter = 0; letter &lt; 26; letter++) {
+            int&amp; child = ch[node][letter];
+            if (child) {
+                fail[child] = ch[fail[node]][letter];
+                q.push(child);
             } else {
-                v = ch[fail[u]][c];        // 補成 Trie 圖：O(1) 轉移
+                child = ch[fail[node]][letter];        // 補成 Trie 圖：O(1) 轉移
             }
         }
     }

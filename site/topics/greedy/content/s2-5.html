@@ -20,15 +20,16 @@
 <p>每次合併兩堆果子，代價為兩堆重量和，求合併成一堆的最小總代價。</p>
 <details><summary>思路</summary><p>每次取<b>最小的兩堆</b>合併 — 即 Huffman 樹構造。證明（交換論證）：最小的兩個元素必然可以是最優樹中深度最深的一對兄弟；若不是，把它們與最深處的元素交換，總代價 \(\sum_i \text{重量}_i\cdot\text{深度}_i\) 不增。合併次序對應樹形，貪心構造即最優前綴碼，這也是資訊理論中 Huffman 編碼最優性的來源。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq(w.begin(), w.end());
+<pre><code class="lang-cpp">priority_queue&lt;long long, vector&lt;long long&gt;, greater&lt;&gt;&gt; pq(
+    weights.begin(), weights.end());
 long long cost = 0;
 while (pq.size() &gt; 1) {
-    long long a = pq.top();
+    long long first = pq.top();
     pq.pop();
-    long long b = pq.top();
+    long long second = pq.top();
     pq.pop();
-    cost += a + b;
-    pq.push(a + b);
+    cost += first + second;
+    pq.push(first + second);
 }</code></pre></details>
 </div>
 

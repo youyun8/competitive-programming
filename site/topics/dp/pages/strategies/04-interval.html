@@ -93,11 +93,12 @@
 <details><summary>思路</summary><p>直鏈版是區間 DP 開山題：\(\mathrm{dp}[l][r]=\min_{l\le k&lt;r}\left(\mathrm{dp}[l][k]+\mathrm{dp}[k+1][r]\right)+\mathrm{sum}(l,r)\)。<b>環形拆鏈</b>：把序列複製一倍接在後面（長 \(2n\)），對每個起點取長度 \(n\) 的區間答案取最優。注意與合併果子的區別：那裡可以合併<b>任意</b>兩堆所以貪心（Huffman）成立，這裡只能合併<b>相鄰</b>兩堆所以必須 DP。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">for (int len = 2; len &lt;= n; len++) {
-    for (int l = 1; l + len - 1 &lt;= 2 * n - 1; l++) {
-        int r = l + len - 1;
-        for (int k = l; k &lt; r; k++) {
-            dp[l][r] = min(dp[l][r],
-                dp[l][k] + dp[k + 1][r] + S(l, r));  // S = 前綴和差
+    for (int left = 1; left + len - 1 &lt;= 2 * n - 1; left++) {
+        int right = left + len - 1;
+        for (int split_point = left; split_point &lt; right; split_point++) {
+            dp[left][right] = min(dp[left][right],
+                dp[left][split_point] + dp[split_point + 1][right] +
+                    S(left, right));  // S = 前綴和差
         }
     }
 }
@@ -117,11 +118,12 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">// a[0] = a[n + 1] = 1 哨兵
 for (int len = 1; len &lt;= n; len++) {
-    for (int l = 1; l + len - 1 &lt;= n; l++) {
-        int r = l + len - 1;
-        for (int k = l; k &lt;= r; k++) {
-            dp[l][r] = max(dp[l][r], dp[l][k - 1] + dp[k + 1][r] +
-                a[l - 1] * a[k] * a[r + 1]);
+    for (int left = 1; left + len - 1 &lt;= n; left++) {
+        int right = left + len - 1;
+        for (int split_point = left; split_point &lt;= right; split_point++) {
+            dp[left][right] = max(dp[left][right],
+                dp[left][split_point - 1] + dp[split_point + 1][right] +
+                    a[left - 1] * a[split_point] * a[right + 1]);
         }
     }
 }</code></pre></details>

@@ -85,17 +85,17 @@
 <p>移走至多 \(M\) 塊石頭，最大化相鄰石頭最短跳躍距離。（同 POJ 2456 Aggressive Cows）</p>
 <details><summary>思路</summary><p>二分最短距離 \(x\)；check 從起點掃過去，與上一塊保留石頭距離 \(<x\) 的就移走，再判斷移走數是否 \(\le M\)。check 的貪心正確性：碰到近的就移，絕不提前移遠的 — 領先論證。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">auto ok = [&amp;](long long x) {
+<pre><code class="lang-cpp">auto ok = [&amp;](long long min_gap) {
     long long last = 0;
     int removed = 0;
     for (int i = 1; i &lt;= n; i++) {
-        if (d[i] - last &lt; x) {
+        if (d[i] - last &lt; min_gap) {
             removed++;  // 移走第 i 塊
         } else {
             last = d[i];
         }
     }
-    if (length - last &lt; x) {
+    if (length - last &lt; min_gap) {
         return false;  // 終點是牆，不可移
     }
     return removed &lt;= m;

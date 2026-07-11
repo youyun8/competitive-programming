@@ -72,34 +72,36 @@
 
 <details><summary>模板（C++)：主席樹（靜態區間第 k 小）</summary>
 <pre><code class="lang-cpp">int rt[N], ls[M], rs[M], cnt[M], tot;      // M = n * (logV + 1) 左右
-int clone(int u) {
-    int v = ++tot;
-    ls[v] = ls[u];
-    rs[v] = rs[u];
-    cnt[v] = cnt[u];
-    return v;
+int clone(int node) {
+    int new_node = ++tot;
+    ls[new_node] = ls[node];
+    rs[new_node] = rs[node];
+    cnt[new_node] = cnt[node];
+    return new_node;
 }
-int insert(int u, int l, int r, int x) {   // 回傳新版本的根
-    u = clone(u);
-    cnt[u]++;
-    if (l == r) {
-        return u;
+int insert(int node, int left, int right, int value) {   // 回傳新版本的根
+    node = clone(node);
+    cnt[node]++;
+    if (left == right) {
+        return node;
     }
-    int m = (l + r) &gt;&gt; 1;
-    if (x &lt;= m) {
-        ls[u] = insert(ls[u], l, m, x);
+    int mid = (left + right) &gt;&gt; 1;
+    if (value &lt;= mid) {
+        ls[node] = insert(ls[node], left, mid, value);
     } else {
-        rs[u] = insert(rs[u], m + 1, r, x);
+        rs[node] = insert(rs[node], mid + 1, right, value);
     }
-    return u;
+    return node;
 }
-int kth(int a, int b, int l, int r, int k) {  // 版本 b 減版本 a：樹上二分
-    if (l == r) {
-        return l;
+int kth(int old_root, int new_root, int left, int right, int k) {
+    // 版本 new_root 減版本 old_root：樹上二分
+    if (left == right) {
+        return left;
     }
-    int m = (l + r) &gt;&gt; 1, c = cnt[ls[b]] - cnt[ls[a]];
-    return k &lt;= c ? kth(ls[a], ls[b], l, m, k)
-                  : kth(rs[a], rs[b], m + 1, r, k - c);
+    int mid = (left + right) &gt;&gt; 1;
+    int diff_count = cnt[ls[new_root]] - cnt[ls[old_root]];
+    return k &lt;= diff_count ? kth(ls[old_root], ls[new_root], left, mid, k)
+                  : kth(rs[old_root], rs[new_root], mid + 1, right, k - diff_count);
 }
 // build：rt[i] = insert(rt[i-1], 1, V, a[i])
 // query(l, r, k)：kth(rt[l-1], rt[r], 1, V, k)</code></pre></details>

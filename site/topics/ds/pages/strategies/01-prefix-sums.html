@@ -85,9 +85,9 @@ for (int j = 1; (1 &lt;&lt; j) &lt;= n; j++) {
         f[j][i] = max(f[j-1][i], f[j-1][i + (1 &lt;&lt; (j-1))]);
     }
 }
-int query(int l, int r) {              // 兩段重疊覆蓋
-    int k = __lg(r - l + 1);
-    return max(f[k][l], f[k][r - (1 &lt;&lt; k) + 1]);
+int query(int left, int right) {              // 兩段重疊覆蓋
+    int level = __lg(right - left + 1);
+    return max(f[level][left], f[level][right - (1 &lt;&lt; level) + 1]);
 }</code></pre></details>
 
 <div class="problem" data-problem-id="lc-304">

@@ -15,26 +15,26 @@
 
 <details><summary>模板（C++）：Manacher</summary>
 <pre><code class="lang-cpp">// t = "^#a#b#…#$"；p[i] = 以 i 為中心的迴文半徑（含自身）
-int manacher(const string&amp; s, vector&lt;int&gt;&amp; p) {
-    string t = "^";
-    for (char c : s) {
-        t += '#';
-        t += c;
+int manacher(const string&amp; text, vector&lt;int&gt;&amp; p) {
+    string padded = "^";
+    for (char c : text) {
+        padded += '#';
+        padded += c;
     }
-    t += "#$";
-    int n = t.size();
+    padded += "#$";
+    int n = padded.size();
     p.assign(n, 0);
-    int center = 0, r = 0, best = 0;
+    int center = 0, right = 0, best = 0;
     for (int i = 1; i &lt; n - 1; i++) {
-        if (i &lt; r) {
-            p[i] = min(p[2 * center - i], r - i);   // 鏡像繼承
+        if (i &lt; right) {
+            p[i] = min(p[2 * center - i], right - i);   // 鏡像繼承
         }
-        while (t[i + p[i] + 1] == t[i - p[i] - 1]) {
+        while (padded[i + p[i] + 1] == padded[i - p[i] - 1]) {
             p[i]++;
         }
-        if (i + p[i] &gt; r) {
+        if (i + p[i] &gt; right) {
             center = i;
-            r = i + p[i];
+            right = i + p[i];
         }
         best = max(best, p[i]);                     // p[i] = 原串迴文長
     }
