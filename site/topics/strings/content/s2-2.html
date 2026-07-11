@@ -1,0 +1,89 @@
+<h2>2.2 KMP、失配函數與週期</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>定義 \(\mathrm{fail}[i]\)＝前綴 \(s_{1..i}\) 的<b>最長 border 長度</b>。匹配失敗時，已匹配部分的 border 告訴我們「模式串可以直接滑到哪」而不必回頭重比——文本指標永不後退，這就是 KMP 線性的來源。更重要的是 fail 陣列本身就是<b>border／週期結構的完整地圖</b>（1.2 的核心等式），一半以上的 KMP 題根本不做匹配，只讀 fail。</p></div>
+
+<div class="callout proof"><b>🔁 為什麼構造是均攤 O(n)？</b>
+<p>構造時維護「目前匹配長度 \(j\)」：每一輪 \(j\) 至多 +1，而每次失配沿 fail 鏈跳都使 \(j\) 嚴格變小且 \(j\ge 0\)——把 \(j\) 當存款，總共存入 \(\le n\)，所以總共取出 \(\le n\)。勢能分析的入門範例，Z 函數與 Manacher 的線性論證同款。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>單模式匹配且要<b>確定性</b>線性（不怕被卡）。</li>
+<li>題目問<b>循環節、週期、前綴=後綴</b>——直接讀 fail，不用匹配。</li>
+<li>需要「匹配進度」當狀態 → KMP 自動機上 DP（連往 <a href="#topic-dp">DP 主題</a> 2.6.4）。</li>
+</ul></div>
+
+<details><summary>模板（C++）：fail 構造 + 匹配</summary>
+<pre><code class="lang-cpp">// p 為 1-indexed 模式串，長 m；fail[i] = p[1..i] 的最長 border 長
+void build(const char* p, int m) {
+    fail[1] = 0;
+    for (int i = 2, j = 0; i &lt;= m; i++) {
+        while (j &amp;&amp; p[i] != p[j+1]) j = fail[j];
+        if (p[i] == p[j+1]) j++;
+        fail[i] = j;
+    }
+}
+void match(const char* t, int n, const char* p, int m) {
+    for (int i = 1, j = 0; i &lt;= n; i++) {
+        while (j &amp;&amp; t[i] != p[j+1]) j = fail[j];
+        if (t[i] == p[j+1]) j++;
+        if (j == m) { report(i - m + 1); j = fail[j]; }  // 出現位置
+    }
+}</code></pre></details>
+
+<h3>2.2.1 週期三定理（讀 fail 就有答案）</h3>
+<ul>
+<li><b>最小週期</b> \(= n - \mathrm{fail}[n]\)。</li>
+<li>\(s\) 由某循環節重複 \(\ge 2\) 次 ⟺ \((n - \mathrm{fail}[n]) \mid n\) 且 \(\mathrm{fail}[n]&gt;0\)。</li>
+<li>\(s_{1..i}\) 的<b>所有</b> border：沿 \(\mathrm{fail}[i], \mathrm{fail}[\mathrm{fail}[i]],\dots\) 走到 0。</li>
+</ul>
+
+<div class="problem" data-problem-id="luogu-p3375">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3375" target="_blank">洛谷 P3375 KMP 模板</a><span class="chip">KMP</span></div>
+<p>輸出所有出現位置與整個 fail 陣列。</p>
+<details><summary>思路</summary><p>裸模板。輸出 fail 的設計很好——強迫你確認自己的 fail 定義（長度制 vs 下標制）與題目一致。寫完後自問：<code>while</code> 裡為什麼是 <code>j = fail[j]</code> 而不是 <code>j--</code>？（答：跳到次長 border，中間的長度不可能匹配。）</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-459">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/repeated-substring-pattern/" target="_blank">LC 459 重複的子字串</a><span class="chip">KMP</span><span class="chip">週期</span></div>
+<p>判斷 s 能否由某子串重複多次構成。</p>
+<details><summary>思路</summary><p>週期定理二的直接應用：<code>fail[n] &gt; 0 &amp;&amp; n % (n - fail[n]) == 0</code>。另一個優雅解：\(s\) 在 \((s+s)\) 去頭去尾後仍出現 ⟺ 有循環節——兩解都值得懂。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4391">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4391" target="_blank">洛谷 P4391 [BOI2009] 無線傳輸</a><span class="chip">KMP</span><span class="chip">週期</span></div>
+<p>s 是某未知串無限重複後截下的一段，求該未知串的最短長度。</p>
+<details><summary>思路</summary><p>答案就是最小週期 \(n-\mathrm{fail}[n]\)——注意週期<b>不需要整除</b> \(n\)（截斷可以停在循環節中間）。這題與 LC 459 成對：一個要整除、一個不用，把「週期 vs 循環節」的差別焊死在腦中。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-214">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/shortest-palindrome/" target="_blank">LC 214 最短迴文串</a><span class="chip">KMP</span><span class="chip">構造</span></div>
+<p>在 s 前面加最少字元使整串成為迴文。</p>
+<details><summary>思路</summary><p>等價於找 <b>s 的最長迴文前綴</b>。經典構造：令 \(u = s + \# + \mathrm{rev}(s)\)，則 \(\mathrm{fail}[|u|]\) 就是最長迴文前綴的長度（既是 \(s\) 的前綴、又是 \(\mathrm{rev}(s)\) 的後綴 = 反過來讀相同）。「<b>拼接 + 分隔符 + 讀 fail</b>」是 border 技巧的萬用句型，分隔符防止 border 跨界。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-126b">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/126/B" target="_blank">CF 126B Password</a><span class="chip">KMP</span><span class="chip">border</span></div>
+<p>找最長的 t：t 是 s 的前綴、後綴，且還在中間（非頭尾處）出現過。</p>
+<details><summary>思路</summary><p>候選只有 fail 鏈上的 border。「中間出現過」的判定：記錄 \(\mathrm{fail}[1..n-1]\) 中出現過的最大值 \(mx\)——若 \(\mathrm{fail}[n]\le mx\) 直接取，否則跳到 \(\mathrm{fail}[\mathrm{fail}[n]]\) 再試。體會「沿 fail 鏈枚舉所有 border」這個基本動作。</p></details>
+</div>
+
+<h3>2.2.2 KMP 自動機</h3>
+<p>把「失配沿鏈跳」預先展開成轉移表：\(\delta(j,c)\)＝匹配長度 \(j\) 時讀入字元 \(c\) 後的新匹配長度。得到一台 \(O(m|\Sigma|)\) 的 DFA——這就是「文本裡不含／恰含模式串」計數 DP 的狀態機。</p>
+
+<details><summary>模板（C++）：KMP 自動機</summary>
+<pre><code class="lang-cpp">// go[j][c]：已匹配 j 個字元、讀入 c 之後匹配多長（j = 0..m）
+for (int c = 0; c &lt; 26; c++) go[0][c] = (p[1] == 'a' + c);
+for (int j = 1; j &lt;= m; j++)
+    for (int c = 0; c &lt; 26; c++)
+        go[j][c] = (j &lt; m &amp;&amp; p[j+1] == 'a' + c) ? j + 1
+                 : go[fail[j]][c];               // 遞推繼承，O(1) 轉移</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3193">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3193" target="_blank">洛谷 P3193 [HNOI2008] GT 考試</a><span class="chip">KMP自動機</span><span class="chip">矩陣冪</span></div>
+<p>數長度 \(n\le 10^9\) 的數字串中不含模式串 \(p\)（\(|p|\le 20\)）的個數。</p>
+<details><summary>思路</summary><p>狀態 = KMP 自動機節點（匹配進度 \(0..m-1\)），轉移 = 讀一個數字。\(n\) 巨大 → 把轉移寫成 \(m\times m\) 矩陣後快速冪。與 <a href="#topic-dp">DP 主題</a> 2.12.7 共用的雙主題代表題：字串側貢獻自動機、DP 側貢獻矩陣加速。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>fail 指標反向成樹＝<b>失配樹</b>（border 樹），「兩個前綴的最長公共 border」變成樹上 LCA → <a href="#s2-11">2.11.1</a>。多模式串的 KMP＝<a href="#s2-6">AC 自動機</a>。</p></div>

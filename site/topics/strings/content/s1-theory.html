@@ -1,0 +1,51 @@
+<h2><span class="sec-no">1</span>理論基礎：字串的共同語言</h2>
+
+<div class="callout proof"><b>🧪 一條貫穿全指南的等式：border ⟺ 週期</b>
+<p>設 \(|s|=n\)。稱 \(t\) 是 \(s\) 的 <b>border</b>，若 \(t\) 同時是 \(s\) 的真前綴與真後綴；稱 \(p\) 是 \(s\) 的<b>週期</b>，若對所有合法的 \(i\) 都有 \(s_i=s_{i+p}\)。核心等式：<b>\(p\) 是 \(s\) 的週期 ⟺ \(s\) 有長度 \(n-p\) 的 border</b>。證明是一行對齊：把 \(s\) 往右平移 \(p\) 格，重疊部分逐字相等，重疊部分恰是長 \(n-p\) 的前綴與後綴。這條等式是 KMP 的 fail 陣列、循環節判定、失配樹全部的地基——<b>求最長 border 就是求最小週期。</b></p></div>
+
+<h3>1.1 基本名詞</h3>
+<div class="tbl-wrap"><table>
+<tr><th>名詞</th><th>定義</th><th>易混淆點</th></tr>
+<tr><td>子串（substring）</td><td>連續的一段 \(s_{l..r}\)</td><td>與「子序列」不同——子序列可以不連續</td></tr>
+<tr><td>前綴／後綴</td><td>\(s_{1..i}\)／\(s_{i..n}\)；「真」= 不等於自己</td><td>每個子串都是「某個前綴的後綴」——SAM 的視角</td></tr>
+<tr><td>border</td><td>既是真前綴又是真後綴的串</td><td>border 的 border 還是 border（遞迴結構）</td></tr>
+<tr><td>週期（period）</td><td>\(s_i=s_{i+p}\) 對所有合法 \(i\)</td><td>週期不必整除 \(n\)；整除的叫「循環節」</td></tr>
+<tr><td>字典序</td><td>逐字比較，前綴較小</td><td>比較兩子串字典序 = hash 二分 LCP 後比下一字元</td></tr>
+</table></div>
+
+<h3>1.2 border 與週期的結構</h3>
+<ul>
+<li><b>fail 鏈 = 所有 border</b>：\(s\) 的最長 border 是 \(\mathrm{fail}[n]\)，次長是 \(\mathrm{fail}[\mathrm{fail}[n]]\)，……沿鏈走完恰好枚舉所有 border。這是 <a href="#s2-2">2.2</a> 一切應用的來源。</li>
+<li><b>Weak Periodicity Lemma</b>：若 \(p,q\) 都是週期且 \(p+q\le n\)，則 \(\gcd(p,q)\) 也是週期。直覺：兩個週期互相「傳染」，輾轉相減。</li>
+<li><b>border 的等差結構</b>：\(s\) 的所有 border 長度可以分成 \(O(\log n)\) 個等差數列——長度超過 \(n/2\) 的 border 兩兩差距形成等差。這在 ★★★★★ 的 border 理論題（<a href="#s2-11">2.11.5</a>）才會用到，此處先陳述。</li>
+</ul>
+
+<h3>1.3 三種匹配思維</h3>
+<div class="tbl-wrap"><table>
+<tr><th>思維</th><th>代表工具</th><th>核心資訊</th><th>特長</th></tr>
+<tr><td><b>滑動比對</b></td><td>KMP、Z、Manacher</td><td>「已匹配的部分」的結構（border／Z-box／迴文鏡像）</td><td>線性、確定性、常數小</td></tr>
+<tr><td><b>指紋比對</b></td><td>多項式 hash</td><td>子串 → 數字，\(O(1)\) 比相等</td><td>萬用膠水：能二分、能塞進 set、能配任何結構</td></tr>
+<tr><td><b>自動機</b></td><td>Trie、ACAM、SAM、PAM</td><td>把所有狀態顯式建成圖</td><td>多模式、子串全體統計、在圖上跑 DP</td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 選型的第一直覺</b>
+<p>先問「<b>我要的答案是關於一個串、兩個串、還是所有子串？</b>」一個模式串 → 滑動比對就夠；答案需要「任意兩個子串比較」→ 指紋；答案是「對所有子串／所有迴文／所有模式串」的統計 → 自動機或後綴結構。完整決策樹見 <a href="#s4">第 4 章</a>。</p></div>
+
+<h3>1.4 複雜度與資料範圍反推</h3>
+<div class="tbl-wrap"><table>
+<tr><th>資料範圍</th><th>暗示</th></tr>
+<tr><td>\(|s|\le 10^6\)</td><td>線性家族：KMP／Z／Manacher／SAM／PAM；\(O(n\log n)\) 的 SA 也常能過</td></tr>
+<tr><td>\(|s|\le 10^5\)</td><td>\(O(n\log n)\) 隨便用：hash+二分、SA、SAM×資料結構</td></tr>
+<tr><td>\(n \le 5000\)</td><td>\(O(n^2)\) 可行：暴力枚舉中心、區間 DP、\(O(n^2)\) hash 表</td></tr>
+<tr><td>\(\Sigma|p_i|\le 10^6\)（多模式）</td><td>AC 自動機；注意字元集大小影響 goto 表空間</td></tr>
+<tr><td>強制線上</td><td>SAM（天然增量）；hash／SA 偏離線</td></tr>
+</table></div>
+
+<h3>1.5 實作工具箱</h3>
+<ul>
+<li><b>下標慣例</b>：本指南 KMP／Z 用 0-indexed 字串 + \(\mathrm{fail}[i]\) 表「長度」；SA 用 1-indexed。每份模板固定自己的慣例，<b>不要現場換</b>。</li>
+<li><b>字元集映射</b>：`c - 'a'` 之前先確認題目字元集；出現數字或大寫時映射表要換（第 3 章高頻坑）。</li>
+<li><b>多測清空</b>：Trie／ACAM 的節點陣列若整包 <code>memset</code>，複雜度變 \(O(T\cdot \text{SIZE})\)——要只清用過的節點，或用版本號打標記。</li>
+<li><b><code>std::string</code> 拷貝</b>：函式傳參用 <code>const string&amp;</code>；`substr` 是 \(O(len)\) 拷貝，迴圈裡呼叫直接退化平方。</li>
+<li><b>讀入</b>：\(10^6\) 級字串用 <code>scanf("%s")</code> 或關同步的 <code>cin</code>；<code>getline</code> 注意殘留換行。</li>
+</ul>

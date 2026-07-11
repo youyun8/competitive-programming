@@ -1,0 +1,40 @@
+<h2><span class="sec-no">0</span>導讀與使用方式</h2>
+
+<div class="callout idea"><b>🗺️ 這份字串指南如何組織？</b>
+<p>競賽字串題看似五花八門，本質上繞著四個問題族打轉：<b>匹配</b>（A 在 B 裡出現在哪）、<b>週期</b>（字串自我重複的結構）、<b>迴文</b>、<b>子串結構</b>（所有子串的統計與排序）。第 1 章先建立 border／週期這套共同語言；第 2 章的 11 個策略按「工具」組織——從雜湊、KMP 這種十行模板，一路到後綴自動機這種需要整章理解的重型結構；第 3、4 章分別處理「為什麼被卡」與「怎麼選工具」，第 6 章才是刷題順序。讀每一章時都要能回答：<b>這個工具回答哪一族問題、線性複雜度從哪裡來、什麼時候它是殺雞用牛刀。</b></p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>題目外觀</th><th>優先翻閱</th><th>最先檢查的限制</th></tr>
+<tr><td>一個模式串找出現位置</td><td>2.1 hash、2.2 KMP、2.3 Z</td><td>會不會被卡 hash、要不要出現次數</td></tr>
+<tr><td>很多模式串同時匹配</td><td>2.6 AC 自動機</td><td>Σ|模式| 的規模、要不要每個串各自的次數</td></tr>
+<tr><td>循環節、前綴後綴相等</td><td>2.2 KMP（border/週期）</td><td>是否只需要 fail 陣列的性質</td></tr>
+<tr><td>迴文子串</td><td>2.4 Manacher、2.9 PAM</td><td>只要最長/計數 → Manacher；逐個迴文統計 → PAM</td></tr>
+<tr><td>本質不同子串、子串排序</td><td>2.7 SA、2.8 SAM</td><td>要 height 分組還是 endpos 結構、是否強制線上</td></tr>
+<tr><td>XOR 最值、二進位前綴</td><td>2.5 01-Trie</td><td>值域位數、要不要可持久化（→ <a href="#topic-ds">資料結構主題</a>）</td></tr>
+<tr><td>環同構、字典序最小旋轉</td><td>2.10 最小表示法 / Lyndon</td><td>只要一個答案還是要整個分解</td></tr>
+</table></div>
+
+<p><b>字串演算法</b>的統一主線是：暴力比較會在「重複比較已知相等的部分」上浪費時間，而每個工具都是一種<b>把已知資訊記下來重複利用</b>的方法——KMP 記住 border、Z 記住匹配盒、Manacher 記住迴文鏡像、自動機把所有狀態顯式建出來。看懂這一點，11 個策略就不是 11 份互不相關的模板。</p>
+
+<div class="callout idea"><b>💡 一句話判斷「這題是不是字串題」</b>
+<p>資料是序列而且<b>比較的單位是「連續片段」</b>（子串、前綴、後綴、迴文段），就是字串題；若只在乎「選哪些位置」而不在乎連續性，多半是 DP 或貪心（子序列問題幾乎都是 <a href="#topic-dp">DP</a>）。競賽中更實用的訊號是資料範圍：\(|s| \le 10^6\) 幾乎鎖定線性家族（KMP／Z／Manacher／SAM）；\(|s| \le 10^5\) 允許 \(O(n \log n)\)（SA、hash+二分）；\(n \le 5000\) 的 \(O(n^2)\) 常常直接暴力 DP。</p></div>
+
+<h3>難度分級</h3>
+<div class="tbl-wrap"><table>
+<tr><th>星級</th><th>定位</th><th>大約對應</th></tr>
+<tr><td><span class="stars s1">★</span></td><td>入門：呼叫模板或十行內暴力</td><td>LeetCode Easy／洛谷 紅題</td></tr>
+<tr><td><span class="stars s2">★★</span></td><td>基礎：單一模板直接套用</td><td>LeetCode Medium／CF 1200 以下</td></tr>
+<tr><td><span class="stars s3">★★★</span></td><td>進階：需要一步轉化或組合兩個工具</td><td>LeetCode Hard 邊緣／CF 1400–1800</td></tr>
+<tr><td><span class="stars s4">★★★★</span></td><td>競賽：SA/SAM/PAM 級工具或 fail 樹思維</td><td>CF 1900–2300／省選</td></tr>
+<tr><td><span class="stars s5">★★★★★</span></td><td>專家：廣義 SAM、SAM×線段樹合併、border 理論</td><td>CF 2400+／NOI／ICPC 區域賽壓軸</td></tr>
+</table></div>
+
+<h3>標籤系統</h3>
+<p>每道題目帶兩類標籤：<b>策略標籤</b>（hash、KMP、Z函數、Manacher、Trie、ACAM、SA、SAM、PAM、Lyndon、fail樹 …）與<b>難度星級</b>。側欄的「📋 <a href="#problems">全站題目總表</a>」可以按主題、標籤與星級複選篩選；同一道題若也收錄在其他主題（例如 GT 考試同時是 KMP 自動機與矩陣冪 DP 的代表題），練習進度只需標記一次、兩邊自動同步。</p>
+
+<div class="callout when"><b>🔗 與其他主題的分工</b>
+<ul>
+<li>字串上的 <b>DP</b>（編輯距離、正則匹配、自動機上計數）→ <a href="#topic-dp">DP 主題</a> 2.5／2.6。</li>
+<li><b>字典序貪心</b>（單調棧刪字元、拼接最大數）→ <a href="#topic-greedy">貪心主題</a> 2.6。</li>
+<li>01-Trie 的<b>可持久化</b>、fail 樹上的 BIT／線段樹 → <a href="#topic-ds">資料結構主題</a>。</li>
+</ul></div>

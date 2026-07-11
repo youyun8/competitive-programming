@@ -1,0 +1,68 @@
+<h2><span class="sec-no">4</span>模板整理與選型方法論</h2>
+
+<h3>4.1 選型決策樹</h3>
+<div class="tbl-wrap"><table>
+<tr><th>第一個問題</th><th>追問</th><th>選擇</th></tr>
+<tr><td rowspan="3">單模式匹配？</td><td>要確定性、要 fail 的副產品（週期）</td><td><a href="#s2-2">KMP</a></td></tr>
+<tr><td>句型是「每個位置往後配多長」</td><td><a href="#s2-3">Z 函數</a></td></tr>
+<tr><td>還要跟二分/資料結構混搭</td><td><a href="#s2-1">hash</a></td></tr>
+<tr><td>多模式匹配？</td><td>Σ|p| 可建自動機</td><td><a href="#s2-6">AC 自動機</a>（計數上 fail 樹）</td></tr>
+<tr><td rowspan="2">迴文？</td><td>只要最長/總數</td><td><a href="#s2-4">Manacher</a></td></tr>
+<tr><td>逐個本質不同迴文統計</td><td><a href="#s2-9">PAM</a></td></tr>
+<tr><td rowspan="2">所有子串的統計？</td><td>字典序、排名、height 分組</td><td><a href="#s2-7">SA</a></td></tr>
+<tr><td>endpos／出現次數／線上</td><td><a href="#s2-8">SAM</a>（多串 → 廣義 SAM）</td></tr>
+<tr><td>XOR／二進位前綴？</td><td>—</td><td><a href="#s2-5">01-Trie</a></td></tr>
+<tr><td>旋轉／最小後綴？</td><td>只要一個答案 vs 全排序</td><td><a href="#s2-10">最小表示/Duval</a> vs SA</td></tr>
+<tr><td>週期／border 結構？</td><td>單點 vs 兩前綴比較</td><td>fail 陣列 vs <a href="#s2-11">失配樹 LCA</a></td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 兩條經驗法則</b>
+<p>① <b>能用輕工具就不用重工具</b>：KMP 十行、SA 四十行、SAM 六十行且 debug 成本指數上升——比賽裡「hash 能不能混過去」永遠值得先想 30 秒。② <b>重工具的價值在「結構」不在「匹配」</b>：如果你用 SAM 只為了找一個串出現在哪，你用錯了；用到 endpos／parent 樹／DAG 導航才回本。</p></div>
+
+<h3>4.2 一題三解對照：Milk Patterns（P2852）</h3>
+<div class="tbl-wrap"><table>
+<tr><th>解法</th><th>複雜度</th><th>思路一句話</th><th>什麼時候選它</th></tr>
+<tr><td><a href="#s2-1">hash + 二分</a></td><td>\(O(n\log n)\)</td><td>二分長度，窗口 hash 計數</td><td>最快寫完；容忍機率正確</td></tr>
+<tr><td><a href="#s2-7">SA + height</a></td><td>\(O(n\log n)\)</td><td>滑窗取 \(k-1\) 個 height 的 min 的最大值</td><td>已有 SA 模板；還要順便答別的字典序問題</td></tr>
+<tr><td><a href="#s2-8">SAM + cnt</a></td><td>\(O(n)\)</td><td>\(\max\{len_u : cnt_u\ge k\}\)</td><td>一行收尾；還要 endpos 相關資訊</td></tr>
+</table></div>
+<p>三解殊途同歸，但「哪個先想到」暴露你的思考入口：hash 走「二分判定」、SA 走「排序後相鄰」、SAM 走「等價類」。三個入口都應該熟。</p>
+
+<h3>4.3 模板碼風格約定</h3>
+<ul>
+<li><b>全域陣列 + 節點池</b>：所有自動機用 <code>int ch[N][Σ]</code> 節點池寫法，不用指標——可 memcpy、可離線、multi-test 好清。</li>
+<li><b>下標制固定</b>：KMP/SA 用 1-indexed（fail=長度）、Z/Manacher 用 0-indexed——每份模板頂端註解寫死，永不現場改。</li>
+<li><b>reset 函式</b>：每個結構配一個只清 \(0..tot\) 的 <code>reset()</code>，多測直接呼叫。</li>
+<li><b>模板自帶測試句</b>：註解裡放一個手推過的小例（如 <code>banana</code> 的 sa/height 值），移植後 30 秒自檢。</li>
+</ul>
+
+<h3>4.4 對拍驗證器</h3>
+<p>字串暴力極好寫，對拍是字串模板的標配保險：</p>
+<details><summary>對拍範例（C++）：隨機小字串 + 暴力比對</summary>
+<pre><code class="lang-cpp">// gen：小字元集 + 短長度最容易觸發 border / 迴文邊界
+string gen(mt19937&amp; rng) {
+    int n = rng() % 12 + 1, sigma = rng() % 2 + 2;   // 長度 1..12，字元 2..3 種
+    string s;
+    for (int i = 0; i &lt; n; i++) s += char('a' + rng() % sigma);
+    return s;
+}
+int bruteMinPeriod(const string&amp; s) {                // 暴力最小週期
+    int n = s.size();
+    for (int p = 1; p &lt;= n; p++) {
+        bool ok = true;
+        for (int i = 0; i + p &lt; n; i++) if (s[i] != s[i+p]) { ok = false; break; }
+        if (ok) return p;
+    }
+    return n;
+}
+int main() {
+    mt19937 rng(random_device{}());
+    for (int t = 0; t &lt; 100000; t++) {
+        string s = gen(rng);
+        int a = bruteMinPeriod(s), b = kmpMinPeriod(s);   // 你的模板
+        if (a != b) { cout &lt;&lt; "WA " &lt;&lt; s &lt;&lt; " brute=" &lt;&lt; a
+                           &lt;&lt; " yours=" &lt;&lt; b &lt;&lt; "\n"; return 1; }
+    }
+    cout &lt;&lt; "all passed\n";
+}</code></pre></details>
+<p>同款骨架換掉「暴力函式」即可對拍 Z（暴力逐位比）、Manacher（暴力中心擴展）、SA（<code>sort</code> 後綴）、SAM 計數（枚舉所有子串塞 map）——<b>每背下一份新模板，先讓它通過十萬組對拍再上賽場</b>。</p>
