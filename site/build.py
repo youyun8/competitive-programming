@@ -307,6 +307,15 @@ SETTINGS_PANEL = """
       </div>
     </div>
     <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
       <span class="settings-label">版面寬度</span>
       <div class="seg" data-group="width">
         <button data-value="narrow">窄</button>
@@ -367,13 +376,15 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
   <div id="authBox" class="authbox"></div>
   <span class="lv1-label">主題</span>
   {switcher}
-  <a class="lv1 sitewide" href="{problems}">📋 全站題目總表</a>
+  <a class="sitewide" href="{problems}"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
   <hr class="sidebar-divider">
   <nav id="toc">
     {nav}
   </nav>
 </aside>
-<button id="menuBtn" aria-label="開啟目錄">☰</button>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
 {body}
@@ -497,7 +508,7 @@ def build_site_index_body():
 </div>
 
 <h2>全站題目總表</h2>
-<p class="lede">不想按章節讀，直接刷題也可以 —— <a href="{problems}">全站題目總表</a>橫跨所有主題，可依主題、難度星級、策略標籤與關鍵字篩選。</p>
+<p class="lede home-problems-lede">不想按章節讀，直接刷題也可以 —— <a href="{problems}">全站題目總表</a>橫跨所有主題，可依主題、難度星級、策略標籤與關鍵字篩選。</p>
 """.format(site_name=SITE_NAME, n_topics=len(TOPICS), n_problems=count_problems(),
            cards="\n".join(cards), problems=GLOBAL_PAGES["problems"]["path"])
 

@@ -27,13 +27,15 @@
     <a class="" data-topic="greedy" href="topics/greedy/index.html">🧭 貪心</a>
     <a class="" data-topic="dp" href="topics/dp/index.html">📈 DP</a>
     </div>
-  <a class="lv1 sitewide" href="pages/problems.html">📋 全站題目總表</a>
+  <a class="sitewide" href="pages/problems.html"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
   <hr class="sidebar-divider">
   <nav id="toc">
     
   </nav>
 </aside>
-<button id="menuBtn" aria-label="開啟目錄">☰</button>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
 
@@ -56,7 +58,7 @@
 </div>
 
 <h2>全站題目總表</h2>
-<p class="lede">不想按章節讀，直接刷題也可以 —— <a href="pages/problems.html">全站題目總表</a>橫跨所有主題，可依主題、難度星級、策略標籤與關鍵字篩選。</p>
+<p class="lede home-problems-lede">不想按章節讀，直接刷題也可以 —— <a href="pages/problems.html">全站題目總表</a>橫跨所有主題，可依主題、難度星級、策略標籤與關鍵字篩選。</p>
 
 
 <footer class="site-footer">
@@ -82,6 +84,15 @@
     <div class="settings-row">
       <span class="settings-label">內文字體大小</span>
       <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
         <button data-value="sm">小</button>
         <button data-value="md">中</button>
         <button data-value="lg">大</button>

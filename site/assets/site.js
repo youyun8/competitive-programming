@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    演算法策略圖鑑 — 共用行為
-   1) 讀取／套用使用者設定（主題、字體大小、版面寬度）— 立即執行，避免畫面閃爍
-   2) DOMContentLoaded 後：設定面板互動、手機側欄、目錄/主題高亮、程式碼語法上色、
+   1) 讀取／套用使用者設定（主題、內文／側欄字體大小、版面寬度）— 立即執行，避免畫面閃爍
+   2) DOMContentLoaded 後：設定面板互動、側欄收合／手機抽屜、目錄/主題高亮、程式碼語法上色、
       全站題目總表篩選（僅在該頁存在對應元素時執行）
 
    本檔案與 assets/problems-data.js 是所有「主題」（貪心、DP、未來新增的主題……）
@@ -20,8 +20,9 @@
 
   var STORE_KEY = "algo-guide-settings";
 
-  var DEFAULTS = { theme: "system", fontSize: "md", width: "normal" };
+  var DEFAULTS = { theme: "system", fontSize: "md", sidebarFontSize: "md", width: "normal" };
   var FONT_PX = { sm: "14px", md: "16px", lg: "18px", xl: "21px" };
+  var SIDEBAR_FONT_PX = { sm: "12px", md: "13.5px", lg: "15px", xl: "17px" };
   var WIDTH_PX = { narrow: "720px", normal: "960px", wide: "1200px", full: "none" };
 
   function loadSettings() {
@@ -42,6 +43,7 @@
     if (s.theme === "light" || s.theme === "dark") root.dataset.theme = s.theme;
     else delete root.dataset.theme;
     root.style.setProperty("--content-fs", FONT_PX[s.fontSize] || FONT_PX.md);
+    root.style.setProperty("--sidebar-fs", SIDEBAR_FONT_PX[s.sidebarFontSize] || SIDEBAR_FONT_PX.md);
     root.style.setProperty("--content-max", WIDTH_PX[s.width] || WIDTH_PX.normal);
   }
 
@@ -96,13 +98,40 @@
     });
   }
 
-  /* ── 手機側欄抽屜 ── */
-  function initMobileNav() {
+  /* ── 側欄收合／手機抽屜 ── */
+  function initSidebarNav() {
     var sb = document.getElementById("sidebar");
+    var collapseBtn = document.getElementById("sidebarToggle");
     var mb = document.getElementById("menuBtn");
-    if (!sb || !mb) return;
-    mb.addEventListener("click", function () { sb.classList.toggle("open"); });
-    sb.addEventListener("click", function (e) { if (e.target.tagName === "A") sb.classList.remove("open"); });
+    if (!sb) return;
+
+    function syncCollapseButton() {
+      if (!collapseBtn) return;
+      var collapsed = sb.classList.contains("collapsed");
+      collapseBtn.textContent = collapsed ? "›" : "‹";
+      collapseBtn.setAttribute("aria-expanded", String(!collapsed));
+      collapseBtn.setAttribute("aria-label", collapsed ? "展開側欄" : "收合側欄");
+      collapseBtn.title = collapsed ? "展開側欄" : "收合側欄";
+    }
+
+    if (collapseBtn) {
+      collapseBtn.addEventListener("click", function () {
+        sb.classList.toggle("collapsed");
+        syncCollapseButton();
+      });
+    }
+
+    if (mb) {
+      mb.addEventListener("click", function () {
+        sb.classList.toggle("open");
+        mb.setAttribute("aria-expanded", String(sb.classList.contains("open")));
+      });
+    }
+
+    sb.addEventListener("click", function (e) {
+      if (e.target.closest("a")) sb.classList.remove("open");
+    });
+    syncCollapseButton();
   }
 
   /* ── 側欄目前頁面／主題高亮 ── */
@@ -116,6 +145,13 @@
     if (topic) {
       var chip = document.querySelector('#topicSwitcher a[data-topic="' + topic + '"]');
       if (chip) chip.classList.add("active");
+    }
+    if (page === "problems") {
+      var sitewide = document.querySelector("#sidebar > a.sitewide");
+      if (sitewide) {
+        sitewide.classList.add("active");
+        sitewide.setAttribute("aria-current", "page");
+      }
     }
   }
 
@@ -232,7 +268,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     initSettingsPanel();
-    initMobileNav();
+    initSidebarNav();
     initActiveNav();
     initSyntaxHighlight();
     initProblemsPage();

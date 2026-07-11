@@ -48,22 +48,28 @@ a{color:var(--accent); text-decoration:none}
 a:hover{text-decoration:underline}
 .layout{display:flex; min-height:100vh}
 
-/* ── sidebar (fixed size — not affected by content font-size setting) ── */
+/* ── sidebar ── */
 #sidebar{
   width:280px; flex-shrink:0; background:var(--bg2); border-right:1px solid var(--line);
   position:sticky; top:0; height:100vh; overflow-y:auto; padding:20px 14px 40px;
+  font-size:var(--sidebar-fs,13.5px);
+  transition:width .25s ease, padding .25s ease, border-color .25s ease;
 }
-#sidebar .logo{font-weight:800; font-size:17px; padding:4px 10px 14px; letter-spacing:.5px}
+#sidebar.collapsed{
+  width:0; padding-left:0; padding-right:0; border-right-color:transparent; overflow:hidden;
+}
+#sidebar.collapsed>*{opacity:0; pointer-events:none}
+#sidebar .logo{font-weight:800; font-size:1.26em; padding:4px 10px 14px; letter-spacing:.5px}
 #sidebar .logo a{color:inherit}
-#sidebar .logo span{color:var(--accent); display:block; font-size:12px; font-weight:600; margin-top:2px}
+#sidebar .logo span{color:var(--accent); display:block; font-size:.86em; font-weight:600; margin-top:2px}
 #sidebar .toolbtns{display:flex; gap:6px; margin:2px 10px 10px}
 #sidebar nav a{
   display:block; padding:5px 10px; margin:1px 0; border-radius:8px;
-  color:var(--fg2); font-size:13.5px;
+  color:var(--fg2); font-size:1em;
 }
 #sidebar nav a:hover{background:var(--chip-bg); color:var(--fg); text-decoration:none}
-#sidebar nav a.lv1{font-weight:700; color:var(--fg); margin-top:10px; font-size:14px}
-#sidebar nav .lv1-label{font-weight:700; color:var(--fg); margin-top:10px; font-size:14px; padding:5px 10px; display:block}
+#sidebar nav a.lv1{font-weight:700; color:var(--fg); margin-top:10px; font-size:1.04em}
+#sidebar .lv1-label{font-weight:700; color:var(--fg); margin-top:10px; font-size:1.04em; padding:5px 10px; display:block}
 #sidebar nav a.lv2{padding-left:22px}
 #sidebar nav a.active{background:var(--accent-soft); color:var(--accent)}
 
@@ -71,16 +77,31 @@ a:hover{text-decoration:underline}
 #topicSwitcher{display:flex; flex-wrap:wrap; gap:6px; padding:2px 10px 8px}
 #topicSwitcher a{
   display:inline-flex; align-items:center; gap:4px; border:1px solid var(--line);
-  border-radius:999px; padding:4px 12px; font-size:12.5px; font-weight:600; color:var(--fg2);
+  border-radius:999px; padding:4px 12px; font-size:.93em; font-weight:600; color:var(--fg2);
 }
 #topicSwitcher a:hover{border-color:var(--accent); color:var(--fg); text-decoration:none}
 #topicSwitcher a.active{background:var(--accent); border-color:var(--accent); color:#fff}
-#sidebar nav a.sitewide{
-  display:flex; align-items:center; gap:6px; font-weight:700; color:var(--fg);
-  margin:8px 0; border:1px dashed var(--line);
+#sidebar>a.sitewide{
+  display:inline-flex; align-items:center; gap:4px; border:1px solid var(--line);
+  border-radius:999px; padding:4px 12px; margin:2px 10px 8px;
+  font-size:.93em; font-weight:600; color:var(--fg2);
 }
-#sidebar nav a.sitewide:hover{border-style:solid}
+#sidebar>a.sitewide:hover{
+  border-color:var(--accent); color:var(--fg); background:transparent; text-decoration:none;
+}
+#sidebar>a.sitewide.active{background:var(--accent); border-color:var(--accent); color:#fff}
+#sidebar>a.sitewide.active:hover{color:#fff; background:var(--accent2)}
+.sitewide-icon{line-height:1}
 .sidebar-divider{border:none; border-top:1px solid var(--line); margin:10px 8px}
+.sidebar-toggle{
+  position:fixed; z-index:55; top:20px; left:264px; width:30px; height:34px;
+  display:flex; align-items:center; justify-content:center; border:1px solid var(--line);
+  border-radius:0 9px 9px 0; background:var(--bg2); color:var(--fg2);
+  cursor:pointer; font-size:22px; line-height:1; box-shadow:var(--shadow);
+  transition:left .25s ease, color .15s ease, background .15s ease;
+}
+.sidebar-toggle:hover{background:var(--accent-soft); color:var(--accent); border-color:var(--accent)}
+#sidebar.collapsed+.sidebar-toggle{left:8px}
 #menuBtn{
   display:none; position:fixed; z-index:60; bottom:18px; right:18px;
   width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
@@ -88,12 +109,12 @@ a:hover{text-decoration:underline}
 }
 .toolbtn{
   border:1px solid var(--line); background:var(--bg2); color:var(--fg2);
-  border-radius:8px; padding:4px 10px; cursor:pointer; font-size:12.5px; flex:1;
+  border-radius:8px; padding:4px 10px; cursor:pointer; font-size:.93em; flex:1;
 }
 .toolbtn:hover{color:var(--fg)}
 
 /* ── 登入狀態 ── */
-.authbox{margin:0 10px 12px; font-size:12px}
+.authbox{margin:0 10px 12px; font-size:.89em}
 .authbox-msg{color:var(--fg2); padding:4px 2px}
 .authbox-user{display:flex; align-items:center; justify-content:space-between; gap:6px}
 .authbox-email{
@@ -142,6 +163,7 @@ section{scroll-margin-top:16px}
 b,strong{font-weight:700}
 .small{font-size:.84375em; color:var(--fg2)}
 .lede{font-size:1.0625em; color:var(--fg2); max-width:720px}
+.home-problems-lede{max-width:none}
 
 /* callouts */
 .callout{border-radius:12px; padding:14px 18px; margin:14px 0; border-left:4px solid}
@@ -330,8 +352,14 @@ footer.site-footer{
     position:fixed; z-index:50; left:0; top:0; transform:translateX(-100%);
     transition:transform .25s ease; box-shadow:4px 0 24px rgba(0,0,0,.25);
   }
+  #sidebar.collapsed{
+    width:280px; padding-left:14px; padding-right:14px; border-right-color:var(--line);
+  }
+  #sidebar.collapsed>*{opacity:1; pointer-events:auto}
   #sidebar.open{transform:translateX(0)}
+  .sidebar-toggle{display:none}
   #menuBtn{display:block}
+  .home-problems-lede{max-width:100%}
   main{padding:20px 18px 60px}
   .hero{padding:26px 22px}
   .hero h1{font-size:1.4375em}

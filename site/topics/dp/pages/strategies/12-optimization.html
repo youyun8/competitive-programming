@@ -27,7 +27,7 @@
     <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
     <a class="active" data-topic="dp" href="../../index.html">📈 DP</a>
     </div>
-  <a class="lv1 sitewide" href="../../../../pages/problems.html#topic=dp">📋 全站題目總表</a>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=dp"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
   <hr class="sidebar-divider">
   <nav id="toc">
     <a class="lv1" data-page="index" href="../../index.html">🏠 動態規劃 首頁</a>
@@ -51,7 +51,9 @@
     <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
   </nav>
 </aside>
-<button id="menuBtn" aria-label="開啟目錄">☰</button>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
 <h2>2.12 DP 優化技術（競賽分水嶺）</h2>
@@ -221,6 +223,15 @@ for (int w : items)
     <div class="settings-row">
       <span class="settings-label">內文字體大小</span>
       <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
         <button data-value="sm">小</button>
         <button data-value="md">中</button>
         <button data-value="lg">大</button>
