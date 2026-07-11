@@ -11,20 +11,28 @@
 </ul></div>
 
 <details><summary>模板（C++）：單調棧 + 單調佇列</summary>
-<pre><code class="lang-cpp">// 單調棧：每個 i 的「左邊第一個更小元素」下標 L[i]
+<pre><code class="lang-cpp">// 單調棧：每個 i 的「左邊第一個更小元素」下標 left[i]
 stack&lt;int&gt; st;
 for (int i = 1; i &lt;= n; i++) {
-    while (!st.empty() &amp;&amp; a[st.top()] &gt;= a[i]) st.pop();
-    L[i] = st.empty() ? 0 : st.top();
+    while (!st.empty() &amp;&amp; a[st.top()] &gt;= a[i]) {
+        st.pop();
+    }
+    left[i] = st.empty() ? 0 : st.top();
     st.push(i);
 }
 // 單調佇列：長 k 窗口最大值（遞減佇列，存下標）
 deque&lt;int&gt; q;
 for (int i = 1; i &lt;= n; i++) {
-    while (!q.empty() &amp;&amp; q.front() &lt;= i - k) q.pop_front(); // 隊首過期
-    while (!q.empty() &amp;&amp; a[q.back()] &lt;= a[i]) q.pop_back(); // 隊尾被支配
+    while (!q.empty() &amp;&amp; q.front() &lt;= i - k) {
+        q.pop_front();  // 隊首過期
+    }
+    while (!q.empty() &amp;&amp; a[q.back()] &lt;= a[i]) {
+        q.pop_back();  // 隊尾被支配
+    }
     q.push_back(i);
-    if (i &gt;= k) ans[i - k + 1] = a[q.front()];
+    if (i &gt;= k) {
+        ans[i - k + 1] = a[q.front()];
+    }
 }</code></pre></details>
 
 <div class="problem" data-problem-id="lc-739">

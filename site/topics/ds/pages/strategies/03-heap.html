@@ -75,17 +75,34 @@
 priority_queue&lt;int&gt; lo;
 priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; hi;
 void insert(int x) {
-    if (lo.empty() || x &lt;= lo.top()) lo.push(x); else hi.push(x);
-    if (lo.size() &gt; hi.size() + 1) { hi.push(lo.top()); lo.pop(); }
-    if (hi.size() &gt; lo.size())     { lo.push(hi.top()); hi.pop(); }
+    if (lo.empty() || x &lt;= lo.top()) {
+        lo.push(x);
+    } else {
+        hi.push(x);
+    }
+    if (lo.size() &gt; hi.size() + 1) {
+        hi.push(lo.top());
+        lo.pop();
+    }
+    if (hi.size() &gt; lo.size()) {
+        lo.push(hi.top());
+        hi.pop();
+    }
 }
-int median() { return lo.top(); }
+int median() {
+    return lo.top();
+}
 
 // 懶刪除：erase 只記帳，top 時對消
 priority_queue&lt;int&gt; q, del;
-void erase(int x) { del.push(x); }
+void erase(int x) {
+    del.push(x);
+}
 int top() {
-    while (!del.empty() &amp;&amp; q.top() == del.top()) q.pop(), del.pop();
+    while (!del.empty() &amp;&amp; q.top() == del.top()) {
+        q.pop();
+        del.pop();
+    }
     return q.top();
 }</code></pre></details>
 

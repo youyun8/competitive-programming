@@ -128,10 +128,11 @@ return best;</code></pre></details>
 <pre><code class="lang-cpp">vector&lt;int&gt; g;
 for (int x : nums) {
     auto it = lower_bound(g.begin(), g.end(), x);  // 非嚴格遞增改 upper_bound
-    if (it == g.end())
+    if (it == g.end()) {
         g.push_back(x);
-    else
+    } else {
         *it = x;
+    }
 }
 return g.size();</code></pre></details>
 </div>

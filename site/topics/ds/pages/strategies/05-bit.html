@@ -72,17 +72,30 @@
 
 <details><summary>模板（C++）：BIT + 上面的三個變形</summary>
 <pre><code class="lang-cpp">int c[N], n;
-void add(int i, int v) { for (; i &lt;= n; i += i &amp; -i) c[i] += v; }
-int  qry(int i) { int s = 0; for (; i; i -= i &amp; -i) s += c[i]; return s; }
+void add(int i, int v) {
+    for (; i &lt;= n; i += i &amp; -i) {
+        c[i] += v;
+    }
+}
+int qry(int i) {
+    int s = 0;
+    for (; i; i -= i &amp; -i) {
+        s += c[i];
+    }
+    return s;
+}
 // 區間加 + 單點查：對差分陣列開 BIT，add(l,v), add(r+1,-v)，查 = qry(i)
 // 區間加 + 區間和：兩個 BIT 維護 d[i] 與 i*d[i]，
 //   sum(1,r) = (r+1)*qry1(r) - qry2(r)
 // BIT 上倍增求第 k 小（權值 BIT）：O(log n)，比二分套查詢省一個 log
 int kth(int k) {
     int pos = 0;
-    for (int j = __lg(n); j &gt;= 0; j--)
-        if (pos + (1 &lt;&lt; j) &lt;= n &amp;&amp; c[pos + (1 &lt;&lt; j)] &lt; k)
-            pos += 1 &lt;&lt; j, k -= c[pos];
+    for (int j = __lg(n); j &gt;= 0; j--) {
+        if (pos + (1 &lt;&lt; j) &lt;= n &amp;&amp; c[pos + (1 &lt;&lt; j)] &lt; k) {
+            pos += 1 &lt;&lt; j;
+            k -= c[pos];
+        }
+    }
     return pos + 1;
 }</code></pre></details>
 

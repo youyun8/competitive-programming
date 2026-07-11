@@ -24,9 +24,9 @@
 </ul></div>
 
 <pre><code class="lang-cpp">// 位運算工具箱
-int lb = S &amp; (-S);                    // lowbit：最低位的 1
-int c = __builtin_popcount(S);        // 集合大小
-for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */
+int lb = s &amp; (-s);                    // lowbit：最低位的 1
+int c = __builtin_popcount(s);        // 集合大小
+for (int t = s; t; t = (t - 1) &amp; s) {  // 枚舉 s 的非空子集
 }
 // 全體「枚舉每個集合的每個子集」總量是 3^n（每位三種歸屬），非 4^n</code></pre>
 
@@ -36,11 +36,13 @@ for (int T = S; T; T = (T - 1) &amp; S) { /* 枚舉 S 的非空子集 */
 <details><summary>思路</summary><p>\(\mathrm{dp}[S]\) 是前 \(\operatorname{popcount}(S)\) 個男生與女生集合 \(S\) 完成配對的方案數。<b>關鍵洞見：第 \(i\) 個男生配誰不用記「哪些男生用過」——按順序處理，男生編號就是 \(\operatorname{popcount}(S)\)</b>，一維集合就夠。轉移枚舉 \(S\) 的每個位，複雜度為 \(O(2^n n)\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">dp[0] = 1;
-for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
-    int i = __builtin_popcount(S) - 1;  // 正在配第 i 個男生
-    for (int j = 0; j &lt; n; j++)
-        if ((S &gt;&gt; j &amp; 1) &amp;&amp; ok[i][j])
-            dp[S] = (dp[S] + dp[S ^ (1 &lt;&lt; j)]) % MOD;
+for (int s = 1; s &lt; (1 &lt;&lt; n); s++) {
+    int i = __builtin_popcount(s) - 1;  // 正在配第 i 個男生
+    for (int j = 0; j &lt; n; j++) {
+        if ((s &gt;&gt; j &amp; 1) &amp;&amp; ok[i][j]) {
+            dp[s] = (dp[s] + dp[s ^ (1 &lt;&lt; j)]) % MOD;
+        }
+    }
 }</code></pre></details>
 </div>
 
@@ -67,12 +69,14 @@ for (int S = 1; S &lt; (1 &lt;&lt; n); S++) {
 <p>每條過原點的拋物線可消滅其上所有豬（\(n \le 18\)），最少幾條拋物線？</p>
 <details><summary>思路</summary><p>先預處理：每對豬決定一條拋物線，得到它能覆蓋的豬集合 \(\mathrm{cover}[i][j]\)。然後做最小集合覆蓋：\(\mathrm{dp}[S]\) 是已消滅集合 \(S\) 的最少線數，<b>轉移時固定 \(S\) 中最小的未消滅豬</b>——它必屬於某條線，只枚舉包含它的線，避免同一組合被枚舉多次，複雜度從 \(3^n\) 降到 \(2^n n\)。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">for (int S = 0; S &lt; (1 &lt;&lt; n); S++) {
-    if (dp[S] == INF)
+<pre><code class="lang-cpp">for (int s = 0; s &lt; (1 &lt;&lt; n); s++) {
+    if (dp[s] == INF) {
         continue;
-    int p = __builtin_ctz(~S);   // 最小的還活著的豬
-    for (int j = 0; j &lt; n; j++)  // 枚舉「經過 p」的拋物線
-        dp[S | cover[p][j]] = min(dp[S | cover[p][j]], dp[S] + 1);
+    }
+    int p = __builtin_ctz(~s);   // 最小的還活著的豬
+    for (int j = 0; j &lt; n; j++) {  // 枚舉「經過 p」的拋物線
+        dp[s | cover[p][j]] = min(dp[s | cover[p][j]], dp[s] + 1);
+    }
 }</code></pre></details>
 </div>
 

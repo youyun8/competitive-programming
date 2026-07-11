@@ -72,17 +72,27 @@
 
 <details><summary>模板（C++）：路徑壓縮 + 按大小合併</summary>
 <pre><code class="lang-cpp">int fa[N], sz[N];
-int find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+int find(int x) {
+    return fa[x] == x ? x : fa[x] = find(fa[x]);
+}
 bool unite(int x, int y) {
-    x = find(x); y = find(y);
-    if (x == y) return false;
-    if (sz[x] &lt; sz[y]) swap(x, y);
-    fa[y] = x; sz[x] += sz[y];
+    x = find(x);
+    y = find(y);
+    if (x == y) {
+        return false;
+    }
+    if (sz[x] &lt; sz[y]) {
+        swap(x, y);
+    }
+    fa[y] = x;
+    sz[x] += sz[y];
     return true;
 }
 // 帶權版：w[x] = x 到父節點的關係量，find 時沿路累積並壓縮
 int find(int x) {
-    if (fa[x] == x) return x;
+    if (fa[x] == x) {
+        return x;
+    }
     int r = find(fa[x]);
     w[x] += w[fa[x]];          // 關係量按語意複合（加法/異或/mod）
     return fa[x] = r;

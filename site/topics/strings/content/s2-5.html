@@ -18,17 +18,24 @@ void insert(const char* s) {
     int u = 0;
     for (int i = 0; s[i]; i++) {
         int c = s[i] - 'a';
-        if (!ch[u][c]) ch[u][c] = ++tot;
-        u = ch[u][c]; cnt[u]++;
+        if (!ch[u][c]) {
+            ch[u][c] = ++tot;
+        }
+        u = ch[u][c];
+        cnt[u]++;
     }
 }
-// 01-Trie：查與 x 異或的最大值（B 為最高位）
-int maxXor(int x) {
+// 01-Trie：查與 x 異或的最大值（max_bit 為最高位）
+int max_xor(int x) {
     int u = 0, res = 0;
-    for (int b = B; b &gt;= 0; b--) {
+    for (int b = max_bit; b &gt;= 0; b--) {
         int d = (x &gt;&gt; b) &amp; 1;
-        if (ch[u][d ^ 1]) { res |= 1 &lt;&lt; b; u = ch[u][d ^ 1]; } // 貪心走相反位
-        else u = ch[u][d];
+        if (ch[u][d ^ 1]) {
+            res |= 1 &lt;&lt; b;
+            u = ch[u][d ^ 1]; // 貪心走相反位
+        } else {
+            u = ch[u][d];
+        }
     }
     return res;
 }</code></pre></details>

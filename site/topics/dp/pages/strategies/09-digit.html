@@ -88,15 +88,18 @@ int digits[20], len;
 long long memo[20][STATE];
 bool vis[20][STATE];
 long long dfs(int pos, int st, bool tight, bool lead) {
-    if (pos == len)
+    if (pos == len) {
         return 合法(st, lead) ? 1 : 0;
-    if (!tight &amp;&amp; !lead &amp;&amp; vis[pos][st])
+    }
+    if (!tight &amp;&amp; !lead &amp;&amp; vis[pos][st]) {
         return memo[pos][st];
+    }
     int hi = tight ? digits[pos] : 9;
     long long res = 0;
-    for (int d = 0; d &lt;= hi; d++)
+    for (int d = 0; d &lt;= hi; d++) {
         res +=
             dfs(pos + 1, 轉移(st, d, lead), tight &amp;&amp; d == hi, lead &amp;&amp; d == 0);
+    }
     if (!tight &amp;&amp; !lead) {
         vis[pos][st] = true;
         memo[pos][st] = res;

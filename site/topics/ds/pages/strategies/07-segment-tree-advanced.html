@@ -73,21 +73,36 @@
 <details><summary>模板（C++）：動態開點 + 樹上二分 + 合併</summary>
 <pre><code class="lang-cpp">int ls[M], rs[M], cnt[M], tot;              // M ≈ 插入次數 × logV
 void insert(int&amp; u, int l, int r, int x, int v) {
-    if (!u) u = ++tot;
+    if (!u) {
+        u = ++tot;
+    }
     cnt[u] += v;
-    if (l == r) return;
+    if (l == r) {
+        return;
+    }
     int m = (l + r) &gt;&gt; 1;
-    x &lt;= m ? insert(ls[u], l, m, x, v) : insert(rs[u], m + 1, r, x, v);
+    if (x &lt;= m) {
+        insert(ls[u], l, m, x, v);
+    } else {
+        insert(rs[u], m + 1, r, x, v);
+    }
 }
 int kth(int u, int l, int r, int k) {       // 樹上二分：第 k 小
-    if (l == r) return l;
+    if (l == r) {
+        return l;
+    }
     int m = (l + r) &gt;&gt; 1;
     return cnt[ls[u]] &gt;= k ? kth(ls[u], l, m, k)
                            : kth(rs[u], m + 1, r, k - cnt[ls[u]]);
 }
 int merge(int a, int b, int l, int r) {     // 線段樹合併
-    if (!a || !b) return a | b;             // 一邊為空直接接管
-    if (l == r) { cnt[a] += cnt[b]; return a; }
+    if (!a || !b) {
+        return a | b;             // 一邊為空直接接管
+    }
+    if (l == r) {
+        cnt[a] += cnt[b];
+        return a;
+    }
     int m = (l + r) &gt;&gt; 1;
     ls[a] = merge(ls[a], ls[b], l, m);
     rs[a] = merge(rs[a], rs[b], m + 1, r);

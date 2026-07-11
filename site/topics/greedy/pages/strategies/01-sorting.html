@@ -91,13 +91,14 @@
 <pre><code class="lang-cpp">sort(items.begin(), items.end(), [](auto&amp; a, auto&amp; b) {
     return a.v * b.w &gt; b.v * a.w;  // v/w 大者在前，交叉相乘避免浮點
 });
-double ans = 0, cap = W;
+double ans = 0, cap = capacity;
 for (auto&amp; [w, v] : items) {
     double take = min(cap, (double)w);
     ans += take * v / w;
     cap -= take;
-    if (cap == 0)
+    if (cap == 0) {
         break;
+    }
 }</code></pre></details>
 </div>
 
@@ -144,8 +145,9 @@ return ans[0] == '0' ? "0" : ans;  // 全零特判</code></pre></details>
 <pre><code class="lang-cpp">sort(p.begin(), p.end());
 int i = 0, j = p.size() - 1, boats = 0;
 while (i &lt;= j) {
-    if (p[i] + p[j] &lt;= limit)
+    if (p[i] + p[j] &lt;= limit) {
         i++;
+    }
     j--;
     boats++;
 }</code></pre></details>

@@ -30,12 +30,13 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">void dfs(int u, int fa) {
     dp[u][1] = w[u];
-    for (int v : g[u])
+    for (int v : g[u]) {
         if (v != fa) {
             dfs(v, u);
             dp[u][0] += max(dp[v][0], dp[v][1]);
             dp[u][1] += dp[v][0];
         }
+    }
 }</code></pre></details>
 </div>
 
@@ -55,9 +56,11 @@
     dp[u][1] = w[u];
     for (int v : g[u]) {
         dfs(v);
-        for (int j = min(sz[u], m); j &gt;= 1; j--)          // 已合併部分：倒序
-            for (int k = 1; k &lt;= min(sz[v], m - j); k++)  // 分給子樹 v 的名額
+        for (int j = min(sz[u], m); j &gt;= 1; j--) {          // 已合併部分：倒序
+            for (int k = 1; k &lt;= min(sz[v], m - j); k++) {  // 分給子樹 v 的名額
                 dp[u][j + k] = max(dp[u][j + k], dp[u][j] + dp[v][k]);
+            }
+        }
         sz[u] += sz[v];
     }
 }</code></pre></details>
@@ -69,11 +72,12 @@
 <details><summary>思路</summary><p>換根 DP 三步：① 一次 DFS 算出以 \(1\) 為根時每個子樹的大小 \(\mathrm{sz}\) 與答案 \(f[1]\)；② 推「根從 \(u\) 移到相鄰的 \(v\)」的增量公式 \(f[v]=f[u]+n-2\mathrm{sz}[v]\)（\(v\) 子樹全體近 \(1\) 步、其餘遠 \(1\) 步）；③ 第二次 DFS 把答案推到所有點。以 \(O(n)\) 回答「每個點當根」的問題。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">void dfs2(int u, int fa) {
-    for (int v : g[u])
+    for (int v : g[u]) {
         if (v != fa) {
             f[v] = f[u] + n - 2LL * sz[v];  // 增量換根
             dfs2(v, u);
         }
+    }
 }</code></pre></details>
 </div>
 

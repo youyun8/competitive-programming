@@ -88,12 +88,13 @@
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; a, auto&amp; b) { return a[1] &lt; b[1]; });
 int keep = 0;
-long long lastEnd = LLONG_MIN;
-for (auto&amp; v : iv)
-    if (v[0] &gt;= lastEnd) {
+long long last_end = LLONG_MIN;
+for (auto&amp; v : iv) {
+    if (v[0] &gt;= last_end) {
         keep++;
-        lastEnd = v[1];
+        last_end = v[1];
     }
+}
 return iv.size() - keep;</code></pre></details>
 </div>
 
@@ -103,12 +104,12 @@ return iv.size() - keep;</code></pre></details>
 <p>用最少段影片覆蓋 \([0,T]\)。同型：LC 45 跳躍遊戲 II、LC 1326 灌溉花園。</p>
 <details><summary>思路</summary><p>按左端點排序。維護目前已覆蓋到 <code>cur</code>；在所有左端點 \(\le\) <code>cur</code> 的區間中，選<b>右端點最遠</b>的一段接上（這一步是貪心選擇性質：反正都要有一段跨過 <code>cur</code>，選伸最遠的不會變差），<code>cur</code> 跳到該右端點。跳躍遊戲 II 是同一個模型的陣列形式，可用 \(O(n)\) 一次掃描。</p></details>
 <details><summary>程式碼（C++，跳躍遊戲 II 形式）</summary>
-<pre><code class="lang-cpp">int jumps = 0, curEnd = 0, farthest = 0;
+<pre><code class="lang-cpp">int jumps = 0, cur_end = 0, farthest = 0;
 for (int i = 0; i + 1 &lt; n; i++) {
     farthest = max(farthest, i + nums[i]);
-    if (i == curEnd) {
+    if (i == cur_end) {
         jumps++;
-        curEnd = farthest;
+        cur_end = farthest;
     }  // 必須起跳
 }</code></pre></details>
 </div>
@@ -122,8 +123,9 @@ for (int i = 0; i + 1 &lt; n; i++) {
 <pre><code class="lang-cpp">sort(iv.begin(), iv.end());
 priority_queue&lt;int, vector&lt;int&gt;, greater&lt;&gt;&gt; rooms;  // 各房結束時間
 for (auto&amp; [s, e] : iv) {
-    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= s)
+    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= s) {
         rooms.pop();
+    }
     rooms.push(e);
 }
 return rooms.size();</code></pre></details>

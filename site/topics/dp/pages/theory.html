@@ -126,14 +126,17 @@
 long long memo[MAXN];
 bool vis[MAXN];
 long long f(int s) {
-    if (是邊界)
+    if (是邊界) {
         return 邊界值;
-    if (vis[s])
+    }
+    if (vis[s]) {
         return memo[s];
+    }
     vis[s] = true;  // 用 vis 而非特殊值，避免「初始值撞答案」
     long long best = -INF;
-    for (每個決策 d)
+    for (每個決策 d) {
         best = max(best, f(更小狀態) + 決策收益);
+    }
     return memo[s] = best;
 }</code></pre>
 

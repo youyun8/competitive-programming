@@ -18,16 +18,27 @@
 void build(const char* p, int m) {
     fail[1] = 0;
     for (int i = 2, j = 0; i &lt;= m; i++) {
-        while (j &amp;&amp; p[i] != p[j+1]) j = fail[j];
-        if (p[i] == p[j+1]) j++;
+        while (j &amp;&amp; p[i] != p[j+1]) {
+            j = fail[j];
+        }
+        if (p[i] == p[j+1]) {
+            j++;
+        }
         fail[i] = j;
     }
 }
 void match(const char* t, int n, const char* p, int m) {
     for (int i = 1, j = 0; i &lt;= n; i++) {
-        while (j &amp;&amp; t[i] != p[j+1]) j = fail[j];
-        if (t[i] == p[j+1]) j++;
-        if (j == m) { report(i - m + 1); j = fail[j]; }  // 出現位置
+        while (j &amp;&amp; t[i] != p[j+1]) {
+            j = fail[j];
+        }
+        if (t[i] == p[j+1]) {
+            j++;
+        }
+        if (j == m) {
+            report(i - m + 1);
+            j = fail[j];
+        }  // 出現位置
     }
 }</code></pre></details>
 
@@ -73,11 +84,15 @@ void match(const char* t, int n, const char* p, int m) {
 
 <details><summary>模板（C++）：KMP 自動機</summary>
 <pre><code class="lang-cpp">// go[j][c]：已匹配 j 個字元、讀入 c 之後匹配多長（j = 0..m）
-for (int c = 0; c &lt; 26; c++) go[0][c] = (p[1] == 'a' + c);
-for (int j = 1; j &lt;= m; j++)
-    for (int c = 0; c &lt; 26; c++)
+for (int c = 0; c &lt; 26; c++) {
+    go[0][c] = (p[1] == 'a' + c);
+}
+for (int j = 1; j &lt;= m; j++) {
+    for (int c = 0; c &lt; 26; c++) {
         go[j][c] = (j &lt; m &amp;&amp; p[j+1] == 'a' + c) ? j + 1
-                 : go[fail[j]][c];               // 遞推繼承，O(1) 轉移</code></pre></details>
+                 : go[fail[j]][c];               // 遞推繼承，O(1) 轉移
+    }
+}</code></pre></details>
 
 <div class="problem" data-problem-id="luogu-p3193">
 <div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3193" target="_blank">洛谷 P3193 [HNOI2008] GT 考試</a><span class="chip">KMP自動機</span><span class="chip">矩陣冪</span></div>
