@@ -1,0 +1,66 @@
+<h2>2.7 線段樹進階（權值／動態開點／合併／二分／李超）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>四個正交的升級，可自由組合：<b>權值化</b>——下標改成值域，「插入 x」= 位置 x 加一，名次/第 k 小變成樹上導航；<b>動態開點</b>——用到才 new 節點，值域 \(10^9\) 不用離散化，空間 \(O(q\log V)\)；<b>樹上二分</b>——第 k 小/第一個滿足條件的位置直接在樹上走，省掉「二分套查詢」的一個 log；<b>線段樹合併</b>——兩棵動態開點樹遞迴合併，重疊才遞迴，總複雜度 = 總插入量 \(O(n\log n)\)。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「第 k 小」「排名」「值域統計」→ 權值線段樹（值域大 + 動態開點）。</li>
+<li>樹上每個節點要一個「自己的集合」，且集合沿樹自底向上匯流 → 線段樹合併。</li>
+<li>「插入一次函數、查單點最值」（斜率優化的線上版）→ 李超樹。</li>
+</ul></div>
+
+<details><summary>模板（C++）：動態開點 + 樹上二分 + 合併</summary>
+<pre><code class="lang-cpp">int ls[M], rs[M], cnt[M], tot;              // M ≈ 插入次數 × logV
+void insert(int&amp; u, int l, int r, int x, int v) {
+    if (!u) u = ++tot;
+    cnt[u] += v;
+    if (l == r) return;
+    int m = (l + r) &gt;&gt; 1;
+    x &lt;= m ? insert(ls[u], l, m, x, v) : insert(rs[u], m + 1, r, x, v);
+}
+int kth(int u, int l, int r, int k) {       // 樹上二分：第 k 小
+    if (l == r) return l;
+    int m = (l + r) &gt;&gt; 1;
+    return cnt[ls[u]] &gt;= k ? kth(ls[u], l, m, k)
+                           : kth(rs[u], m + 1, r, k - cnt[ls[u]]);
+}
+int merge(int a, int b, int l, int r) {     // 線段樹合併
+    if (!a || !b) return a | b;             // 一邊為空直接接管
+    if (l == r) { cnt[a] += cnt[b]; return a; }
+    int m = (l + r) &gt;&gt; 1;
+    ls[a] = merge(ls[a], ls[b], l, m);
+    rs[a] = merge(rs[a], rs[b], m + 1, r);
+    cnt[a] = cnt[ls[a]] + cnt[rs[a]];
+    return a;
+}</code></pre></details>
+
+<div class="problem" data-problem-id="ds-wseg-inversion">
+<div class="p-head"><span class="stars s2">★★</span><span class="p-title">逆序對（權值線段樹版，對照 P1908）</span><span class="chip">權值線段樹</span></div>
+<p>用權值線段樹重做逆序對。</p>
+<details><summary>思路</summary><p>與權值 BIT 完全同構——這題的意義是校準工具箱：<b>可差分計數用 BIT（短），要樹上二分/區間值域查詢/合併時才值得上權值線段樹</b>。寫一次感受碼量差。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4097">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4097" target="_blank">洛谷 P4097 [HEOI2013] Segment（李超樹）</a><span class="chip">李超樹</span></div>
+<p>動態插入線段，查 x 座標處最高的線段。</p>
+<details><summary>思路</summary><p>李超樹：每節點存「這段區間的優勢線段」，插入時與現任比較——在中點贏的當現任，輸的一半區間還有機會、遞迴下去（每層只走一邊 → \(O(\log^2)\)）。它是<a href="#topic-dp">DP 主題</a>斜率優化的線上替代：斜率不單調、x 不單調時的救星。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4556">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4556" target="_blank">洛谷 P4556 [Vani有約會] 雨天的尾巴</a><span class="chip">線段樹合併</span><span class="chip">樹上差分</span></div>
+<p>樹上路徑發放物品（多種），問每個節點收到最多的物品種類。</p>
+<details><summary>思路</summary><p>路徑操作 → <b>樹上差分</b>（\(u,v\) 打 +1、\(\mathrm{lca}\) 與其父打 −1，見 <a href="#s2-11">2.11.2</a>）；「收和」不是數字而是<b>整個值域分布</b> → 每個節點開權值線段樹，DFS 回溯時<b>線段樹合併</b>，順帶維護每棵樹的眾數。差分 + 合併的組合拳，是線段樹合併的招牌應用。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3960">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3960" target="_blank">洛谷 P3960 [NOIP2017] 列隊</a><span class="chip">動態開點</span><span class="chip">第k個空位</span></div>
+<p>\(n\times m\)（\(10^9\) 級）方陣反覆離隊補位，問每次離隊者編號。</p>
+<details><summary>思路</summary><p>每行只關心「第 k 個<b>還在</b>的位置」：動態開點線段樹（或 BIT+倍增）維護「已刪個數」，樹上二分找第 k 個活著的；行尾與最後一列用 vector 追加。值域巨大但操作稀疏——動態開點的主場。NOIP 壓軸的資料結構代表作。</p></details>
+</div>
+
+<div class="callout warn"><b>⚠ 空間紀律</b>
+<p>動態開點的 M 要<b>算</b>不要猜：每次插入新開 \(\le \log V\) 個節點 → \(M = q\lceil\log_2 V\rceil\) 再留餘裕。線段樹合併的節點會被「吃掉」但不回收，M 按總插入量算。MLE 的動態開點題九成是 M 拍腦袋。</p></div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>權值線段樹 + 「歷史版本」= 主席樹（<a href="#s2-12">2.12</a>）；「維護 max/min 又要區間取 min」→ Segment Tree Beats（<a href="#s2-13">2.13.1</a>）；「修改有存活區間」→ 線段樹分治（<a href="#s2-13">2.13.2</a>）。</p></div>

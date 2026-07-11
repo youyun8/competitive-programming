@@ -1,0 +1,42 @@
+<h2><span class="sec-no">0</span>導讀與使用方式</h2>
+
+<div class="callout idea"><b>🗺️ 這份資料結構指南如何組織？</b>
+<p>競賽資料結構題的本質只有一句話：<b>把「每次詢問都暴力重算」換成「維護增量」</b>。所以第 1 章先建立「操作分析」這套方法——先列出（修改型態 × 查詢型態），再問查詢能不能拆成可合併的區間資訊；第 2 章的 13 個策略按「武器重量」排序：從前綴和、單調棧這種零結構技巧，經 BIT／線段樹主戰坦克，到平衡樹、可持久化、LCT 重炮；第 3、4 章分別處理「為什麼寫掛」與「怎麼選結構」，第 6 章是刷題順序。讀每一章都要能回答：<b>它維護什麼資訊、資訊怎麼合併、修改怎麼攤銷、什麼時候它是過度設計。</b></p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>操作外觀</th><th>優先翻閱</th><th>最先檢查的限制</th></tr>
+<tr><td>靜態區間和／min／gcd</td><td>2.1 前綴和、差分、ST 表</td><td>真的沒有修改嗎</td></tr>
+<tr><td>下一個更大元素、滑窗最值</td><td>2.2 單調棧／單調佇列</td><td>要的是「支配關係」而非任意查詢</td></tr>
+<tr><td>動態最值、動態中位數</td><td>2.3 堆與對頂堆</td><td>需不需要刪除任意元素</td></tr>
+<tr><td>連通性、分組、傳遞關係</td><td>2.4 並查集</td><td>有沒有「刪邊」（→ 離線倒序／線段樹分治）</td></tr>
+<tr><td>單點改 + 區間和/名次</td><td>2.5 BIT</td><td>資訊可差分嗎（min 不行）</td></tr>
+<tr><td>區間改 + 區間查</td><td>2.6–2.7 線段樹</td><td>標記能複合嗎、值域要不要動態開點</td></tr>
+<tr><td>矩形、偏序、二維統計</td><td>2.8 掃描線／CDQ</td><td>能離線嗎</td></tr>
+<tr><td>插入刪除 + 名次/區間翻轉</td><td>2.9 平衡樹</td><td>能不能用權值線段樹/pb_ds 混過去</td></tr>
+<tr><td>區間眾數這類「不可合併」統計</td><td>2.10 分塊與莫隊</td><td>允許 O(n√n) 嗎、能離線嗎</td></tr>
+<tr><td>樹上路徑/子樹操作</td><td>2.11 樹上資料結構</td><td>樹形固定嗎（動態 → LCT）</td></tr>
+<tr><td>歷史版本、區間第 k 小</td><td>2.12 可持久化</td><td>強制線上嗎（離線可整體二分）</td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 一句話判斷「這題是不是資料結構題」</b>
+<p>題面出現「\(q\) 次操作／詢問」且單次暴力是 \(O(n)\)，總量 \(nq\ge 10^8\) 就是資料結構題。更細的訊號藏在<b>資料範圍</b>：\(n,q\le 10^5\sim10^6\) → \(O((n+q)\log n)\) 的 BIT/線段樹；\(n\le 10^5\) 且統計「不可合併」→ \(O(n\sqrt n)\) 分塊/莫隊；值域 \(10^9\) → 離散化或動態開點；「強制線上」四個字 → 可持久化或平衡樹。</p></div>
+
+<h3>難度分級</h3>
+<div class="tbl-wrap"><table>
+<tr><th>星級</th><th>定位</th><th>大約對應</th></tr>
+<tr><td><span class="stars s1">★</span></td><td>入門：前綴和一行公式、STL 直接用</td><td>LeetCode Easy／洛谷 紅題</td></tr>
+<tr><td><span class="stars s2">★★</span></td><td>基礎：BIT／單調棧模板直接套</td><td>LeetCode Medium／CF 1200 以下</td></tr>
+<tr><td><span class="stars s3">★★★</span></td><td>進階：線段樹懶標記、離線技巧、LCA</td><td>LeetCode Hard 邊緣／CF 1400–1800／NOIP 提高</td></tr>
+<tr><td><span class="stars s4">★★★★</span></td><td>競賽：平衡樹、主席樹、樹剖、CDQ、莫隊</td><td>CF 1900–2300／省選／USACO Platinum</td></tr>
+<tr><td><span class="stars s5">★★★★★</span></td><td>專家：吉司機線段樹、LCT、線段樹分治、樹套樹</td><td>CF 2400+／NOI／ICPC 區域賽壓軸</td></tr>
+</table></div>
+
+<h3>標籤系統</h3>
+<p>每道題帶<b>策略標籤</b>（前綴和、單調棧、堆、DSU、BIT、線段樹、掃描線、CDQ、平衡樹、莫隊、樹剖、可持久化 …）與<b>難度星級</b>；側欄「📋 <a href="#problems">全站題目總表</a>」可複選篩選。同一題在多主題出現時（例如琪露諾在 DP 主題講轉移優化、在本主題講單調佇列本身），進度標記一次、全站同步。</p>
+
+<div class="callout when"><b>🔗 與其他主題的分工</b>
+<ul>
+<li>「資料結構<b>優化 DP 轉移</b>」的套路（斜率、單調佇列優化）→ <a href="#topic-dp">DP 主題</a> 2.12。</li>
+<li>「貪心決策用資料結構加速」（反悔堆、DSU 找空位）→ <a href="#topic-greedy">貪心主題</a> 2.4／2.9。</li>
+<li>Trie／01-Trie 本體與字串自動機 → <a href="#topic-strings">字串主題</a> 2.5；本主題只收它的可持久化版本。</li>
+</ul></div>

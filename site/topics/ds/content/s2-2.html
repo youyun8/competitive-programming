@@ -1,0 +1,67 @@
+<h2>2.2 單調堆疊與單調佇列</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>維護「還有機會成為答案」的候選集合：新元素進來時，把被它<b>支配</b>的舊候選（又舊又差）彈掉——留下的序列自然單調。每個元素進出各一次 ⇒ 均攤 \(O(n)\)。<b>單調棧</b>回答「左/右第一個更大（小）元素」；<b>單調佇列</b>在此之上多了「隊首過期出隊」，回答滑動窗口最值。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>句型「下一個更大元素」「以 \(i\) 為最小值能延伸多遠」→ 單調棧。</li>
+<li>句型「長度 ≤ k 的窗口最值」「決策集合隨 \(i\) 滑動」→ 單調佇列。</li>
+<li>它們不是「查詢結構」而是<b>一次掃描的伴生結構</b>——問題必須能重述成一次（或常數次）掃描。</li>
+</ul></div>
+
+<details><summary>模板（C++）：單調棧 + 單調佇列</summary>
+<pre><code class="lang-cpp">// 單調棧：每個 i 的「左邊第一個更小元素」下標 L[i]
+stack&lt;int&gt; st;
+for (int i = 1; i &lt;= n; i++) {
+    while (!st.empty() &amp;&amp; a[st.top()] &gt;= a[i]) st.pop();
+    L[i] = st.empty() ? 0 : st.top();
+    st.push(i);
+}
+// 單調佇列：長 k 窗口最大值（遞減佇列，存下標）
+deque&lt;int&gt; q;
+for (int i = 1; i &lt;= n; i++) {
+    while (!q.empty() &amp;&amp; q.front() &lt;= i - k) q.pop_front(); // 隊首過期
+    while (!q.empty() &amp;&amp; a[q.back()] &lt;= a[i]) q.pop_back(); // 隊尾被支配
+    q.push_back(i);
+    if (i &gt;= k) ans[i - k + 1] = a[q.front()];
+}</code></pre></details>
+
+<div class="problem" data-problem-id="lc-739">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/daily-temperatures/" target="_blank">LC 739 每日溫度</a><span class="chip">單調棧</span></div>
+<p>對每天求「幾天後首次更暖」。</p>
+<details><summary>思路</summary><p>「下一個更大元素」的直譯。棧裡存「還沒等到答案的下標」——遞減棧；新元素把能回答的全彈出。洛谷 P5788 是同款模板題。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-42">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/trapping-rain-water/" target="_blank">LC 42 接雨水</a><span class="chip">單調棧</span><span class="chip">雙指針</span></div>
+<p>柱狀圖接住多少雨水。</p>
+<details><summary>思路</summary><p>三解名題：按列（每列水位 = min(左max, 右max)−高，前後綴 max 預處理）、單調棧（按層結算：彈棧時「凹槽」成形）、雙指針（空間 O(1)）。單調棧解最能訓練「彈出瞬間結算貢獻」的思維——之後 P4248、LC 84 都是它。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-84">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/largest-rectangle-in-histogram/" target="_blank">LC 84 柱狀圖中最大的矩形</a><span class="chip">單調棧</span></div>
+<p>柱狀圖內最大矩形面積。</p>
+<details><summary>思路</summary><p>以每根柱子為<b>高度瓶頸</b>：能延伸的範圍 =（左邊第一個更矮, 右邊第一個更矮）之間——單調棧一遍求出兩側邊界。「枚舉最小值 + 求支配區間」是單調棧的招牌句型，字串主題 P4248 的 Σmin 同款。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-85">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://leetcode.cn/problems/maximal-rectangle/" target="_blank">LC 85 最大矩形</a><span class="chip">單調棧</span><span class="chip">降維</span></div>
+<p>01 矩陣中全 1 的最大矩形。</p>
+<details><summary>思路</summary><p>逐行維護「以本行為底、每列向上連續 1 的高度」，每行套一次 LC 84——\(O(nm)\)。二維 → 逐行一維化，與 P1719 的降維同思想。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1886">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1886" target="_blank">洛谷 P1886 滑動窗口</a><span class="chip">單調佇列</span></div>
+<p>長 k 窗口的最小值與最大值序列（\(n\le 10^6\)）。</p>
+<details><summary>思路</summary><p>單調佇列模板（= LC 239）。兩個 while 的順序無所謂，但「隊首判過期用下標、隊尾判支配用值」不能混。\(10^6\) 規模用陣列模擬 deque 更穩。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1725">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1725" target="_blank">洛谷 P1725 琪露諾</a><span class="chip">單調佇列</span><span class="chip">DP優化</span></div>
+<p>每步從 \([i-r, i-l]\) 跳到 \(i\)，最大化收集值。</p>
+<details><summary>思路</summary><p>\(f_i=\max_{j\in[i-r,i-l]}f_j + a_i\)：決策窗口隨 \(i\) 平移 → 單調佇列維護窗口 max。與 <a href="#topic-dp">DP 主題</a> 2.12.2 共用——那邊講「什麼樣的轉移可用單調佇列」，這邊看清楚佇列本身在做什麼。</p></details>
+</div>
+
+<div class="callout warn"><b>⚠ 高頻坑</b>
+<p>① 「≥ 還是 &gt;」彈棧決定相等元素歸誰——求「嚴格更大」與「第一個不小於」的邊界不同，先想清楚再寫。② 單調佇列存<b>下標</b>不存值（過期判斷需要）。③ 窗口未滿 k 時就輸出答案。</p></div>

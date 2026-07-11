@@ -1,0 +1,45 @@
+<h2><span class="sec-no">3</span>常見錯誤與陷阱</h2>
+
+<div class="tbl-wrap"><table>
+<tr><th>症狀</th><th>優先檢查</th><th>最小測資方向</th></tr>
+<tr><td>RE／WA 在較大測點</td><td>線段樹空間 4n、動態開點 M 估算、遞迴深度</td><td>n 取奇數且不是 2 的冪</td></tr>
+<tr><td>區間修改後查詢錯</td><td>pushdown 漏呼叫、標記複合順序、apply 沒同步改資訊</td><td>兩次重疊的區間修改 + 中間查詢</td></tr>
+<tr><td>死迴圈</td><td>BIT 下標 0、莫隊指標順序把區間走成負長</td><td>l = r = 1 的詢問</td></tr>
+<tr><td>答案偏移一格</td><td>離散化缺值、DFS 序 in/out 邊界、掃描線「段 vs 點」</td><td>兩個相同座標的元素</td></tr>
+<tr><td>TLE 但複雜度沒錯</td><td>常數：遞迴線段樹 vs BIT、memset 整池、cin 沒關同步</td><td>—（估 ops×常數 對照時限）</td></tr>
+</table></div>
+
+<h3>3.1 線段樹全家桶</h3>
+<div class="callout warn"><b>⚠ 高頻五連</b>
+<p>① 空間開 2n → 第 7 個測點 RE：遞迴切不齊時樹高多一層，<b>永遠 4n</b>。② pushdown 只在 update 寫了、query 忘了。③ 多重標記複合順序：先乘後加——「加標記也要被乘」（P3373 的靈魂）。④ apply 只改 tag 沒改 sum（或反之）：apply 的定義是「這個節點的資訊與標記<b>同時</b>反映此次修改」。⑤ 動態開點 M 拍腦袋 → MLE：\(M = q\lceil\log_2 V\rceil\) 起算。</p></div>
+
+<h3>3.2 BIT 三坑</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 下標 0：<code>lowbit(0)=0</code>，add(0,·) 直接死迴圈——1-indexed 是紀律。② 用 BIT 維護 max：max 不可差分，「單點改小」之後前綴 max 就錯了（只有「單點只增」的受限場景可用）。③ 區間加區間和的雙 BIT 公式抄錯符號：自己從 \(\sum_{i\le r} d_i(r-i+1)\) 推一遍，比抄模板可靠。</p></div>
+
+<h3>3.3 離散化與離線的隱形錯</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① <b>查詢用到的值沒一起離散化</b>：詢問「≥ c」時 c 不在離散表裡，lower_bound 到錯誤的桶——把修改值與查詢值合在一起離散化。② 排序比較器不嚴格（<code>&lt;=</code>）→ UB。③ 離線重排後<b>忘記按原順序輸出</b>答案。④ 倒序離線（P1197）時第一個輸出是「全刪完」的狀態，邊界別漏。</p></div>
+
+<h3>3.4 DSU 細節</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 只寫路徑壓縮、沒按秩：一般夠用，但<b>可撤銷 DSU 絕不能路徑壓縮</b>（撤銷靠按秩的 O(log) 深度保證）。② 帶權 DSU 的 find 裡，權值更新必須在遞迴<b>返回後</b>（父鏈先壓好才知道到根的累積量）。③ 種類/擴展域忘記「兩個方向都要合併」（u 友 v ⇒ u 敵 = v 敵）。</p></div>
+
+<h3>3.5 莫隊與分塊</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 指標移動順序：先擴張後收縮（<code>while (r &lt; qr) add(++r);</code> … <code>while (l &lt; ql) del(l++);</code>），順序錯會讓區間瞬間為負長、桶減成負數。② 塊長：\(n\) 與 \(q\) 不同階時取 \(n/\sqrt q\)，帶修莫隊取 \(n^{2/3}\)——亂取直接慢一倍以上。③ 分塊散塊修改後忘記重建塊內輔助結構（排序副本）。④ 奇偶排序寫錯反而變慢——對拍時間，不只對拍答案。</p></div>
+
+<h3>3.6 樹上結構</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 樹剖第二次 DFS <b>必須先走重兒子</b>，順序錯 = 鏈不連續，一切皆錯。② DFS 序（子樹用）與歐拉序（LCA 用）與重鏈序（路徑用）三種序混用。③ 倍增 LCA：深度先對齊、相遇提前返回、最後回傳 <code>f[0][u]</code>。④ 樹上差分點/邊版本的 lca 扣減位置不同（點：lca 與 fa(lca) 各 −1；邊：lca −2）。</p></div>
+
+<h3>3.7 卡常實務</h3>
+<ul>
+<li>估算：遞迴線段樹 \(\sim 10^7\)–\(10^8\) ops/s、BIT 快 4–8 倍——\(q\log n\) 乘常數後跟時限比，超了先想「換 BIT／離線／砍 log」而不是黑魔法。</li>
+<li>快讀（getchar 手寫）對 \(10^6\) 級輸入是及格線；<code>endl</code> 換 <code>'\n'</code>。</li>
+<li>zkw／非遞迴線段樹、指令集是最後手段；<b>先確認演算法層面沒有多餘的 log</b>。</li>
+<li>記憶體布局：結構陣列（SoA）比陣列結構（AoS）對 cache 友善；莫隊桶用 int 不用 map。</li>
+</ul>
+
+<div class="callout idea"><b>🔬 資料結構是對拍收益最高的題型</b>
+<p>暴力 = 一個陣列 + O(n) 掃描，五分鐘寫完；隨機操作序列生成器 + 逐操作比對輸出，能抓出 pushdown 漏傳這種肉眼看三小時看不出的 bug。<b>寫完模板先對拍一萬組再刷題</b>——範例腳手架見<a href="#s4">第 4 章</a>。</p></div>

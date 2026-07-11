@@ -1,0 +1,63 @@
+<h2>2.3 堆、對頂堆與可刪堆</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>只需要「最值」而不需要全序時，堆用 \(O(\log n)\) 的 push/pop 換掉排序。競賽三形態：<b>裸堆</b>（priority_queue）；<b>對頂堆</b>——大根堆存較小一半、小根堆存較大一半，堆頂夾著中位數／第 k 小；<b>可刪堆（懶惰刪除）</b>——再開一個「待刪堆」，兩堆頂相同就一起彈，把不支援的 erase 攤銷掉。<code>multiset</code> 是三者的萬能替身（多送前驅後繼），常數大一點。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>流式資料只問最值／中位數／第 k 大；決策「每次取最...的」（貪心搭檔，見<a href="#topic-greedy">貪心主題</a> 2.4/2.5）。</li>
+<li>需要刪任意元素但捨不得平衡樹 → 懶刪除。</li>
+<li>需要名次（第 k 小隨 k 亂跳）、區間查詢 → 升級 <a href="#s2-5">權值 BIT</a>／<a href="#s2-9">平衡樹</a>。</li>
+</ul></div>
+
+<details><summary>模板（C++）：對頂堆 + 懶刪除</summary>
+<pre><code class="lang-cpp">// 對頂堆：lo（大根）存較小半、hi（小根）存較大半，|lo| = |hi| 或 |hi|+1...
+priority_queue&lt;int&gt; lo;
+priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; hi;
+void insert(int x) {
+    if (lo.empty() || x &lt;= lo.top()) lo.push(x); else hi.push(x);
+    if (lo.size() &gt; hi.size() + 1) { hi.push(lo.top()); lo.pop(); }
+    if (hi.size() &gt; lo.size())     { lo.push(hi.top()); hi.pop(); }
+}
+int median() { return lo.top(); }
+
+// 懶刪除：erase 只記帳，top 時對消
+priority_queue&lt;int&gt; q, del;
+void erase(int x) { del.push(x); }
+int top() {
+    while (!del.empty() &amp;&amp; q.top() == del.top()) q.pop(), del.pop();
+    return q.top();
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3378">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3378" target="_blank">洛谷 P3378 堆模板</a><span class="chip">堆</span></div>
+<p>插入、查最小、刪最小。</p>
+<details><summary>思路</summary><p><code>priority_queue</code> 直接過。值得做一次手寫二叉堆（up/down 兩函式）——不是為了比 STL 快，是為了之後看懂可併堆與堆式線段樹。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-295">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/find-median-from-data-stream/" target="_blank">LC 295 數據流的中位數</a><span class="chip">堆</span><span class="chip">對頂堆</span></div>
+<p>流式插入，隨時報中位數。</p>
+<details><summary>思路</summary><p>對頂堆模板：插入後兩行 rebalance 維持大小不變量。與<a href="#topic-greedy">貪心主題</a> 2.5 共用——中位數貪心（P1889 等）的引擎就是它。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1801">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1801" target="_blank">洛谷 P1801 黑匣子</a><span class="chip">對頂堆</span></div>
+<p>插入序列給定，第 \(i\) 次查詢問「目前第 \(i\) 小」。</p>
+<details><summary>思路</summary><p>對頂堆的推廣：小半堆的大小固定為「目前查詢序號」，每次查詢後閾值 +1、rebalance 一次。看懂「對頂堆 = 維護一條可移動的分界線」，中位數只是分界線在中間的特例。BIT 上倍增（<a href="#s2-5">2.5</a>）是另一解，對照。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-480">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://leetcode.cn/problems/sliding-window-median/" target="_blank">LC 480 滑動窗口中位數</a><span class="chip">對頂堆</span><span class="chip">懶刪除</span></div>
+<p>長 k 窗口的中位數序列。</p>
+<details><summary>思路</summary><p>對頂堆 + 懶刪除的合體：出窗元素只記到待刪堆，<b>大小不變量改用「有效大小」計算</b>（各堆維護一個「已死但未彈」計數）。這題把兩個技巧的邊界細節全部逼出來，寫過一次終生免疫。<code>multiset</code> + 中位數指標是更短的替代解。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-2102">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/sequentially-ordinal-rank-tracker/" target="_blank">LC 2102 序列順序查詢</a><span class="chip">對頂堆</span></div>
+<p>插入評分景點，第 \(i\) 次查詢問「第 \(i\) 好」。</p>
+<details><summary>思路</summary><p>P1801 的變種（查詢閾值同樣單調 +1）。閾值單調 → 對頂堆；若閾值亂跳 → 就得上權值 BIT/平衡樹。「<b>查詢參數是否單調</b>」決定武器等級，是很好的選型練習。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>「兩個堆合併」→ 左偏樹/可併堆（<a href="#topic-greedy">貪心主題</a> APIO 烟花表演有實戰）；名次隨機查 → <a href="#s2-5">權值 BIT</a>；帶區間結構 → <a href="#s2-9">平衡樹</a>。堆的本職是「配角結構」——搭貪心、搭 Dijkstra、搭模擬，單獨成題反而少。</p></div>
