@@ -1,0 +1,49 @@
+<h2>2.3 Z 函數（擴展 KMP）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>\(z[i]\)＝\(s\) 與其後綴 \(s_{i..n}\) 的最長公共前綴（LCP）長度。維護「最靠右的匹配盒」\([L,R]\)（\(s_{L..R}\) 是 \(s\) 的前綴的副本）：對 \(i\le R\)，位置 \(i\) 在盒內對應前綴中的位置 \(i-L+1\)，可以先<b>免費繼承</b> \(z[i-L+1]\)（截斷到 \(R\)），只有頂到盒右緣才需要往外逐字擴張——每次擴張都把 \(R\) 右推，\(R\) 不減 ⇒ 線性。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵：Z 還是 fail？</b>
+<ul>
+<li>fail 回答「以 \(i\) <b>結尾</b>的前綴後綴結構」；\(z\) 回答「從 \(i\) <b>開始</b>能配多長的前綴」——方向相反、資訊等價（可互相換算）。</li>
+<li>題目句型是「每個位置往後能匹配多長」「前綴 \(P\) 在哪些位置整段出現」→ Z 直觀得多。</li>
+<li>模式對文本：對 \(u = p + \# + t\) 求 z，\(z[i] = m\) 的位置就是出現位置——單模式匹配的 Z 寫法。</li>
+</ul></div>
+
+<details><summary>模板（C++）：Z 函數</summary>
+<pre><code class="lang-cpp">// s 為 0-indexed，z[0] = n（慣例）
+void zfunc(const string&amp; s, int* z) {
+    int n = s.size(); z[0] = n;
+    for (int i = 1, L = 0, R = 0; i &lt; n; i++) {   // [L,R] 最右匹配盒
+        z[i] = (i &lt; R) ? min(z[i - L], R - i) : 0; // 盒內先繼承
+        while (i + z[i] &lt; n &amp;&amp; s[z[i]] == s[i + z[i]]) z[i]++;
+        if (i + z[i] &gt; R) L = i, R = i + z[i];
+    }
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p5410">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5410" target="_blank">洛谷 P5410 擴展 KMP／Z 函數模板</a><span class="chip">Z函數</span></div>
+<p>求 \(b\) 的 z 陣列，以及 \(b\) 與 \(a\) 每個後綴的 LCP（即 exkmp）。</p>
+<details><summary>思路</summary><p>第二問對 \(u=b+\#+a\) 跑同一套盒子邏輯即可（或寫標準 exkmp 雙串版）。模板題但下標細節多，是檢驗「盒內繼承要不要截斷」理解的試金石：<code>min(z[i-L], R-i)</code> 少了 <code>min</code> 就是經典 WA。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-2223">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/sum-of-scores-of-built-strings/" target="_blank">LC 2223 構造字串的總得分和</a><span class="chip">Z函數</span></div>
+<p>對每個後綴 \(s_{i..n}\)，得分 = 它與 \(s\) 的 LCP；求總分。</p>
+<details><summary>思路</summary><p>題目就是 \(\sum z[i]\) 的直譯——最裸的 Z 應用。適合當作寫完模板後的第一發驗證。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-432d">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/432/D" target="_blank">CF 432D Prefixes and Suffixes</a><span class="chip">Z函數</span><span class="chip">計數</span></div>
+<p>對每個「既是前綴又是後綴」的長度，求它在 \(s\) 中的出現次數。</p>
+<details><summary>思路</summary><p>「既是前綴又是後綴」的長度 \(k\) ⟺ \(z[n-k+1]=k\)（後綴整段匹配前綴）。「前綴長 \(k\) 的出現次數」= \(\#\{i: z[i]\ge k\}\) —— 對 z 值開桶做<b>後綴和</b>即得所有答案。Z 的可加工性示範：z 陣列不只回答匹配，還能整批統計。fail 鏈版解法同樣成立，對照練習。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-1968g1">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1968/G1" target="_blank">CF 1968G1 Division + Score（Easy）</a><span class="chip">Z函數</span><span class="chip">枚舉</span></div>
+<p>把 \(s\) 切成 \(k\) 段，得分為兩兩段間 LCP 之和的變體；固定 \(k\) 求最佳切法。</p>
+<details><summary>思路</summary><p>答案由「每段都以某公共前綴開頭」主導：二分/枚舉公共前綴長 \(L\)，用 z 陣列數有多少個位置 \(i\) 滿足 \(z[i]\ge L\) 且互不重疊（貪心隔 \(L\) 取）。「z 值 ≥ L 的位置集合」+ 貪心選點是 Z 題的常見二段式。</p></details>
+</div>
+
+<div class="callout warn"><b>⚠ 高頻坑</b>
+<p>① \(z[0]\) 慣例上設為 \(n\)，但有些題把「自己跟自己」排除——先讀清楚。② Z 與 fail 混用：想沿「所有 border」枚舉時要用 fail 鏈，z 陣列沒有這個鏈結構。③ 拼接寫法 \(p+\#+t\) 的分隔符必須是兩串都不出現的字元。</p></div>

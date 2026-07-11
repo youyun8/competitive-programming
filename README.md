@@ -1,6 +1,6 @@
 # 📚 演算法策略圖鑑
 
-**一套統一介面**，收錄程式競賽各大演算法主題的策略分類與題目整理——每個主題都是從入門（★）到程式競賽專家（★★★★★）的完整攻略，共用同一份側欄導覽、顯示設定與練習進度追蹤。之後新增主題（例如字串演算法）不需要另外做網站，只要在主題註冊表登記一筆即可自動出現在首頁、側欄切換器與全站題目總表。
+**一套統一介面**，收錄程式競賽各大演算法主題的策略分類與題目整理——每個主題都是從入門（★）到程式競賽專家（★★★★★）的完整攻略，共用同一份側欄導覽、顯示設定與練習進度追蹤。之後新增主題（例如圖論）不需要另外做網站，只要在主題註冊表登記一筆即可自動出現在首頁、側欄切換器與全站題目總表。
 
 **🌐 線上網站：https://youyun8.github.io/competitive-programming/**
 
@@ -10,9 +10,11 @@
 |---|---|---|
 | 🧭 **貪心演算法** | `/topics/greedy/` | 11 大策略分類、四大證明技巧、假貪心陷阱、路線圖 |
 | 📈 **動態規劃** | `/topics/dp/` | 13 大策略分類、狀態設計方法論、DP 優化技術、路線圖 |
-| ✨ 更多主題陸續加入中 | — | 字串演算法、資料結構專題、圖論……站內架構已為擴充做好準備 |
+| 🔤 **字串演算法** | `/topics/strings/` | 11 大策略分類（hash／KMP／Z／Manacher／Trie／ACAM／SA／SAM／PAM／Lyndon／專家專題）、border 週期理論、選型方法論、路線圖 |
+| 🧱 **競賽資料結構** | `/topics/ds/` | 13 大策略分類（前綴和／單調結構／堆／DSU／BIT／線段樹／掃描線 CDQ／平衡樹／分塊莫隊／樹上／可持久化／專家專題）、操作分析法、離線思維、路線圖 |
+| ✨ 更多主題陸續加入中 | — | 圖論、數論、計算幾何……站內架構已為擴充做好準備 |
 
-共 146 題可篩選的**全站題目總表**（`/pages/problems.html`）橫跨所有主題，同一題若在多個主題都有出現（例如同一道題目分別用貪心與 DP 兩種角度講解），練習進度只需標記一次、兩邊自動同步。
+共 258 題可篩選的**全站題目總表**（`/pages/problems.html`）橫跨所有主題，同一題若在多個主題都有出現（例如同一道題目分別用貪心與 DP 兩種角度講解），練習進度只需標記一次、兩邊自動同步。
 
 ---
 
@@ -62,7 +64,9 @@ competitive-programming/
         │   │   └── s6-roadmap.html
         │   ├── pages/               # 產生出的章節頁（由 build.py 產生）
         │   └── OUTLINE.md           # 這個主題的內容大綱
-        └── dp/                   # 📈 動態規劃（結構同上，章節到 s2-13、多一份 s4-method.html）
+        ├── dp/                   # 📈 動態規劃（結構同上，章節到 s2-13、多一份 s4-method.html）
+        ├── strings/              # 🔤 字串演算法（結構同上，章節到 s2-11、s4-method.html）
+        └── ds/                   # 🧱 競賽資料結構（結構同上，章節到 s2-13、s4-method.html）
 ```
 
 **內容與版面是分離的**：`topics/<id>/content/*.html` 只放教學內文（不含側欄、設定面板等版面），`build.py` 負責把內文套上共用版面模板，產生最終要部署的靜態頁面。這代表：
@@ -73,14 +77,14 @@ competitive-programming/
 
 ---
 
-## 🧩 新增一個主題（例如「字串演算法」）
+## 🧩 新增一個主題（例如「圖論」）
 
 這是這套架構存在的目的——新增主題**不需要另外做介面**，只要：
 
-1. 建立 `site/topics/strings/content/*.html`，內容片段結構比照既有主題（`s0-intro.html` 首頁導讀、`s1-theory.html` 理論、`s2-N.html` 策略章節、`s3-pitfalls.html` 陷阱、`s6-roadmap.html` 路線圖……依需要增減）
-2. 打開 `site/build.py`，在檔案開頭的 `TOPICS` 清單新增一筆 `dict(id="strings", icon="🔤", short="字串", name="字串演算法", ...)`，`pages` 欄位登記這個主題的所有章節（照抄既有兩個主題的寫法即可）
-3. 打開 `site/assets/site.js`，在 `TOPIC_META` 補一筆 `strings: { label: "字串演算法", short: "字串", icon: "🔤" }`（題目總表的主題欄位與篩選 chip 要用）
-4. 把這個主題的題目加進 `site/assets/problems-data.js`（每列最後一欄是主題 id，例如 `"strings"`）
+1. 建立 `site/topics/graph/content/*.html`，內容片段結構比照既有主題（`s0-intro.html` 首頁導讀、`s1-theory.html` 理論、`s2-N.html` 策略章節、`s3-pitfalls.html` 陷阱、`s6-roadmap.html` 路線圖……依需要增減）
+2. 打開 `site/build.py`，在檔案開頭的 `TOPICS` 清單新增一筆 `dict(id="graph", icon="🕸️", short="圖論", name="圖論", ...)`，`pages` 欄位登記這個主題的所有章節（照抄既有主題的寫法即可）
+3. 打開 `site/assets/site.js`，在 `TOPIC_META` 補一筆 `graph: { label: "圖論", short: "圖論", icon: "🕸️" }`（題目總表的主題欄位與篩選 chip 要用）
+4. 把這個主題的題目加進 `site/assets/problems-data.js`（每列最後一欄是主題 id，例如 `"graph"`）
 5. 執行 `python3 build.py`——首頁的主題卡片、側欄的主題切換器、全站題目總表的主題篩選都會自動出現這個新主題
 
 不需要新增 workflow、不需要新的 `index.html` 骨架、不需要複製 `site.css`／`site.js`——這些全站只有一份。

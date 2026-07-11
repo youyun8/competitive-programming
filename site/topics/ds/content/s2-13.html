@@ -1,0 +1,57 @@
+<h2>2.13 專家專題</h2>
+
+<p class="lede">每一節都是一個獨立武器系統；這裡給「是什麼、什麼時候需要、代表題」，作為 ★★★★★ 的路標。</p>
+
+<h3>2.13.1 Segment Tree Beats（吉司機線段樹）</h3>
+<p>處理「區間取 \(\min\)（chmin）+ 區間和」這類<b>標記無法用普通懶標記表達</b>的操作：每節點維護<b>最大值、次大值、最大值個數</b>；chmin(v) 遞迴到「max &gt; v ≥ 次大值」的節點就能整段結算（只有最大值們被削），否則繼續遞迴。勢能分析給出 \(O((n+q)\log^2 n)\)（實際飛快）。</p>
+
+<div class="problem" data-problem-id="luogu-p6242">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P6242" target="_blank">洛谷 P6242 線段樹 3（區間最值操作/歷史最值）</a><span class="chip">STB</span><span class="chip">勢能分析</span></div>
+<p>區間加、區間 chmin、區間和、區間 max、歷史 max。</p>
+<details><summary>思路</summary><p>吉司機全家桶模板：標記拆成「對最大值的標記」與「對其他值的標記」兩軌，歷史最值再各加一軌。先做 HDU 5306 Gorgeous Sequence（只有 chmin+sum+max）熱身，再上這題。重點不是背碼，是看懂「<b>次大值是遞迴終止的哨兵</b>」這個設計。</p></details>
+</div>
+
+<h3>2.13.2 線段樹分治</h3>
+<p>「每個修改有存活時間 \([t_1,t_2]\)」的離線大殺器：把時間軸開成線段樹，修改掛到 \(O(\log q)\) 個節點；DFS 整棵樹，進節點套用修改、離開時<b>撤銷</b>（配可撤銷 DSU 等可回滾結構），到葉子回答該時刻的詢問。把「刪除」偷換成「DFS 回溯」。</p>
+
+<div class="problem" data-problem-id="luogu-p5787">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5787" target="_blank">洛谷 P5787 二分圖（線段樹分治模板）</a><span class="chip">線段樹分治</span><span class="chip">可撤銷DSU</span></div>
+<p>邊在時間區間內存在，問每個時刻圖是否二分圖。</p>
+<details><summary>思路</summary><p>二分圖 ⟺ 無奇環：「擴展域/帶權 DSU」判奇環（u 與 v+n 合併），配<b>按秩不壓縮</b>的可撤銷版本。發現奇環時該子樹整段標非二分圖、直接剪枝。DSU（2.4）+ 離線思維（1.4）的畢業考。</p></details>
+</div>
+
+<h3>2.13.3 Link-Cut Tree（LCT）</h3>
+<p>樹形本身會變（link/cut）時的路徑結構：用一片 Splay 森林維護「實鏈剖分」，<code>access(u)</code> 把根到 u 打成一條實鏈、<code>makeroot(u)</code> 換根，路徑操作 = <code>split(u,v)</code> 後對一棵 Splay 整體操作。均攤 \(O(\log n)\)。</p>
+
+<div class="problem" data-problem-id="luogu-p3690">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3690" target="_blank">洛谷 P3690 LCT 模板</a><span class="chip">LCT</span></div>
+<p>連邊、斷邊、路徑異或和、單點改。</p>
+<details><summary>思路</summary><p>先確認你真的需要它：樹形固定 → 樹剖；只加邊 → DSU/離線。LCT 的碼量與 debug 成本值得這層猶豫。實作心法：<code>access</code> 是唯一的靈魂函式，其餘（makeroot/findroot/split/link/cut）都是它加旋轉的組裝；維護子樹資訊要加虛邊貢獻（進階）。</p></details>
+</div>
+
+<h3>2.13.4 珂朵莉樹（ODT）</h3>
+<p>用 <code>std::set</code> 存「值相同的極長段」，<b>區間賦值（推平）</b>時整段刪除合併；其他操作對著段暴力。<b>資料隨機</b>時段數期望 \(O(\log n)\) 級 → 均攤可過；出題人不隨機就會被卡到平方——賽場上先看清資料生成方式再用。</p>
+
+<div class="problem" data-problem-id="cf-896c">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/896/C" target="_blank">CF 896C Willem, Chtholly and Seniorious</a><span class="chip">ODT</span></div>
+<p>區間加、區間賦值、區間第 k 小、區間冪次和——資料隨機。</p>
+<details><summary>思路</summary><p>ODT 的出生地：<code>split(l)</code> 把 l 所在段切開、<code>assign</code> 推平、其餘操作把 [l,r] 內的段撈出來暴力。設計練習：為什麼 assign 保證段數均攤有界？（每次操作最多新增 3 段、assign 大量銷段——存款論證又來了。）</p></details>
+</div>
+
+<h3>2.13.5 回滾莫隊</h3>
+<p>「加入容易、<b>移除做不到</b>」的統計（區間最值類：眾數出現次數、最大 \(cnt_v\cdot v\)）：詢問按左塊分組，r 只增不減；l 每次從塊界出發向左暴力擴、回答後<b>回滾</b>（撤銷 l 側修改——因為修改都記錄在棧上，撤銷 = 彈棧，不需要「刪除」的語意）。複雜度仍 \(O(n\sqrt n)\)。</p>
+
+<div class="problem" data-problem-id="at-joisc2014c">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/AT_joisc2014_c" target="_blank">AT 歷史研究（JOISC 2014）</a><span class="chip">回滾莫隊</span></div>
+<p>區間查 \(\max(cnt_v \times v)\)。</p>
+<details><summary>思路</summary><p>max 無法隨移除回退（不知道次大是誰）→ 回滾莫隊模板。實作要點：塊內小區間直接暴力；「回滾」只還原桶與答案變數，別真的寫刪除。</p></details>
+</div>
+
+<h3>2.13.6 樹套樹與 KD-Tree 一瞥</h3>
+<ul>
+<li><b>樹套樹</b>：外層結構的每個節點掛一棵內層樹——BIT 套主席樹（P2617，見 <a href="#s2-12">2.12</a>）、線段樹套平衡樹（P3380 二逼平衡樹）。\(O(\log^2)\)、空間大、碼量大：<b>永遠先問能不能離線（CDQ/整體二分）換掉一層</b>。</li>
+<li><b>KD-Tree</b>：k 維空間的二叉劃分，帶插入的二維數點/鄰域查詢（P4148 簡單題）——複雜度 \(O(\sqrt n)\) 級每次、靠重構維持平衡。二維且矩形可差分時，CDQ 通常更穩。</li>
+</ul>
+
+<div class="callout idea"><b>🎓 專家題的共同形狀</b>
+<p>資結壓軸幾乎都是「<b>組合</b>」：線段樹分治 = 時間軸線段樹 × 可撤銷 DSU；P4556 = 樹上差分 × 線段樹合併；P2617 = BIT × 主席樹。單體結構到 ★★★★ 就學完了，★★★★★ 拼的是「把兩個學過的東西接起來」的介面直覺——這正是第 1 章操作分析法要練的東西。</p></div>

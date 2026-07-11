@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.1 字串雜湊（Polynomial Hashing） — 演算法策略圖鑑</title>
+<meta name="description" content="O(1) 子串比較、防卡雙模數、hash+二分求 LCP">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s01" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.1 字串雜湊（Polynomial Hashing）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>把字串看成 \(B\) 進位大數對質數 \(M\) 取模：</p>
+<div class="formula">\[
+h(s)=\left(\sum_{i=1}^{n} s_i\cdot B^{\,n-i}\right)\bmod M.
+\]</div>
+<p>預處理前綴 hash 與 \(B\) 的冪次後，任意子串的 hash 可 \(O(1)\) 算出：\(h(s_{l..r}) = h_{r} - h_{l-1}\cdot B^{\,r-l+1}\)。於是「比較兩子串是否相等」從 \(O(n)\) 變 \(O(1)\)——<b>不等必真、相等大概率真</b>。hash 是字串工具箱裡的萬用膠水：能塞進 <code>set</code> 去重、能當二分的判定、能跟任何資料結構組合。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>需要<b>大量「子串相等？」判定</b>，且可以容忍極小出錯機率。</li>
+<li>想把字串問題轉成「數字問題」：去重、計數、當 map 的 key。</li>
+<li>「最長公共前綴」「比較子串字典序」→ hash + 二分（見下）。</li>
+<li>正確性要求絕對嚴格（構造題、對抗測資）時，換 KMP／SA 等確定性工具。</li>
+</ul></div>
+
+<div class="callout warn"><b>⚠ 防卡三原則</b>
+<p>① <b>別用自然溢位</b>（mod \(2^{64}\)）：Thue–Morse 串可以構造出必然碰撞的測資，CF 上被卡是日常。② <b>模數用大質數</b>（如 \(10^9+7\)、\(998244353\)），要更穩就<b>雙模數</b>各算一份。③ <b>base 隨機化</b>：比賽開始時 <code>B = mt19937(seed)() % 233 + 131</code>。單模數隨機 base 下，比較 \(k\) 次的碰撞率約 \(k\cdot n/M\)（生日悖論估算），\(10^6\) 次比較配 \(10^9\) 級模數已略嫌緊，雙模最安心。</p></div>
+
+<details><summary>模板（C++）：前綴 hash + O(1) 子串</summary>
+<pre><code class="lang-cpp">typedef unsigned long long ull;
+const ull MOD = 1e9 + 7;
+ull B, h[N], pw[N];          // B 開賽隨機化
+
+void build(const char* s, int n) {         // s 為 1-indexed
+    pw[0] = 1;
+    for (int i = 1; i &lt;= n; i++) {
+        h[i]  = (h[i-1] * B + s[i]) % MOD;
+        pw[i] = pw[i-1] * B % MOD;
+    }
+}
+ull get(int l, int r) {                    // s[l..r] 的 hash
+    return (h[r] + MOD * MOD - h[l-1] * pw[r-l+1]) % MOD;
+}</code></pre></details>
+
+<h3>2.1.1 hash + 二分：LCP 與子串字典序</h3>
+<p>兩個後綴（或任兩個子串）的<b>最長公共前綴</b>滿足可二分性：「前 \(k\) 字元相等」隨 \(k\) 單調。二分 + \(O(1)\) hash 比較 = \(O(\log n)\) 求 LCP；求出 LCP 後比較下一個字元即得字典序。這讓「對所有後綴排序」可以 <code>sort</code> + \(O(\log n)\) 比較器完成——\(O(n\log^2 n)\) 的懶人後綴數組。</p>
+
+<div class="problem" data-problem-id="luogu-p3370">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3370" target="_blank">洛谷 P3370 字串雜湊模板</a><span class="chip">hash</span></div>
+<p>給 \(n\) 個字串，數本質不同的個數。</p>
+<details><summary>思路</summary><p>每個串算 hash 丟進陣列，排序去重（或 <code>set</code>）。模板檢核題：驗證你的 hash 寫法與防碰撞配置能不能直接通過。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-28">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/" target="_blank">LC 28 找出字串中第一個匹配項的下標</a><span class="chip">hash</span><span class="chip">KMP</span></div>
+<p>在 haystack 中找 needle 第一次出現的位置（單模式匹配的最小例）。</p>
+<details><summary>思路</summary><p>hash 解法：算出 needle 的 hash，滑過 haystack 的每個等長窗口 \(O(1)\) 比對。這題是三種匹配思維的練習場——暴力 \(O(nm)\)、hash \(O(n+m)\)、KMP \(O(n+m)\)（見 <a href="02-kmp.html">2.2</a>）都寫一遍，理解各自「省掉了哪些重複比較」。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-187">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/repeated-dna-sequences/" target="_blank">LC 187 重複的 DNA 序列</a><span class="chip">hash</span><span class="chip">滑動窗口</span></div>
+<p>找出所有出現超過一次的長度 10 子串。</p>
+<details><summary>思路</summary><p>定長窗口滑過去，每個窗口的 hash 丟進 <code>unordered_map</code> 計數。字元集只有 ACGT → 可以用 2 bit 編碼把 hash 做成<b>精確</b>的 20-bit 整數（無碰撞），體會「字元集小時 hash 可以是無損編碼」。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-1200e">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1200/E" target="_blank">CF 1200E Compress Words</a><span class="chip">hash</span><span class="chip">border</span></div>
+<p>依序合併單詞：每次把新詞接上結果串，重疊部分（結果的後綴 = 新詞的前綴）只留一份。</p>
+<details><summary>思路</summary><p>對每個新詞 \(w\)，要找最大的 \(k\le\min(|res|,|w|)\) 使 \(res\) 的後綴 \(k\) 等於 \(w\) 的前綴 \(k\)——枚舉 \(k\) 由大到小，hash \(O(1)\) 判定。注意這裡<b>不能二分</b>（「長度 \(k\) 可行」不單調），只能枚舉；總複雜度 \(O(\Sigma|w|)\)。KMP 解法：對 \(w + \# + res\text{ 尾段}\) 求 fail 也行——一題兩解對照 hash 與 border 的等價表達。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-1044">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://leetcode.cn/problems/longest-duplicate-substring/" target="_blank">LC 1044 最長重複子串</a><span class="chip">hash</span><span class="chip">二分答案</span></div>
+<p>找出現至少兩次的最長子串。</p>
+<details><summary>思路</summary><p>「存在長度 \(k\) 的重複子串」對 \(k\) 單調 → 二分 \(k\)；判定時把所有長度 \(k\) 窗口的 hash 丟進 <code>unordered_set</code> 看是否撞到。\(O(n\log n)\)。這是「hash 把判定變 \(O(n)\)，二分把最優化變判定」的招牌組合；SA 的 height 也能做（<a href="07-suffix-array.html">2.7</a>），對照兩解。</p></details>
+<details><summary>程式碼（C++）</summary>
+<pre><code class="lang-cpp">bool ok(int k, int n) {                 // 存在長 k 的重複子串？
+    unordered_set&lt;ull&gt; seen;
+    for (int l = 1; l + k - 1 &lt;= n; l++)
+        if (!seen.insert(get(l, l + k - 1)).second) return true;
+    return false;
+}
+// 主程式：對 k 二分，ok(k) 單調</code></pre></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2852">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2852" target="_blank">洛谷 P2852 Milk Patterns</a><span class="chip">hash</span><span class="chip">二分答案</span></div>
+<p>找至少出現 \(k\) 次（可重疊）的最長子串。</p>
+<details><summary>思路</summary><p>LC 1044 的推廣：二分長度，hash 計數改成「某個 hash 出現 \(\ge k\) 次」。本題是三解對照組的主角——hash 二分 \(O(n\log n)\)、SA height 分組（<a href="07-suffix-array.html">2.7</a>）、SAM 的 endpos 大小（<a href="08-sam.html">2.8</a>），第 4 章拿它做完整比較。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>hash 的上限在於它只回答「相等嗎」。需要「所有子串的結構」（排序、本質不同計數、出現次數全表）時，升級到 <a href="07-suffix-array.html">SA</a>／<a href="08-sam.html">SAM</a>；需要確定性線性匹配時用 <a href="02-kmp.html">KMP</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="../theory.html"><span class="dir">← 上一節</span>1. 理論基礎</a>
+<a class="next" href="02-kmp.html"><span class="dir">下一節 →</span>2.2 KMP 與週期</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

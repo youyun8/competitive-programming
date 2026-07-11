@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.5 樹狀數組（BIT / Fenwick Tree） — 演算法策略圖鑑</title>
+<meta name="description" content="lowbit 切前綴：逆序對、雙 BIT 區間和、BIT 上倍增求第 k 小">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s05" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.5 樹狀數組（BIT / Fenwick Tree）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p><code>c[i]</code> 管轄 \((i-\mathrm{lowbit}(i),\ i]\) 這段——沿 <code>i += lowbit(i)</code> 往上打點、沿 <code>i -= lowbit(i)</code> 往下收前綴，兩個方向各 \(O(\log n)\)。BIT 只會一件事：<b>可差分資訊的前綴查詢</b>（和、計數）；但它碼量 8 行、常數是線段樹的 1/4～1/8，能用 BIT 的場合用線段樹是浪費生命。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>單點改 + 區間和（差分後也涵蓋：區間加+單點查、區間加+區間和）。</li>
+<li><b>權值 BIT</b>：把值域當下標——動態計數「≤ x 有幾個」＝逆序對、名次、第 k 小。</li>
+<li>資訊必須可差分：\(\mathrm{sum}(l,r)=S(r)-S(l-1)\)。<b>min/max 不行</b> → 線段樹。</li>
+</ul></div>
+
+<details><summary>模板（C++）：BIT + 上面的三個變形</summary>
+<pre><code class="lang-cpp">int c[N], n;
+void add(int i, int v) { for (; i &lt;= n; i += i &amp; -i) c[i] += v; }
+int  qry(int i) { int s = 0; for (; i; i -= i &amp; -i) s += c[i]; return s; }
+// 區間加 + 單點查：對差分陣列開 BIT，add(l,v), add(r+1,-v)，查 = qry(i)
+// 區間加 + 區間和：兩個 BIT 維護 d[i] 與 i*d[i]，
+//   sum(1,r) = (r+1)*qry1(r) - qry2(r)
+// BIT 上倍增求第 k 小（權值 BIT）：O(log n)，比二分套查詢省一個 log
+int kth(int k) {
+    int pos = 0;
+    for (int j = __lg(n); j &gt;= 0; j--)
+        if (pos + (1 &lt;&lt; j) &lt;= n &amp;&amp; c[pos + (1 &lt;&lt; j)] &lt; k)
+            pos += 1 &lt;&lt; j, k -= c[pos];
+    return pos + 1;
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3374">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3374" target="_blank">洛谷 P3374 BIT 模板一</a><span class="chip">BIT</span></div>
+<p>單點加、區間和。P3368 模板二（區間加、單點查）★★ 是差分版。</p>
+<details><summary>思路</summary><p>八行模板。兩個模板連做，體會「BIT 不變，變的是餵給它的陣列（原陣列 vs 差分陣列）」——這個觀點讓「區間加區間和」的雙 BIT 推導變得自然。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1908">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1908" target="_blank">洛谷 P1908 逆序對</a><span class="chip">BIT</span><span class="chip">權值</span><span class="chip">離散化</span></div>
+<p>數 \(i&lt;j\) 且 \(a_i&gt;a_j\) 的對數。</p>
+<details><summary>思路</summary><p>權值 BIT 第一課：從左往右掃，每個 \(a_j\) 查「已插入且 &gt; \(a_j\)」的個數（= 已插入數 − \(qry(a_j)\)），再插入。值域大先離散化。歸併排序解法對照：同一個「跨越中線的貢獻」兩種算法。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-315">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/count-of-smaller-numbers-after-self/" target="_blank">LC 315 計算右側小於當前元素的個數</a><span class="chip">BIT</span><span class="chip">權值</span></div>
+<p>逆序對的「每個位置各自報數」版。</p>
+<details><summary>思路</summary><p>倒序掃 + 權值 BIT 查 \(qry(a_i-1)\)。跟 P1908 湊成一對：正掃查大的、倒掃查小的——方向與不等號的對應關係自己推一次。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p5094">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5094" target="_blank">洛谷 P5094 [USACO04OPEN] MooFest 加強版</a><span class="chip">BIT</span><span class="chip">貢獻拆解</span></div>
+<p>求 \(\sum_{i&lt;j}\max(v_i,v_j)\cdot|x_i-x_j|\)。</p>
+<details><summary>思路</summary><p>按 \(v\) 排序讓 max 消失（後加入者的 \(v\) 就是 max），剩下 \(\sum v_j\cdot|x_j - x_i|\)：開<b>兩個權值 BIT</b>（按座標的個數、座標和），絕對值拆成「左邊的：\(cnt\cdot x_j - sumx\)」與「右邊的：\(sumx - cnt\cdot x_j\)」。<b>排序消 max + 雙 BIT 拆絕對值</b>是貢獻類計數的標準連招。</p></details>
+</div>
+
+<div class="problem" data-problem-id="ds-bit-kth">
+<div class="p-head"><span class="stars s4">★★★★</span><span class="p-title">BIT 上倍增求第 k 小（技巧條目）</span><span class="chip">BIT</span><span class="chip">倍增</span></div>
+<p>權值 BIT 支援「插入/刪除 + 查全域第 k 小」，單次 \(O(\log n)\)。</p>
+<details><summary>思路</summary><p>從高位往低位試探：如果跨出 \(2^j\) 步後累計個數仍 &lt; k，就真的跨出去並扣除。它讓「值域固定的平衡樹需求」（P3369 的弱化版！）用 8+7 行搞定——寫平衡樹之前先問自己：值域能離散化嗎？能的話 BIT 倍增就夠。P1801 黑匣子可用此解對照對頂堆。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>資訊不可差分（min/max）、修改是「區間賦值/取min」→ <a href="06-segment-tree.html">線段樹</a>；二維數點的離線引擎就是權值 BIT（<a href="08-sweepline-cdq.html">2.8.2</a>）；「BIT 套主席樹」處理帶修第 k 小（<a href="12-persistent.html">2.12.4</a>）。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="04-dsu.html"><span class="dir">← 上一節</span>2.4 並查集</a>
+<a class="next" href="06-segment-tree.html"><span class="dir">下一節 →</span>2.6 線段樹基礎</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

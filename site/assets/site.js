@@ -15,7 +15,9 @@
      都靠這份對照表顯示圖示與簡稱。新增主題時，這裡與 build.py 的 TOPICS 都要補一筆。 */
   var TOPIC_META = {
     greedy: { label: "貪心演算法", short: "貪心", icon: "🧭" },
-    dp: { label: "動態規劃", short: "DP", icon: "📈" }
+    dp: { label: "動態規劃", short: "DP", icon: "📈" },
+    strings: { label: "字串演算法", short: "字串", icon: "🔤" },
+    ds: { label: "競賽資料結構", short: "資結", icon: "🧱" }
   };
 
   var STORE_KEY = "algo-guide-settings";

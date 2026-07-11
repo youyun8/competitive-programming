@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>選型方法論與離線思維 — 演算法策略圖鑑</title>
+<meta name="description" content="操作規格書、選型決策表、五種離線重排與對拍驗證器">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="method" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="strategies/02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="strategies/03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="strategies/04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="strategies/05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="strategies/06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="strategies/07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="strategies/08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="strategies/09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="strategies/10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="strategies/11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="strategies/12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="strategies/13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2><span class="sec-no">4</span>選型方法論與離線思維</h2>
+
+<div class="callout proof"><b>📝 動筆前的「操作規格書」</b>
+<p>固定填五格：① 修改操作清單（型態＋頻率）；② 查詢操作清單（要的資訊＋頻率）；③ 資訊可合併嗎、可差分嗎；④ 能離線嗎；⑤ \(n,q\) 與時限 → 複雜度預算。五格填完，選型幾乎自動完成——資料結構題的「不會做」大多是跳過了這張表直接開寫。</p></div>
+
+<h3>4.1 選型決策表</h3>
+<div class="tbl-wrap"><table>
+<tr><th>修改</th><th>查詢</th><th>首選</th><th>備選／備註</th></tr>
+<tr><td>無（或全在查詢前）</td><td>區間和/min/gcd</td><td><a href="strategies/01-prefix-sums.html">前綴和/差分/ST 表</a></td><td>—</td></tr>
+<tr><td>單點加</td><td>前綴/區間和、名次</td><td><a href="strategies/05-bit.html">BIT</a></td><td>權值化處理逆序對/第 k 小</td></tr>
+<tr><td>區間改（可複合標記）</td><td>區間可合併資訊</td><td><a href="strategies/06-segment-tree.html">線段樹</a></td><td>資訊要自己設計時見 2.6.4</td></tr>
+<tr><td>插入/刪除任意值</td><td>名次/前驅後繼</td><td><a href="strategies/09-balanced-bst.html">平衡樹</a></td><td>值域可離散化 → BIT 倍增；只要最值 → <a href="strategies/03-heap.html">堆</a></td></tr>
+<tr><td>合併集合</td><td>連通/等價類</td><td><a href="strategies/04-dsu.html">DSU</a></td><td>要刪邊 → 倒序離線／線段樹分治</td></tr>
+<tr><td>任意</td><td>不可合併統計（眾數類）</td><td><a href="strategies/10-sqrt.html">分塊/莫隊</a></td><td>只加不刪 → 回滾莫隊</td></tr>
+<tr><td>樹上路徑/子樹</td><td>路徑/子樹資訊</td><td><a href="strategies/11-tree.html">樹剖/DFS 序</a></td><td>離線子樹統計 → DSU on tree</td></tr>
+<tr><td>—（歷史版本）</td><td>區間第 k 小、版本查詢</td><td><a href="strategies/12-persistent.html">主席樹</a></td><td>可離線 → 整體二分；帶修 → BIT 套主席樹</td></tr>
+<tr><td>區間 chmin/chmax</td><td>區間和/max</td><td><a href="strategies/13-expert.html">Segment Tree Beats</a></td><td>—</td></tr>
+<tr><td>連邊斷邊</td><td>路徑資訊</td><td><a href="strategies/13-expert.html">LCT</a></td><td>離線 → 線段樹分治常更好寫</td></tr>
+</table></div>
+
+<h3>4.2 資訊設計四問（線段樹的創作課）</h3>
+<ol>
+<li><b>維護什麼？</b>——查詢要的答案 + 為了合併必須額外攜帶的資訊（最大子段和要帶前綴/後綴 max，P4513）。</li>
+<li><b>怎麼合併？</b>——寫出 pushup 的數學式，證明只依賴兩個兒子。</li>
+<li><b>修改怎麼打標記？</b>——修改對「本節點資訊」的影響能不能 O(1) 整段計算（區間加對和 = v×len）。</li>
+<li><b>標記怎麼複合？</b>——兩個標記疊加是否封閉、有無順序（仿射變換：先乘後加）。</li>
+</ol>
+<p>四問任何一問卡住，就換武器：第 2 問卡 → 分塊/莫隊；第 3、4 問卡 → 想 Segment Tree Beats 或離線。</p>
+
+<h3>4.3 離線化思維總整理：五種重排</h3>
+<div class="tbl-wrap"><table>
+<tr><th>重排方式</th><th>把什麼變簡單</th><th>代表</th></tr>
+<tr><td><b>倒序</b>：時間反演</td><td>刪除 → 插入</td><td>P1197 星球大戰（<a href="strategies/04-dsu.html">2.4</a>）</td></tr>
+<tr><td><b>掃描線</b>：一維變時間</td><td>二維 → 一維 + 事件</td><td>P5490、P2163（<a href="strategies/08-sweepline-cdq.html">2.8</a>）</td></tr>
+<tr><td><b>莫隊</b>：按塊重排詢問</td><td>任意區間 → 相鄰區間增量</td><td>P1494（<a href="strategies/10-sqrt.html">2.10</a>）</td></tr>
+<tr><td><b>CDQ</b>：分治造有序</td><td>三維 → 一維 BIT</td><td>P3810（<a href="strategies/08-sweepline-cdq.html">2.8</a>）</td></tr>
+<tr><td><b>線段樹分治</b>：時間軸掛修改</td><td>刪除 → DFS 回溯撤銷</td><td>P5787（<a href="strategies/13-expert.html">2.13</a>）</td></tr>
+</table></div>
+<p>共同信念：<b>順序是出題人給的，處理順序是你自己的</b>。讀題後先問「強制線上嗎」，不是先想「上什麼樹」。</p>
+
+<h3>4.4 對拍驗證器</h3>
+<details><summary>對拍範例（C++）：隨機操作序列 + 暴力陣列</summary>
+<pre><code class="lang-cpp">// 以「區間加 + 區間和」為例：暴力就是裸陣列
+int n = rng() % 8 + 1, q = rng() % 20 + 1;
+vector&lt;long long&gt; a(n + 1, 0);
+init_segtree(n);                       // 你的結構
+while (q--) {
+    int op = rng() % 2;
+    int l = rng() % n + 1, r = rng() % n + 1;
+    if (l &gt; r) swap(l, r);
+    if (op == 0) {
+        long long v = (long long)(rng() % 21) - 10;
+        for (int i = l; i &lt;= r; i++) a[i] += v;   // 暴力
+        update(1, 1, n, l, r, v);                  // 待測
+    } else {
+        long long s = 0;
+        for (int i = l; i &lt;= r; i++) s += a[i];
+        long long t = query(1, 1, n, l, r);
+        if (s != t) { dumpCase(); return 1; }      // 印出完整操作序列
+    }
+}</code></pre></details>
+<ul>
+<li><b>n 要小</b>（≤ 8）：小陣列才容易撞出 pushdown/邊界 bug，而且反例可手算。</li>
+<li>WA 時印出<b>完整操作序列</b>，手動最小化到 3–4 步——那就是你的單元測試。</li>
+<li>莫隊/離線結構對拍：連同「詢問輸出順序」一起比。</li>
+<li>對拍也要<b>計時</b>：卡常題先用隨機大測資量產壓力測試，別上提交才知道慢。</li>
+</ul>
+
+<div class="pagenav">
+<a class="prev" href="pitfalls.html"><span class="dir">← 上一節</span>3. 常見錯誤與陷阱</a>
+<a class="next" href="roadmap.html"><span class="dir">下一節 →</span>6. 學習路線圖</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

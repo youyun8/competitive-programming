@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.9 平衡樹（FHQ Treap／Splay） — 演算法策略圖鑑</title>
+<meta name="description" content="split/merge 兩原語打天下：名次、區間翻轉、整體偏移">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s09" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.9 平衡樹（FHQ Treap／Splay）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>維護<b>動態有序集合</b>：插入、刪除、名次、第 k 小、前驅後繼全部 \(O(\log n)\)。競賽首選 <b>FHQ Treap（無旋 Treap）</b>：靠隨機優先級維持期望平衡，只用兩個原語——<code>split</code>（把樹按值或按大小劈成兩棵）與 <code>merge</code>（把兩棵值域有序的樹縫回去），所有操作都是這兩個動作的組裝，好寫、好背、支援可持久化。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>插入/刪除與名次查詢<b>交錯</b>且值域無法離散化（能離散化 → <a href="05-bit.html">BIT 倍增</a>更短）。</li>
+<li>維護<b>序列</b>本身（按下標 split）：區間翻轉、區間搬移——線段樹做不到「改變元素順序」。</li>
+<li>只要有序集合＋前驅後繼 → 先想 <code>multiset</code>／pb_ds <code>tree</code> 能不能混過去。</li>
+</ul></div>
+
+<details><summary>模板（C++）：FHQ Treap 核心</summary>
+<pre><code class="lang-cpp">int ch[N][2], val[N], pri[N], sz[N], tot;
+int node(int v) { int u = ++tot; val[u]=v; pri[u]=rand(); sz[u]=1; return u; }
+void pushup(int u) { sz[u] = sz[ch[u][0]] + sz[ch[u][1]] + 1; }
+void split(int u, int v, int&amp; a, int&amp; b) {   // 按值：a 全 ≤ v，b 全 &gt; v
+    if (!u) { a = b = 0; return; }
+    if (val[u] &lt;= v) { a = u; split(ch[u][1], v, ch[u][1], b); }
+    else             { b = u; split(ch[u][0], v, a, ch[u][0]); }
+    pushup(u);
+}
+int merge(int a, int b) {                     // 前提：a 的值全 ≤ b
+    if (!a || !b) return a | b;
+    if (pri[a] &lt; pri[b]) { ch[a][1] = merge(ch[a][1], b); pushup(a); return a; }
+    else                 { ch[b][0] = merge(a, ch[b][0]); pushup(b); return b; }
+}
+// insert(v): split(root, v, a, b); root = merge(merge(a, node(v)), b);
+// erase(v):  split 出恰等於 v 的樹，merge 掉一個節點
+// 文藝平衡樹：split 改按 sz（前 k 個），節點加翻轉懶標記 + pushdown</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3369">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3369" target="_blank">洛谷 P3369 普通平衡樹</a><span class="chip">平衡樹</span><span class="chip">FHQ</span></div>
+<p>插入、刪除、查排名、查第 k 小、前驅、後繼。</p>
+<details><summary>思路</summary><p>六操作全部由 split/merge 組裝（前驅 = split(v−1) 後左樹最右）。先畫圖理解「split 沿途把樹撕成兩條拉鍊」，再背碼。對照解：值域離散化後權值線段樹/BIT 也能過此題——體會「平衡樹是線上無值域限制版」。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3391">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3391" target="_blank">洛谷 P3391 文藝平衡樹</a><span class="chip">平衡樹</span><span class="chip">區間翻轉</span></div>
+<p>多次翻轉序列的區間，輸出最終序列。</p>
+<details><summary>思路</summary><p>平衡樹維護<b>序列</b>：中序遍歷 = 序列順序，split 按<b>子樹大小</b>切出 \([l,r]\)，對根打「翻轉懶標記」（交換左右兒子，pushdown 下傳）。「按值」與「按大小」是同一棵 FHQ 的兩種人格，切換的只有 split 的判據。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1486">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1486" target="_blank">洛谷 P1486 [NOI2004] 郁悶的出納員</a><span class="chip">平衡樹</span><span class="chip">整體偏移</span></div>
+<p>員工工資整體加減、低於下限自動離職、查第 k 大。</p>
+<details><summary>思路</summary><p>整體加減不真的改每個節點——維護<b>全域偏移量 delta</b>，插入時存 \(v-\)delta。離職 = split 出「< 下限 − delta」的整棵子樹一次砍掉（計數即離職人數）。「全域 lazy + 按值批量切除」讓平衡樹的 split 展現出線段樹學不來的靈活性。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2596">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2596" target="_blank">洛谷 P2596 [ZJOI2006] 書架</a><span class="chip">平衡樹</span><span class="chip">序列維護</span></div>
+<p>把某本書挪到頂/底/上下移一格、查某書名次、查第 k 本。</p>
+<details><summary>思路</summary><p>序列平衡樹的綜合題：每本書記錄自己的節點編號，「查名次」要<b>從節點向上爬</b>累計左子樹大小（需父指標），移動 = split 抽出單點再 merge 到新位置。FHQ 加父指標或改用 Splay 皆可——順便理解 Splay 的賣點：把「訪問的節點轉到根」天然支援這類操作。</p></details>
+</div>
+
+<div class="callout proof"><b>📎 Splay 與 pb_ds 備忘</b>
+<p><b>Splay</b>：每次訪問後將節點旋到根，均攤 \(O(\log n)\)——競賽中主要作為 <a href="13-expert.html">LCT</a> 的底層；單獨使用時 FHQ 幾乎總是更好寫。<b>pb_ds</b>：<code>__gnu_pbds::tree</code> 自帶 order_of_key / find_by_order，普通平衡樹題可以 20 行過——賽場救急合法武器，但區間翻轉這種序列操作救不了。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="08-sweepline-cdq.html"><span class="dir">← 上一節</span>2.8 掃描線與離線分治</a>
+<a class="next" href="10-sqrt.html"><span class="dir">下一節 →</span>2.10 分塊與莫隊</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<h2>2.6 AC 自動機（多模式匹配）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>把所有模式串插進 Trie，再給每個節點加 <b>fail 指標</b>：指向「目前串的最長真後綴中，是某模式串前綴的那一個」——Trie 版的 KMP fail。文本在自動機上走一遍，每個位置的節點代表「以此結尾的最長模式前綴匹配」，沿 fail 鏈能枚舉<b>所有</b>此刻結束的模式串。多模式匹配 \(O(|t| + \Sigma|p_i|)\)。</p></div>
+
+<div class="callout proof"><b>🔁 兩個關鍵改寫</b>
+<p>① <b>Trie 圖（goto 表）</b>：BFS 建 fail 時順手把不存在的轉移補成 <code>ch[fail[u]][c]</code>——失配跳躍被展開成 \(O(1)\) 轉移，自動機成為真正的 DFA（DP 可用）。② <b>fail 樹</b>：所有 fail 邊反向構成一棵樹；「節點 \(u\) 的串出現在文本中」⟺ 文本走過的某個節點在 fail 樹上位於 \(u\) 的子樹內。於是「每個模式串出現幾次」= 把文本經過的每個節點打 +1，<b>fail 樹上做一次子樹和</b>——從逐位置跳 fail 的 \(O(n\sqrt{n})\)／最壞平方，變成一次 DFS 的 \(O(n)\)。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li><b>多個</b>模式串在文本中的出現（存在性／次數／位置）。</li>
+<li>「文本不含任何違禁詞」類的計數／構造 → ACAM 上 DP。</li>
+<li>單模式就別上 ACAM——KMP 碼量五分之一。</li>
+</ul></div>
+
+<details><summary>模板（C++）：建 Trie 圖 + fail</summary>
+<pre><code class="lang-cpp">int ch[N][26], fail[N], tot = 0;
+vector&lt;int&gt; ends[N];               // 節點 u 結束的模式串編號
+void build() {                     // BFS：層序保證 fail[u] 先於 u 處理
+    queue&lt;int&gt; q;
+    for (int c = 0; c &lt; 26; c++) if (ch[0][c]) q.push(ch[0][c]);
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        for (int c = 0; c &lt; 26; c++) {
+            int&amp; v = ch[u][c];
+            if (v) { fail[v] = ch[fail[u]][c]; q.push(v); }
+            else   v = ch[fail[u]][c];        // 補成 Trie 圖：O(1) 轉移
+        }
+    }
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3808">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3808" target="_blank">洛谷 P3808 AC 自動機（簡單版）</a><span class="chip">ACAM</span></div>
+<p>問有多少個模式串在文本中出現過（存在性）。</p>
+<details><summary>思路</summary><p>文本走自動機，每到一個節點沿 fail 鏈上跳、把沿路的結束標記收掉並<b>標已訪問</b>（訪問過就停，保證每節點只清一次）→ 均攤線性。這題允許「跳 fail + 剪枝」的寫法；下一題會逼你升級。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3796">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3796" target="_blank">洛谷 P3796 AC 自動機（加強版）</a><span class="chip">ACAM</span><span class="chip">計數</span></div>
+<p>找出現次數最多的模式串（次數要精確）。</p>
+<details><summary>思路</summary><p>規模仍小，可以「每步沿 fail 鏈全部 +1」硬數；但正確的思維是先意識到這是 \(O(n\cdot\text{深度})\) 的定時炸彈——為二次加強版鋪路。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p5357">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5357" target="_blank">洛谷 P5357 AC 自動機（二次加強版）</a><span class="chip">ACAM</span><span class="chip">fail樹</span></div>
+<p>求<b>每個</b>模式串的出現次數，規模卡掉跳 fail 的做法。</p>
+<details><summary>思路</summary><p>fail 樹技法的模板題：文本經過的每個節點 <code>val[u]++</code>，結束後在 fail 樹上自底向上累加（BFS 逆序即拓撲序，不必真建樹），每個模式串答案 = 其結束節點的子樹和。<b>「打標記 + fail 樹子樹和」</b>是 ACAM 計數的最終形態，此後所有變形（帶權、帶位置）都是它的裝飾。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4052">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4052" target="_blank">洛谷 P4052 [JSOI2007] 文本生成器</a><span class="chip">ACAM</span><span class="chip">DP</span></div>
+<p>數長度 \(m\) 的大寫字母串中，<b>至少包含一個</b>給定單詞的個數。</p>
+<details><summary>思路</summary><p>補集轉化：總數 \(26^m\) 減去「一個都不含」。後者是自動機上 DP：\(f[i][u]\)＝走了 \(i\) 步、位於節點 \(u\)、從未經過危險節點的方案數；<b>危險節點 = 自身是結尾或 fail 鏈上有結尾</b>（建 fail 時 <code>danger[u] |= danger[fail[u]]</code> 順手傳遞）。ACAM 上 DP 的句型：狀態 =（步數, 節點），Trie 圖保證轉移 \(O(|\Sigma|)\)。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2414">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2414" target="_blank">洛谷 P2414 [NOI2011] 阿狸的打字機</a><span class="chip">ACAM</span><span class="chip">fail樹</span><span class="chip">BIT</span></div>
+<p>多次詢問：第 \(x\) 個串在第 \(y\) 個串中出現幾次。</p>
+<details><summary>思路</summary><p>「\(x\) 在 \(y\) 中出現次數」= \(y\) 在 Trie 上的路徑節點中，落在 fail 樹上 \(x\) 結束節點子樹內的個數。離線：按 Trie DFS 走（進節點 +1、離開 −1 維護「目前路徑」），走到某個 \(y\) 的結尾時回答其所有詢問——fail 樹子樹 = DFS 序區間，用 BIT 查區間和。<b>雙樹配合</b>（Trie 樹上走、fail 樹上查）+ 離線 + DFS 序，NOI 級 ACAM 的集大成之作。</p></details>
+</div>
+
+<div class="callout warn"><b>⚠ 高頻坑</b>
+<p>① 忘記把不存在的轉移補成 Trie 圖，DP 時就得手寫跳 fail——要嘛補圖要嘛跳鏈，混用必錯。② fail 樹統計要按 <b>BFS 逆序</b>或建樹 DFS，不能沿 fail 鏈逐個上跳累加（平方）。③ 多測清空：節點池、fail、ends 只清 \(0..tot\)。</p></div>

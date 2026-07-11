@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常見錯誤與陷阱 — 演算法策略圖鑑</title>
+<meta name="description" content="線段樹 4n、標記複合順序、離散化漏值、莫隊指標順序——高頻坑與修法">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="pitfalls" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="strategies/02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="strategies/03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="strategies/04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="strategies/05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="strategies/06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="strategies/07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="strategies/08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="strategies/09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="strategies/10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="strategies/11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="strategies/12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="strategies/13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2><span class="sec-no">3</span>常見錯誤與陷阱</h2>
+
+<div class="tbl-wrap"><table>
+<tr><th>症狀</th><th>優先檢查</th><th>最小測資方向</th></tr>
+<tr><td>RE／WA 在較大測點</td><td>線段樹空間 4n、動態開點 M 估算、遞迴深度</td><td>n 取奇數且不是 2 的冪</td></tr>
+<tr><td>區間修改後查詢錯</td><td>pushdown 漏呼叫、標記複合順序、apply 沒同步改資訊</td><td>兩次重疊的區間修改 + 中間查詢</td></tr>
+<tr><td>死迴圈</td><td>BIT 下標 0、莫隊指標順序把區間走成負長</td><td>l = r = 1 的詢問</td></tr>
+<tr><td>答案偏移一格</td><td>離散化缺值、DFS 序 in/out 邊界、掃描線「段 vs 點」</td><td>兩個相同座標的元素</td></tr>
+<tr><td>TLE 但複雜度沒錯</td><td>常數：遞迴線段樹 vs BIT、memset 整池、cin 沒關同步</td><td>—（估 ops×常數 對照時限）</td></tr>
+</table></div>
+
+<h3>3.1 線段樹全家桶</h3>
+<div class="callout warn"><b>⚠ 高頻五連</b>
+<p>① 空間開 2n → 第 7 個測點 RE：遞迴切不齊時樹高多一層，<b>永遠 4n</b>。② pushdown 只在 update 寫了、query 忘了。③ 多重標記複合順序：先乘後加——「加標記也要被乘」（P3373 的靈魂）。④ apply 只改 tag 沒改 sum（或反之）：apply 的定義是「這個節點的資訊與標記<b>同時</b>反映此次修改」。⑤ 動態開點 M 拍腦袋 → MLE：\(M = q\lceil\log_2 V\rceil\) 起算。</p></div>
+
+<h3>3.2 BIT 三坑</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 下標 0：<code>lowbit(0)=0</code>，add(0,·) 直接死迴圈——1-indexed 是紀律。② 用 BIT 維護 max：max 不可差分，「單點改小」之後前綴 max 就錯了（只有「單點只增」的受限場景可用）。③ 區間加區間和的雙 BIT 公式抄錯符號：自己從 \(\sum_{i\le r} d_i(r-i+1)\) 推一遍，比抄模板可靠。</p></div>
+
+<h3>3.3 離散化與離線的隱形錯</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① <b>查詢用到的值沒一起離散化</b>：詢問「≥ c」時 c 不在離散表裡，lower_bound 到錯誤的桶——把修改值與查詢值合在一起離散化。② 排序比較器不嚴格（<code>&lt;=</code>）→ UB。③ 離線重排後<b>忘記按原順序輸出</b>答案。④ 倒序離線（P1197）時第一個輸出是「全刪完」的狀態，邊界別漏。</p></div>
+
+<h3>3.4 DSU 細節</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 只寫路徑壓縮、沒按秩：一般夠用，但<b>可撤銷 DSU 絕不能路徑壓縮</b>（撤銷靠按秩的 O(log) 深度保證）。② 帶權 DSU 的 find 裡，權值更新必須在遞迴<b>返回後</b>（父鏈先壓好才知道到根的累積量）。③ 種類/擴展域忘記「兩個方向都要合併」（u 友 v ⇒ u 敵 = v 敵）。</p></div>
+
+<h3>3.5 莫隊與分塊</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 指標移動順序：先擴張後收縮（<code>while (r &lt; qr) add(++r);</code> … <code>while (l &lt; ql) del(l++);</code>），順序錯會讓區間瞬間為負長、桶減成負數。② 塊長：\(n\) 與 \(q\) 不同階時取 \(n/\sqrt q\)，帶修莫隊取 \(n^{2/3}\)——亂取直接慢一倍以上。③ 分塊散塊修改後忘記重建塊內輔助結構（排序副本）。④ 奇偶排序寫錯反而變慢——對拍時間，不只對拍答案。</p></div>
+
+<h3>3.6 樹上結構</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 樹剖第二次 DFS <b>必須先走重兒子</b>，順序錯 = 鏈不連續，一切皆錯。② DFS 序（子樹用）與歐拉序（LCA 用）與重鏈序（路徑用）三種序混用。③ 倍增 LCA：深度先對齊、相遇提前返回、最後回傳 <code>f[0][u]</code>。④ 樹上差分點/邊版本的 lca 扣減位置不同（點：lca 與 fa(lca) 各 −1；邊：lca −2）。</p></div>
+
+<h3>3.7 卡常實務</h3>
+<ul>
+<li>估算：遞迴線段樹 \(\sim 10^7\)–\(10^8\) ops/s、BIT 快 4–8 倍——\(q\log n\) 乘常數後跟時限比，超了先想「換 BIT／離線／砍 log」而不是黑魔法。</li>
+<li>快讀（getchar 手寫）對 \(10^6\) 級輸入是及格線；<code>endl</code> 換 <code>'\n'</code>。</li>
+<li>zkw／非遞迴線段樹、指令集是最後手段；<b>先確認演算法層面沒有多餘的 log</b>。</li>
+<li>記憶體布局：結構陣列（SoA）比陣列結構（AoS）對 cache 友善；莫隊桶用 int 不用 map。</li>
+</ul>
+
+<div class="callout idea"><b>🔬 資料結構是對拍收益最高的題型</b>
+<p>暴力 = 一個陣列 + O(n) 掃描，五分鐘寫完；隨機操作序列生成器 + 逐操作比對輸出，能抓出 pushdown 漏傳這種肉眼看三小時看不出的 bug。<b>寫完模板先對拍一萬組再刷題</b>——範例腳手架見<a href="method.html">第 4 章</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="strategies/13-expert.html"><span class="dir">← 上一節</span>2.13 專家專題</a>
+<a class="next" href="method.html"><span class="dir">下一節 →</span>4. 選型方法論</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

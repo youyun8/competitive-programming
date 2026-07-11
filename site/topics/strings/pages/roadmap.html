@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學習路線圖 — 演算法策略圖鑑</title>
+<meta name="description" content="四階段學習計畫，每階段附代表題與畢業檢定">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="roadmap" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="strategies/02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="strategies/03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="strategies/04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="strategies/05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="strategies/06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="strategies/07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="strategies/08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="strategies/09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="strategies/10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2><span class="sec-no">6</span>學習路線圖</h2>
+
+<div class="callout idea"><b>🎯 路線圖的使用方式</b>
+<p>字串的特殊之處：模板佔比極高，但「背得出」與「用得對」之間隔著 border/週期這層理論。每個階段都遵循「讀懂 → 默寫模板 → 過對拍 → 講出線性複雜度的論證 → 變形題」五步。星級只是參考，畢業檢定過不了就留在原階段補洞；搭配側欄的<a href="../../../pages/problems.html">全站題目總表</a>按標籤篩選刷題。</p></div>
+
+<div class="stage">
+<h3>第一階段 <span class="stars s1">★</span>–<span class="stars s2">★★</span>：四件輕武器（約 2 週）</h3>
+<p><b>目標</b>：hash、KMP、Trie、Manacher 模板能默寫並通過對拍；懂 border ⟺ 週期。</p>
+<ul>
+<li>hash：P3370 → LC 187 → LC 28（暴力/hash/KMP 三寫）</li>
+<li>KMP：P3375 → LC 459 → P4391（週期兩兄弟）</li>
+<li>Trie：LC 208 → P8306（多測清空的第一課）</li>
+<li>Manacher：LC 5（先中心擴展再 Manacher）→ LC 647</li>
+</ul>
+<p class="small">✅ 畢業檢定：LC 28 三種寫法各自省掉了哪些重複比較，講給別人聽；並證明最小週期 = n − fail[n]。</p>
+</div>
+
+<div class="stage">
+<h3>第二階段 <span class="stars s3">★★★</span>：組合技與自動機入門（約 1 個月）</h3>
+<p><b>目標</b>：Z 函數、ACAM、最小表示法上手；「拼接+分隔符」「二分+hash」「fail 樹子樹和」三個句型成為反射。</p>
+<ul>
+<li>Z：P5410 → LC 2223 → CF 432D</li>
+<li>KMP 應用：LC 214（拼接技巧）→ CF 126B（fail 鏈枚舉 border）</li>
+<li>ACAM：P3808 → P3796 → P5357（見證跳 fail → fail 樹的升級）</li>
+<li>hash 組合：CF 1200E → LC 1044 → P2852（hash 版）</li>
+<li>旋轉：P1368 → LC 899 → UVa 719</li>
+<li>01-Trie：LC 421 → P4551</li>
+</ul>
+<p class="small">✅ 畢業檢定：獨立完成 P5357（fail 樹子樹和），並解釋為什麼逐位置跳 fail 會超時。</p>
+</div>
+
+<div class="stage">
+<h3>第三階段 <span class="stars s4">★★★★</span>：後綴結構（約 1–2 月）</h3>
+<p><b>目標</b>：SA、SAM、PAM 三大重型結構的模板與應用地圖；同一題能說出兩種以上結構的做法。</p>
+<ul>
+<li>SA：P3809 → P4051 → P2408 → P2852（SA 版，與 hash 版對照）</li>
+<li>SAM：P3804 → 不同子串數（SAM 版）→ SPOJ LCS</li>
+<li>PAM：P5496 → P3649（與 P3804 對照「打點+子樹和」）</li>
+<li>Manacher 進階：P1659 → P4555</li>
+<li>ACAM 上 DP：P4052；失配樹：P5829</li>
+</ul>
+<p class="small">✅ 畢業檢定：P2852 用 SA 與 SAM 各寫一遍全 AC；畫出 <code>banana</code> 的 SAM（含 clone）與 parent 樹。</p>
+</div>
+
+<div class="stage">
+<h3>第四階段 <span class="stars s5">★★★★★</span>：結構 × 結構（長期）</h3>
+<p><b>目標</b>：廣義 SAM、SAM×線段樹合併、border 理論；面對 CF 2400+ 字串題有系統的切入流程。</p>
+<ul>
+<li>廣義 SAM：P6139；SAM 進階：CF 235C → P3975</li>
+<li>SAM × 資料結構：CF 1037H（先補資料結構主題的線段樹合併）</li>
+<li>ACAM 壓軸：P2414 阿狸的打字機</li>
+<li>SA 壓軸：P4248 差異；PAM 壓軸：P4287 → CF 906E（讀懂框架）</li>
+<li>理論：Periodicity Lemma 證明、border 等差結構、Duval：P6114</li>
+</ul>
+<p class="small">✅ 畢業檢定：拿到一道陌生 CF 2400+ 字串題，能在 10 分鐘內完成「問題族分類 → 候選工具 → 複雜度預算」的書面分析（不必解出）。</p>
+</div>
+
+<div class="callout when"><b>📚 配套資源</b>
+<ul>
+<li>OI Wiki 字串部分：模板的權威對照（本指南的模板與其記號盡量相容）。</li>
+<li>陳立傑《後綴自動機》講稿／cp-algorithms 的 SAM 章節：endpos 理論最清楚的兩份材料。</li>
+<li>刷題主線：洛谷「字串」標籤按難度升序 + 本站<a href="../../../pages/problems.html">題目總表</a>的 strings 篩選。</li>
+</ul></div>
+
+<div class="pagenav">
+<a class="prev" href="method.html"><span class="dir">← 上一節</span>4. 模板整理與選型</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<h2>2.7 後綴數組（Suffix Array）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>把 \(s\) 的 \(n\) 個後綴按字典序排序：\(sa[i]\)＝排名第 \(i\) 的後綴起點，\(rk[i]\)＝後綴 \(i\) 的排名（互逆）。再配上 \(height[i] = \mathrm{LCP}(sa[i-1], sa[i])\)（排名相鄰後綴的最長公共前綴），就得到子串世界的「排序 + 相似度」全景圖。<b>任何子串都是某後綴的前綴</b>——子串的字典序、去重、公共前綴問題全部化到這張表上。</p></div>
+
+<div class="callout proof"><b>🔁 兩個支柱定理</b>
+<p>① <b>LCP Lemma</b>：\(\mathrm{LCP}(sa[i],sa[j]) = \min_{i&lt;k\le j} height[k]\)——排名區間上的 RMQ，配 ST 表後任兩後綴 LCP \(O(1)\)。② <b>height 均攤</b>：\(height[rk[i]] \ge height[rk[i-1]] - 1\)（去掉首字元的後綴繼承 LCP−1），所以按 \(i=1..n\) 順序計算 height 時指標總移動 \(O(n)\)。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>問題涉及<b>子串字典序</b>（第 k 小子串、最小的滿足…的子串）。</li>
+<li>「出現 ≥ k 次的最長子串」「本質不同子串數」——height 上的分組／求和。</li>
+<li>離線、靜態；需要線上增量改用 <a href="#s2-8">SAM</a>。</li>
+</ul></div>
+
+<details><summary>模板（C++）：倍增 + 基數排序 O(n log n)</summary>
+<pre><code class="lang-cpp">// 1-indexed；sa/rk/height；倍增每輪按（第二關鍵字, 第一關鍵字）基數排序
+int sa[N], rk[N], old[N], cnt[N], id[N], height[N];
+void buildSA(const char* s, int n, int m) {     // m = 字元集大小
+    for (int i = 1; i &lt;= n; i++) cnt[rk[i] = s[i]]++;
+    for (int i = 1; i &lt;= m; i++) cnt[i] += cnt[i-1];
+    for (int i = n; i &gt;= 1; i--) sa[cnt[rk[i]]--] = i;
+    for (int w = 1; w &lt; n; w &lt;&lt;= 1, m = /*新排名數*/ rk[sa[n]]) {
+        int p = 0;                               // 第二關鍵字：空後綴最小
+        for (int i = n - w + 1; i &lt;= n; i++) id[++p] = i;
+        for (int i = 1; i &lt;= n; i++) if (sa[i] &gt; w) id[++p] = sa[i] - w;
+        memset(cnt, 0, sizeof(int) * (m + 1));   // 第一關鍵字基數排序
+        for (int i = 1; i &lt;= n; i++) cnt[rk[i]]++;
+        for (int i = 1; i &lt;= m; i++) cnt[i] += cnt[i-1];
+        for (int i = n; i &gt;= 1; i--) sa[cnt[rk[id[i]]]--] = id[i];
+        memcpy(old, rk, sizeof(int) * (n + 1));
+        for (int i = 1, p = 0; i &lt;= n; i++)      // 重標排名（相同對併排名）
+            rk[sa[i]] = (old[sa[i]] == old[sa[i-1]] &amp;&amp;
+                         old[sa[i]+w] == old[sa[i-1]+w]) ? p : ++p;
+        if (rk[sa[n]] == n) break;               // 排名互異，提前結束
+    }
+    for (int i = 1, k = 0; i &lt;= n; i++) {        // height：均攤 O(n)
+        if (k) k--;
+        while (s[i + k] == s[sa[rk[i] - 1] + k]) k++;
+        height[rk[i]] = k;
+    }
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3809">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3809" target="_blank">洛谷 P3809 後綴排序模板</a><span class="chip">SA</span></div>
+<p>輸出 sa 陣列，\(|s|\le 10^6\)。</p>
+<details><summary>思路</summary><p>倍增 + 基數排序，\(O(n\log n)\)。實作重點：第二關鍵字不用真的排序（上一輪 sa 平移即得）、排名相同的對必須併排名、提前結束判斷。SA-IS 可線性但競賽版模板背倍增即可。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4051">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4051" target="_blank">洛谷 P4051 [JSOI2007] 字符加密</a><span class="chip">SA</span><span class="chip">環形</span></div>
+<p>把 s 的所有旋轉排序後取每個旋轉的末字元。</p>
+<details><summary>思路</summary><p>環形 → <b>拆環倍長</b>：對 \(s+s\) 做 SA，取起點在前半的後綴的相對順序即為旋轉排序（長度都 ≥ n，比較等價）。「環轉鏈 + 倍長」與區間 DP 的拆環同款，SA 的第一道應用題。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2408">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2408" target="_blank">洛谷 P2408 不同子串個數</a><span class="chip">SA</span><span class="chip">去重計數</span></div>
+<p>求本質不同子串數。</p>
+<details><summary>思路</summary><p>按 sa 順序考慮每個後綴：它貢獻的「新」前綴數 = 長度 − 與前一名的 LCP，故答案 \(=\frac{n(n+1)}{2}-\sum height[i]\)。<b>height 是「重複」的度量</b>——這個視角在 SA 題裡反覆出現。SAM 一行 \(\sum(len_u - len_{link(u)})\) 也能做（<a href="#s2-8">2.8</a>），對照理解兩結構怎麼各自「去重」。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2852">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2852" target="_blank">洛谷 P2852 Milk Patterns（SA 正解）</a><span class="chip">SA</span><span class="chip">height分組</span></div>
+<p>至少出現 \(k\) 次（可重疊）的最長子串。</p>
+<details><summary>思路</summary><p>出現 \(k\) 次的子串 = 某 \(k\) 個後綴的公共前綴 = sa 上連續 \(k\) 個後綴（排序後相似者相鄰！）。答案 \(=\max\) 窗口大小 \(k-1\) 的 \(\min(height)\) → 單調佇列滑窗。「<b>出現次數 → sa 連續段 → height 區間 min</b>」是 SA 最重要的思考鏈。對照 2.1 的 hash 二分解與 2.8 的 SAM 解。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4248">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4248" target="_blank">洛谷 P4248 [AHOI2013] 差異</a><span class="chip">SA</span><span class="chip">單調棧</span></div>
+<p>求 \(\sum_{i&lt;j} \big(|T_i|+|T_j|-2\,\mathrm{LCP}(T_i,T_j)\big)\)，\(T_i\) 為後綴。</p>
+<details><summary>思路</summary><p>前半是常數，難點在 \(\sum \mathrm{LCP} = \sum_{i&lt;j}\min(height[i+1..j])\)——「所有區間 min 的總和」：對每個 \(height[k]\) 用<b>單調棧</b>算它作為最小值支配的區間數（左右第一個更小者），乘上貢獻。SA × 單調棧的定番組合；同款算貢獻手法亦見資料結構主題的柱狀圖問題。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ SA vs SAM 選型</b>
+<p>要<b>字典序／排名區間／height 的 RMQ 結構</b> → SA；要 <b>endpos（出現位置集合）結構、線上增量</b> → SAM。兩者能互相模擬大部分功能，但順手程度差很多——第 4 章有完整對照表。</p></div>

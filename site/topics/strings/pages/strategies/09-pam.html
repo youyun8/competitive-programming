@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.9 迴文自動機（PAM／迴文樹） — 演算法策略圖鑑</title>
+<meta name="description" content="本質不同迴文至多 n 個、雙根增量構造、出現次數統計">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s09" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.9 迴文自動機（PAM／迴文樹）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>一個字串本質不同的迴文子串<b>至多 \(n\) 個</b>（每加一個字元至多新增一個——新增的必是「以新字元結尾的最長迴文後綴」）。PAM 給每個本質不同迴文開一個節點：<code>ch[u][c]</code> 表示「在迴文 \(u\) 兩側各加一個 \(c\)」，\(fail(u)\)＝\(u\) 的最長迴文真後綴。兩個根：長度 0 的偶根與長度 −1 的奇根（讓單字元迴文 \(c\) 由奇根加 \(c\) 得到，天然統一奇偶——比 Manacher 插 '#' 更優雅）。</p></div>
+
+<div class="callout proof"><b>🔁 增量構造為什麼線性？</b>
+<p>加入 \(s_i\) 時，從 <code>last</code> 沿 fail 鏈找第一個節點 \(u\) 使 \(s_{i-len_u-1} = s_i\)（即 \(s_i u s_i\) 是迴文）。<code>last</code> 的深度每次至多 +1、每次跳 fail 至少 −1——同一套勢能論證第三次出現（KMP、Z、PAM），此時你應該能自己講完它。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵（vs Manacher）</b>
+<ul>
+<li>Manacher 給「每個<b>中心</b>的最長半徑」；PAM 給「每個<b>本質不同迴文</b>一個節點」＋出現次數＋後綴結構。</li>
+<li>題目要「每種迴文出現幾次」「迴文的迴文後綴」「迴文分解」→ PAM。</li>
+<li>只要最長迴文／計數總數 → Manacher 就夠（碼量一半）。</li>
+</ul></div>
+
+<details><summary>模板（C++）：PAM 增量構造</summary>
+<pre><code class="lang-cpp">struct PAM {
+    int ch[N][26], fail[N], len[N], cnt[N], tot, last;
+    char s[N]; int n;
+    void init() { s[0] = -1; n = 0; tot = 1; last = 0;
+        fail[0] = 1; len[0] = 0; len[1] = -1; }      // 0=偶根, 1=奇根
+    int getfail(int u) {                             // 找 s[n-len-1]==s[n]
+        while (s[n - len[u] - 1] != s[n]) u = fail[u];
+        return u;
+    }
+    void extend(char c) {
+        s[++n] = c;
+        int p = getfail(last), u = ch[p][c - 'a'];
+        if (!u) {
+            u = ++tot; len[u] = len[p] + 2;
+            fail[u] = ch[getfail(fail[p])][c - 'a']; // 先求 fail 再掛邊！
+            ch[p][c - 'a'] = u;
+        }
+        last = u; cnt[u]++;                           // 出現次數打點
+    }
+    // 最後：按 tot..2 逆序 cnt[fail[u]] += cnt[u]（fail 樹子樹和）
+};</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p5496">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5496" target="_blank">洛谷 P5496 迴文自動機模板</a><span class="chip">PAM</span></div>
+<p>對每個前綴，求「以該位置結尾的迴文子串個數」（強制線上）。</p>
+<details><summary>思路</summary><p>「以 \(i\) 結尾的迴文數」= <code>last</code> 在 fail 樹上的深度（fail 鏈上每個節點都是一個迴文後綴）——建構時順手 <code>dep[u]=dep[fail[u]]+1</code>。強制線上正好展示 PAM 的增量本性。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3649">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3649" target="_blank">洛谷 P3649 [APIO2014] 回文串</a><span class="chip">PAM</span><span class="chip">endpos</span></div>
+<p>求「出現次數 × 長度」最大的迴文子串。</p>
+<details><summary>思路</summary><p>PAM 版的 P3804：extend 時 <code>cnt[last]++</code>，收尾逆序沿 fail 累加（一個迴文出現 ⇒ 它的迴文後綴也出現），答案 \(=\max cnt_u\cdot len_u\)。寫過 SAM 模板的話這題是十分鐘的事——<b>「打點 + fail 樹子樹和」在 ACAM／SAM／PAM 三處是同一招</b>。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4287">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4287" target="_blank">洛谷 P4287 [SHOI2011] 雙倍迴文</a><span class="chip">PAM</span><span class="chip">trans指標</span></div>
+<p>找最長的「\(ww^Rww^R\)」形（自身迴文且前半也是迴文）子串。</p>
+<details><summary>思路</summary><p>雙倍迴文 ⟺ 節點 \(u\) 長度是 4 的倍數，且存在長度恰為 \(len_u/2\) 的迴文後綴。維護 <b>trans 指標</b>：\(trans(u)\)＝\(u\) 的長度 \(\le len_u/2\) 的最長迴文後綴（構造時仿 fail 多跳一條鏈）。檢查 \(len_{trans(u)} = len_u/2\) 即可。展示「在 PAM 上加自訂指標」的擴充手法。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-906e">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/906/E" target="_blank">CF 906E Reverses（提及）</a><span class="chip">PAM</span><span class="chip">DP</span></div>
+<p>把 t 切成最少段、每段可選擇翻轉後拼出 s——等價於對 \(s_1t_1s_2t_2\dots\) 交錯串做偶迴文分解。</p>
+<details><summary>思路</summary><p>「最少迴文分解」是 PAM 的招牌難題：利用 fail 鏈上長度的<b>等差數列結構</b>（\(O(\log n)\) 條）加 series link，把 DP 轉移壓到均攤 \(O(n\log n)\)。與 border 的等差結構（<a href="11-expert.html">2.11.5</a>）同源，作為 PAM 上限的路標，第一次讀懂框架即可。</p></details>
+</div>
+
+<div class="callout warn"><b>⚠ 高頻坑</b>
+<p>① 求 <code>fail[u]</code> 必須在把 \(u\) 掛上 <code>ch[p][c]</code> <b>之前</b>——先掛邊會讓 getfail 找到自己。② 奇根 len=−1 讓 <code>s[n-(-1)-1]=s[n]</code> 恆真，是單字元迴文的入口，別「修正」它。③ cnt 統計必須逆序（子節點先加給 fail），順序錯答案偏小。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="08-sam.html"><span class="dir">← 上一節</span>2.8 後綴自動機</a>
+<a class="next" href="10-lyndon.html"><span class="dir">下一節 →</span>2.10 最小表示與 Lyndon</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

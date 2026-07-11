@@ -1,0 +1,60 @@
+<h2>2.1 前綴和、差分與 ST 表（靜態的力量）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>沒有修改（或修改全部發生在查詢之前），就不需要「結構」——<b>預處理換查詢</b>。三件套：前綴和把「區間求和」變 \(O(1)\) 相減；差分把「區間加」變兩個端點打點（修改與查詢的<b>對偶</b>：前綴和的逆運算）；ST 表把「可重複貢獻」的區間 min/max/gcd 變 \(O(1)\)（兩個重疊子區間蓋滿整段，重疊不影響答案）。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「先做完所有修改、再回答所有查詢」——差分收工後做一次前綴和。</li>
+<li>完全靜態的區間和/min/gcd——別開線段樹，會被同行嘲笑。</li>
+<li>二維小規模（\(n\times m \le 10^7\)）的子矩陣統計——二維前綴和 + 容斥。</li>
+</ul></div>
+
+<details><summary>模板（C++）：三件套</summary>
+<pre><code class="lang-cpp">// 一維前綴和：S[i] = S[i-1] + a[i]；sum(l,r) = S[r] - S[l-1]
+// 差分：  d[l] += v, d[r+1] -= v；最後 a = d 的前綴和
+// 二維前綴和：S[i][j] = S[i-1][j] + S[i][j-1] - S[i-1][j-1] + a[i][j]
+// 二維差分：d[x1][y1]+=v; d[x1][y2+1]-=v; d[x2+1][y1]-=v; d[x2+1][y2+1]+=v;
+
+// ST 表：f[j][i] = [i, i + 2^j) 的 max
+for (int i = 1; i &lt;= n; i++) f[0][i] = a[i];
+for (int j = 1; (1 &lt;&lt; j) &lt;= n; j++)
+    for (int i = 1; i + (1 &lt;&lt; j) - 1 &lt;= n; i++)
+        f[j][i] = max(f[j-1][i], f[j-1][i + (1 &lt;&lt; (j-1))]);
+int query(int l, int r) {              // 兩段重疊覆蓋
+    int k = __lg(r - l + 1);
+    return max(f[k][l], f[k][r - (1 &lt;&lt; k) + 1]);
+}</code></pre></details>
+
+<div class="problem" data-problem-id="lc-304">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/range-sum-query-2d-immutable/" target="_blank">LC 304 二維區域和檢索</a><span class="chip">前綴和</span></div>
+<p>多次查子矩陣和（靜態）。一維版 LC 303 ★。</p>
+<details><summary>思路</summary><p>二維前綴和 + 容斥：\(\mathrm{sum}=S_{x_2y_2}-S_{x_1-1,y_2}-S_{x_2,y_1-1}+S_{x_1-1,y_1-1}\)。把「加一減二補一」畫成圖記住，之後二維差分就是它的鏡像。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2367">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2367" target="_blank">洛谷 P2367 語文成績</a><span class="chip">差分</span></div>
+<p>大量區間加，最後問全體最小值。</p>
+<details><summary>思路</summary><p>差分模板：所有修改打完端點再一次前綴和。體會「修改全在查詢前」= 免結構的訊號。LC 1109 航班預訂統計 ★★ 是同一題換皮。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3397">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3397" target="_blank">洛谷 P3397 地毯</a><span class="chip">二維差分</span></div>
+<p>二維平面上鋪矩形地毯，最後問每格層數。</p>
+<details><summary>思路</summary><p>二維差分四個角打點，收工兩次前綴和（先行後列）。自己推一遍四角的正負號，比背模板牢固十倍。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1719">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1719" target="_blank">洛谷 P1719 最大加權矩形</a><span class="chip">前綴和</span><span class="chip">Kadane</span></div>
+<p>找權值和最大的子矩形（\(n\le 120\)）。</p>
+<details><summary>思路</summary><p>枚舉上下界 \(O(n^2)\)，把中間各列壓成一維陣列，套最大子段和（Kadane，見 <a href="#topic-dp">DP 主題</a> 2.1）\(O(n)\)。「<b>降維打擊</b>：枚舉一維、壓縮一維、DP 一維」是二維統計的常青套路。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3865">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3865" target="_blank">洛谷 P3865 ST 表模板</a><span class="chip">ST表</span><span class="chip">RMQ</span></div>
+<p>靜態區間最大值，\(q\le 2\times 10^6\)。</p>
+<details><summary>思路</summary><p>查詢量卡掉 \(O(q\log n)\) 的線段樹——ST 表 \(O(1)\) 查詢的主場（配快讀）。理解「可重複貢獻」：max 重疊算兩次沒關係，<b>和不行</b>，所以 ST 表做不了區間和。此表也是 <a href="#topic-strings">字串主題</a> SA 的 height RMQ、樹上歐拉序 LCA 的引擎。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>一旦「修改與查詢交錯」，前綴和失效：可差分資訊 → <a href="#s2-5">BIT</a>；區間修改 → <a href="#s2-6">線段樹</a>。而「差分」的思想不死：樹上差分（<a href="#s2-11">2.11.2</a>）、掃描線（<a href="#s2-8">2.8</a>）都是它的高維化身。</p></div>

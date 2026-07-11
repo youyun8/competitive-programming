@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.5 Trie 與 01-Trie — 演算法策略圖鑑</title>
+<meta name="description" content="前綴樹、逐位貪心求最大 XOR、樹上路徑 XOR 轉化">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s05" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.5 Trie 與 01-Trie</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p><b>Trie（字典樹）</b>：把一堆字串按字元逐層插進樹裡，公共前綴自動共享路徑——「前綴」在 Trie 上就是「祖先」。<b>01-Trie</b> 是它最重要的變形：把整數當成固定 30～60 位的 01 字串，從最高位插入；於是「找與 \(x\) XOR 最大的數」變成在樹上<b>逐位貪心走相反位</b>，\(O(\log V)\)。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>一堆字串的<b>前綴查詢</b>：有多少串以 \(p\) 為前綴、自動補全、字典序第 k 小字串。</li>
+<li>看到 <b>XOR 最值／XOR 第 k 大</b>幾乎反射性上 01-Trie。</li>
+<li>空間 = 節點數 × 字元集大小——字元集大（如 Unicode）改用 <code>map</code> 子節點或雙陣列。</li>
+<li>Trie 也是 <a href="06-aho-corasick.html">AC 自動機</a>的底座、廣義 SAM 的離線載體（<a href="11-expert.html">2.11.2</a>）。</li>
+</ul></div>
+
+<details><summary>模板（C++）：Trie 與 01-Trie</summary>
+<pre><code class="lang-cpp">// Trie：ch[u][c] 子節點，cnt[u] 經過該節點的串數（前綴計數）
+int ch[N][26], cnt[N], tot = 0;
+void insert(const char* s) {
+    int u = 0;
+    for (int i = 0; s[i]; i++) {
+        int c = s[i] - 'a';
+        if (!ch[u][c]) ch[u][c] = ++tot;
+        u = ch[u][c]; cnt[u]++;
+    }
+}
+// 01-Trie：查與 x 異或的最大值（B 為最高位）
+int maxXor(int x) {
+    int u = 0, res = 0;
+    for (int b = B; b &gt;= 0; b--) {
+        int d = (x &gt;&gt; b) &amp; 1;
+        if (ch[u][d ^ 1]) { res |= 1 &lt;&lt; b; u = ch[u][d ^ 1]; } // 貪心走相反位
+        else u = ch[u][d];
+    }
+    return res;
+}</code></pre></details>
+
+<div class="problem" data-problem-id="lc-208">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://leetcode.cn/problems/implement-trie-prefix-tree/" target="_blank">LC 208 實作 Trie</a><span class="chip">Trie</span></div>
+<p>實作 insert / search / startsWith。</p>
+<details><summary>思路</summary><p>裸結構題。用「節點池 + 陣列」而非 <code>new</code> 指標——競賽寫法要為之後的 ACAM 打底（節點編號才能 BFS、才能開 fail 陣列）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p8306">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P8306" target="_blank">洛谷 P8306 Trie 模板（前綴計數）</a><span class="chip">Trie</span><span class="chip">多測</span></div>
+<p>多測：每組給字串集合與查詢，問多少字串以查詢串為前綴。字元集含大小寫與數字。</p>
+<details><summary>思路</summary><p>插入時沿路 <code>cnt[u]++</code>，查詢走到底回傳 <code>cnt</code>。兩個坑故意埋給你：① 字元集是 62 個（映射表要寫全）；② 多測不能 <code>memset</code> 整個節點池——只清 <code>0..tot</code> 用過的節點。這正是第 3 章「多測清空成本」的現場教學。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-421">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/maximum-xor-of-two-numbers-in-an-array/" target="_blank">LC 421 陣列中兩個數的最大異或值</a><span class="chip">01-Trie</span></div>
+<p>求 \(\max_{i,j} a_i \oplus a_j\)。</p>
+<details><summary>思路</summary><p>全部插入 01-Trie，對每個 \(a_i\) 貪心查一次取 max。貪心正確性：高位優先——高位能取 1 就絕不為低位妥協（\(2^b &gt; \sum_{k&lt;b}2^k\)）。這是字典序貪心在二進位上的化身。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4551">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4551" target="_blank">洛谷 P4551 最長異或路徑</a><span class="chip">01-Trie</span><span class="chip">樹上前綴</span></div>
+<p>樹上邊權，求 XOR 和最大的路徑。</p>
+<details><summary>思路</summary><p>設 \(d[u]\)＝根到 \(u\) 的邊權 XOR，則路徑 \(u\to v\) 的 XOR \(= d[u]\oplus d[v]\)（LCA 以上抵消）——問題化成 LC 421。<b>「樹上路徑 XOR = 兩點前綴 XOR」</b>這步轉化比 Trie 本身更重要，是 XOR 題的第一反應。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-888g">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/888/G" target="_blank">CF 888G Xor-MST</a><span class="chip">01-Trie</span><span class="chip">Boruvka</span></div>
+<p>完全圖邊權 \(=a_u\oplus a_v\)，求 MST 權重（\(n\le 2\times 10^5\)）。</p>
+<details><summary>思路</summary><p>在 01-Trie 上分治：某個節點的左右子樹（bit 0/1 兩群）之間只需連<b>一條</b>最小 XOR 邊——枚舉小子樹每個值到大子樹查最小 XOR（啟發式），加上遞迴兩側。等價於 Boruvka 每輪用 Trie 找最小出邊。與<a href="../../../greedy/index.html">貪心主題</a> 2.8 共用：那邊講 MST 正確性，這邊講 Trie 上的分治結構。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>「區間內與 \(x\) 的最大 XOR」→ <b>可持久化 01-Trie</b>（前綴版本相減），見<a href="../../../ds/index.html">資料結構主題</a> 2.12；多字串匹配 → 給 Trie 加 fail 指標，就是下一章的 <a href="06-aho-corasick.html">AC 自動機</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="04-manacher.html"><span class="dir">← 上一節</span>2.4 Manacher</a>
+<a class="next" href="06-aho-corasick.html"><span class="dir">下一節 →</span>2.6 AC 自動機</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.7 後綴數組（Suffix Array） — 演算法策略圖鑑</title>
+<meta name="description" content="倍增構造、height 陣列與 LCP Lemma、去重與分組應用">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s07" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.7 後綴數組（Suffix Array）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>把 \(s\) 的 \(n\) 個後綴按字典序排序：\(sa[i]\)＝排名第 \(i\) 的後綴起點，\(rk[i]\)＝後綴 \(i\) 的排名（互逆）。再配上 \(height[i] = \mathrm{LCP}(sa[i-1], sa[i])\)（排名相鄰後綴的最長公共前綴），就得到子串世界的「排序 + 相似度」全景圖。<b>任何子串都是某後綴的前綴</b>——子串的字典序、去重、公共前綴問題全部化到這張表上。</p></div>
+
+<div class="callout proof"><b>🔁 兩個支柱定理</b>
+<p>① <b>LCP Lemma</b>：\(\mathrm{LCP}(sa[i],sa[j]) = \min_{i&lt;k\le j} height[k]\)——排名區間上的 RMQ，配 ST 表後任兩後綴 LCP \(O(1)\)。② <b>height 均攤</b>：\(height[rk[i]] \ge height[rk[i-1]] - 1\)（去掉首字元的後綴繼承 LCP−1），所以按 \(i=1..n\) 順序計算 height 時指標總移動 \(O(n)\)。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>問題涉及<b>子串字典序</b>（第 k 小子串、最小的滿足…的子串）。</li>
+<li>「出現 ≥ k 次的最長子串」「本質不同子串數」——height 上的分組／求和。</li>
+<li>離線、靜態；需要線上增量改用 <a href="08-sam.html">SAM</a>。</li>
+</ul></div>
+
+<details><summary>模板（C++）：倍增 + 基數排序 O(n log n)</summary>
+<pre><code class="lang-cpp">// 1-indexed；sa/rk/height；倍增每輪按（第二關鍵字, 第一關鍵字）基數排序
+int sa[N], rk[N], old[N], cnt[N], id[N], height[N];
+void buildSA(const char* s, int n, int m) {     // m = 字元集大小
+    for (int i = 1; i &lt;= n; i++) cnt[rk[i] = s[i]]++;
+    for (int i = 1; i &lt;= m; i++) cnt[i] += cnt[i-1];
+    for (int i = n; i &gt;= 1; i--) sa[cnt[rk[i]]--] = i;
+    for (int w = 1; w &lt; n; w &lt;&lt;= 1, m = /*新排名數*/ rk[sa[n]]) {
+        int p = 0;                               // 第二關鍵字：空後綴最小
+        for (int i = n - w + 1; i &lt;= n; i++) id[++p] = i;
+        for (int i = 1; i &lt;= n; i++) if (sa[i] &gt; w) id[++p] = sa[i] - w;
+        memset(cnt, 0, sizeof(int) * (m + 1));   // 第一關鍵字基數排序
+        for (int i = 1; i &lt;= n; i++) cnt[rk[i]]++;
+        for (int i = 1; i &lt;= m; i++) cnt[i] += cnt[i-1];
+        for (int i = n; i &gt;= 1; i--) sa[cnt[rk[id[i]]]--] = id[i];
+        memcpy(old, rk, sizeof(int) * (n + 1));
+        for (int i = 1, p = 0; i &lt;= n; i++)      // 重標排名（相同對併排名）
+            rk[sa[i]] = (old[sa[i]] == old[sa[i-1]] &amp;&amp;
+                         old[sa[i]+w] == old[sa[i-1]+w]) ? p : ++p;
+        if (rk[sa[n]] == n) break;               // 排名互異，提前結束
+    }
+    for (int i = 1, k = 0; i &lt;= n; i++) {        // height：均攤 O(n)
+        if (k) k--;
+        while (s[i + k] == s[sa[rk[i] - 1] + k]) k++;
+        height[rk[i]] = k;
+    }
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3809">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3809" target="_blank">洛谷 P3809 後綴排序模板</a><span class="chip">SA</span></div>
+<p>輸出 sa 陣列，\(|s|\le 10^6\)。</p>
+<details><summary>思路</summary><p>倍增 + 基數排序，\(O(n\log n)\)。實作重點：第二關鍵字不用真的排序（上一輪 sa 平移即得）、排名相同的對必須併排名、提前結束判斷。SA-IS 可線性但競賽版模板背倍增即可。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4051">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4051" target="_blank">洛谷 P4051 [JSOI2007] 字符加密</a><span class="chip">SA</span><span class="chip">環形</span></div>
+<p>把 s 的所有旋轉排序後取每個旋轉的末字元。</p>
+<details><summary>思路</summary><p>環形 → <b>拆環倍長</b>：對 \(s+s\) 做 SA，取起點在前半的後綴的相對順序即為旋轉排序（長度都 ≥ n，比較等價）。「環轉鏈 + 倍長」與區間 DP 的拆環同款，SA 的第一道應用題。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2408">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2408" target="_blank">洛谷 P2408 不同子串個數</a><span class="chip">SA</span><span class="chip">去重計數</span></div>
+<p>求本質不同子串數。</p>
+<details><summary>思路</summary><p>按 sa 順序考慮每個後綴：它貢獻的「新」前綴數 = 長度 − 與前一名的 LCP，故答案 \(=\frac{n(n+1)}{2}-\sum height[i]\)。<b>height 是「重複」的度量</b>——這個視角在 SA 題裡反覆出現。SAM 一行 \(\sum(len_u - len_{link(u)})\) 也能做（<a href="08-sam.html">2.8</a>），對照理解兩結構怎麼各自「去重」。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2852">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2852" target="_blank">洛谷 P2852 Milk Patterns（SA 正解）</a><span class="chip">SA</span><span class="chip">height分組</span></div>
+<p>至少出現 \(k\) 次（可重疊）的最長子串。</p>
+<details><summary>思路</summary><p>出現 \(k\) 次的子串 = 某 \(k\) 個後綴的公共前綴 = sa 上連續 \(k\) 個後綴（排序後相似者相鄰！）。答案 \(=\max\) 窗口大小 \(k-1\) 的 \(\min(height)\) → 單調佇列滑窗。「<b>出現次數 → sa 連續段 → height 區間 min</b>」是 SA 最重要的思考鏈。對照 2.1 的 hash 二分解與 2.8 的 SAM 解。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4248">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4248" target="_blank">洛谷 P4248 [AHOI2013] 差異</a><span class="chip">SA</span><span class="chip">單調棧</span></div>
+<p>求 \(\sum_{i&lt;j} \big(|T_i|+|T_j|-2\,\mathrm{LCP}(T_i,T_j)\big)\)，\(T_i\) 為後綴。</p>
+<details><summary>思路</summary><p>前半是常數，難點在 \(\sum \mathrm{LCP} = \sum_{i&lt;j}\min(height[i+1..j])\)——「所有區間 min 的總和」：對每個 \(height[k]\) 用<b>單調棧</b>算它作為最小值支配的區間數（左右第一個更小者），乘上貢獻。SA × 單調棧的定番組合；同款算貢獻手法亦見資料結構主題的柱狀圖問題。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ SA vs SAM 選型</b>
+<p>要<b>字典序／排名區間／height 的 RMQ 結構</b> → SA；要 <b>endpos（出現位置集合）結構、線上增量</b> → SAM。兩者能互相模擬大部分功能，但順手程度差很多——第 4 章有完整對照表。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="06-aho-corasick.html"><span class="dir">← 上一節</span>2.6 AC 自動機</a>
+<a class="next" href="08-sam.html"><span class="dir">下一節 →</span>2.8 後綴自動機</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

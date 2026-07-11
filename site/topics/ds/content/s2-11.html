@@ -1,0 +1,52 @@
+<h2>2.11 樹上資料結構（LCA／樹上差分／樹剖／DSU on tree）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>樹上問題的總方針：<b>把樹「線性化」再套序列結構</b>。三種線性化各管一攤——<b>DFS 序</b>：子樹 = 連續區間；<b>歐拉序</b>：LCA = 區間 RMQ；<b>重鏈剖分序</b>：任意路徑 = \(O(\log n)\) 段連續區間。配套的輕武器是<b>樹上差分</b>：路徑批量加、最後一次 DFS 結算——樹版的「差分 → 前綴和」。</p></div>
+
+<h3>2.11.1 LCA：倍增法</h3>
+<p>\(f[j][u]\)＝u 的第 \(2^j\) 級祖先：先把深節點跳到同深，再兩指標同步「能不跳就不跳」地二分逼近。預處理 \(O(n\log n)\)、查詢 \(O(\log n)\)。歐拉序 + ST 表可 \(O(1)\) 查詢；樹剖 LCA 常數更小還免費附贈路徑操作——三選一背熟一種，推薦倍增（還能順帶維護路徑 max 等資訊，如貪心主題的次小生成樹）。</p>
+
+<div class="problem" data-problem-id="luogu-p3379">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3379" target="_blank">洛谷 P3379 LCA 模板</a><span class="chip">LCA</span><span class="chip">倍增</span></div>
+<p>多次詢問兩點最近公共祖先。</p>
+<details><summary>思路</summary><p>倍增模板。兩個必踩的坑：跳到同深後<b>若已相遇要提前返回</b>；主循環是「跳了還不相遇才跳」，最後答案是 <code>f[0][u]</code>。路徑長度 = dep[u]+dep[v]−2dep[lca]，樹上兩點問題的基本盤。</p></details>
+</div>
+
+<h3>2.11.2 樹上差分</h3>
+<div class="problem" data-problem-id="luogu-p3128">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3128" target="_blank">洛谷 P3128 [USACO15DEC] Max Flow</a><span class="chip">樹上差分</span><span class="chip">LCA</span></div>
+<p>k 條路徑各 +1，問最大點權。</p>
+<details><summary>思路</summary><p><b>點差分</b>：路徑 \(u\to v\) 打 <code>d[u]++, d[v]++, d[lca]--, d[fa(lca)]--</code>；全部打完一次 DFS 自底向上求子樹和 = 每點真值。邊差分則是 <code>d[u]++, d[v]++, d[lca] -= 2</code>（掛在深端點上）。修改全在查詢前 → 免結構，樹版 P2367。</p></details>
+</div>
+
+<h3>2.11.3 DFS 序 + 序列結構</h3>
+<div class="problem" data-problem-id="luogu-p3178">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3178" target="_blank">洛谷 P3178 [HAOI2015] 樹上操作</a><span class="chip">DFS序</span><span class="chip">線段樹</span></div>
+<p>單點加、子樹加、查根到某點的路徑和。</p>
+<details><summary>思路</summary><p>子樹 = DFS 序連續區間 <code>[in[u], out[u]]</code> → 線段樹區間加。妙處在查詢：「根到 u 的路徑和」把每個點的貢獻換成「對其子樹內所有點的貢獻」——修改點 x 時對 \([in[x],out[x]]\) 區間加，查詢只查單點 <code>in[u]</code>。<b>修改與查詢的貢獻互換</b>是 DFS 序題的靈魂。</p></details>
+</div>
+
+<h3>2.11.4 樹鏈剖分</h3>
+<div class="problem" data-problem-id="luogu-p3384">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3384" target="_blank">洛谷 P3384 樹鏈剖分模板</a><span class="chip">樹剖</span><span class="chip">線段樹</span></div>
+<p>路徑加/路徑和、子樹加/子樹和。</p>
+<details><summary>思路</summary><p>兩次 DFS：第一次算 size/重兒子，第二次沿重鏈連續編號（重鏈上 DFS 序連續、子樹仍連續——一箭雙鵰）。路徑操作：兩端輪流把「鏈頭更深」的一端跳到鏈頭之上，每跳一次處理一段連續區間，\(O(\log n)\) 段 × 線段樹 \(O(\log n)\) = \(O(\log^2 n)\)。<b>「重鏈剖分把路徑翻譯成 ≤2log 段區間」</b>背熟，剩下全是線段樹。</p></details>
+</div>
+
+<h3>2.11.5 DSU on tree（樹上啟發式合併）</h3>
+<div class="problem" data-problem-id="cf-600e">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/600/E" target="_blank">CF 600E Lomsat gelral</a><span class="chip">DSU on tree</span></div>
+<p>每棵子樹內出現次數最多的顏色（和）。</p>
+<details><summary>思路</summary><p>對每個節點：先遞迴輕兒子並<b>清空</b>其貢獻，再遞迴重兒子<b>保留</b>，最後把輕子樹重新暴力加入、回答本節點。每個點被重加的次數 = 到根的輕邊數 \(\le\log n\) → \(O(n\log n)\)。與線段樹合併（<a href="#s2-7">2.7</a>）同生態位：DSU on tree 空間 \(O(n)\)、只能離線子樹統計；線段樹合併能帶值域結構。P4556 兩解對照。</p></details>
+</div>
+
+<div class="callout when"><b>🔎 樹上選型速查</b>
+<div class="tbl-wrap"><table>
+<tr><th>需求</th><th>工具</th></tr>
+<tr><td>只查 LCA／路徑長</td><td>倍增（或樹剖 LCA）</td></tr>
+<tr><td>修改全在查詢前的路徑加</td><td>樹上差分</td></tr>
+<tr><td>子樹修改/查詢</td><td>DFS 序 + BIT/線段樹</td></tr>
+<tr><td>路徑修改/查詢交錯</td><td>樹剖 + 線段樹</td></tr>
+<tr><td>子樹「出現次數類」離線統計</td><td>DSU on tree／線段樹合併</td></tr>
+<tr><td>樹形會變（連邊斷邊）</td><td><a href="#s2-13">LCT</a></td></tr>
+</table></div></div>
