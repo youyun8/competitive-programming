@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常見錯誤與陷阱 — 演算法策略圖鑑</title>
+<meta name="description" content="hash 被卡全家桶、下標制混用、統計順序、多測清空——高頻坑與修法">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="pitfalls" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="strategies/02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="strategies/03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="strategies/04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="strategies/05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="strategies/06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="strategies/07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="strategies/08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="strategies/09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="strategies/10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2><span class="sec-no">3</span>常見錯誤與陷阱</h2>
+
+<div class="tbl-wrap"><table>
+<tr><th>症狀</th><th>優先檢查</th><th>最小測資方向</th></tr>
+<tr><td>CF 上 WA on test 60+</td><td>hash 被卡（自然溢位／單模／固定 base）</td><td>Thue–Morse 串、全同字元長串</td></tr>
+<tr><td>TLE 但複雜度「看起來對」</td><td>多測 memset 整池、substr 拷貝、跳 fail 未剪枝</td><td>大量小測資、深 fail 鏈</td></tr>
+<tr><td>模板題就 WA</td><td>下標制混用（長度制 vs 下標制、0/1-indexed）</td><td>單字元、兩字元串</td></tr>
+<tr><td>SAM/PAM 計數偏小</td><td>統計順序（len 基數排序／逆序累加）</td><td>aaaa（深 link 鏈）</td></tr>
+<tr><td>答案爆負數</td><td>int 溢位：cnt×len、n(n+1)/2、hash 乘法</td><td>n = 10⁶ 的極端串</td></tr>
+</table></div>
+
+<h3>3.1 hash 被卡全家桶</h3>
+<div class="callout warn"><b>⚠ 症狀與修法</b>
+<p><b>自然溢位（mod \(2^{64}\)）</b>：Thue–Morse 串可構造出必碰撞測資，CF 有現成 hack——改用大質數取模。<b>單模數固定 base</b>：出題人能預埋反例——base 開賽用 <code>mt19937(chrono::…now())</code> 隨機。<b>碰撞率估算</b>：單模 \(M\approx 10^9\)、比較 \(k\) 次，錯誤率約 \(k/M\)；\(k\sim 10^6\) 時已達千分之一，正式比賽<b>雙模數</b>是紀律不是潔癖。</p></div>
+
+<h3>3.2 「KMP 是線性」的兩種誤解</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>① 失配時寫 <code>j--</code> 或從頭重比 → 退化 \(O(nm)\)：必須 <code>j = fail[j]</code>（跳到次長 border，中間長度數學上不可能匹配）。② 在主循環裡對<b>每個位置</b>沿 fail 鏈走到底收集所有匹配 → 最壞平方：要匹配計數請一次打點，收尾在失配樹上做子樹和（<a href="strategies/02-kmp.html">2.2</a>／<a href="strategies/06-aho-corasick.html">2.6</a> 的 fail 樹手法）。</p></div>
+
+<h3>3.3 Z 與 fail 方向搞反</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>想沿「所有 border」枚舉卻去讀 z 陣列，或想要「從 i 往後配多長」卻跳 fail 鏈。口訣：<b>fail 以 i 結尾、z 從 i 開始</b>。另一個高頻筆誤：Z 的盒內繼承忘記 <code>min(z[i-L], R-i)</code> 的截斷——超出盒子的部分沒有任何保證。</p></div>
+
+<h3>3.4 SA 三件套下標災難</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p><code>sa</code>（排名→位置）與 <code>rk</code>（位置→排名）互為反函數，公式裡寫反一個就全錯；\(height[i]\) 定義在「排名 \(i\) 與 \(i-1\)」之間，區間 LCP 是 \(\min(height[i+1..j])\)——<b>左端點要 +1</b>。修法：把三個陣列的定義用註解寫在模板頂端，用「banana」手推一遍對照。</p></div>
+
+<h3>3.5 SAM／PAM 的統計順序</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>cnt 沿 parent 樹累加時用了錯誤順序（如按節點編號），深鏈上父節點先被加、子節點的貢獻漏掉。修法：SAM 按 <b>len 基數排序</b>後由長到短；PAM 直接按<b>節點編號逆序</b>（PAM 編號天然拓撲，SAM 因 clone 而不然——這正是兩者的差異點）。clone 節點 cnt 初始為 0 也常被忘。</p></div>
+
+<h3>3.6 多測清空成本</h3>
+<div class="callout warn"><b>⚠ 症狀</b>
+<p>Trie／ACAM 每組測資 <code>memset(ch, 0, sizeof ch)</code> → \(O(T\cdot\text{SIZE})\) 直接 TLE。修法：只清 \(0..tot\) 的節點（<code>for (int i = 0; i &lt;= tot; i++) memset(ch[i], ...)</code>），或版本號懶清空。P8306 是現場教學題。</p></div>
+
+<h3>3.7 字元集與邊界雜項</h3>
+<ul>
+<li>題面說小寫字母、測資混進大寫/數字：<code>c-'a'</code> 變負數下標，不一定立刻 RE——讀題時先確認字元集，映射寫成函式。</li>
+<li>拼接技巧（\(p+\#+t\)）的分隔符必須兩串都不出現；數字串用 <code>char(1)</code> 比 <code>'#'</code> 保險。</li>
+<li>爆 int 三兄弟：hash 乘法（先轉 <code>unsigned long long</code>）、\(cnt\times len\)、\(n(n+1)/2\)。</li>
+<li>Manacher 新舊座標換算 off-by-one：把換算式寫進模板註解，不要每次現推。</li>
+<li>讀入 \(10^6\)+ 字串：<code>cin &gt;&gt; string</code> 記得關同步；<code>gets</code> 已死，<code>scanf("%s")</code> 注意緩衝區大小。</li>
+</ul>
+
+<div class="callout idea"><b>🔬 字串題的對拍姿勢</b>
+<p>字串暴力特別好寫（子串枚舉、朴素匹配都十行內），所以<b>對拍成本極低、收益極高</b>：隨機小字元集（2～3 個字母最容易觸發 border/迴文邊界）短串 + 暴力比對，幾分鐘就能定位 90% 的模板錯。範例碼見 <a href="method.html">第 4 章</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="strategies/11-expert.html"><span class="dir">← 上一節</span>2.11 專家專題</a>
+<a class="next" href="method.html"><span class="dir">下一節 →</span>4. 模板整理與選型</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

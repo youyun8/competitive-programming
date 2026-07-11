@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.10 分塊與莫隊（根號演算法） — 演算法策略圖鑑</title>
+<meta name="description" content="不可合併資訊的救生圈：整塊標記散塊暴力、詢問重排">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s10" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.10 分塊與莫隊（根號演算法）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>把序列切成 \(\sqrt n\) 塊：<b>整塊打標記、散塊暴力</b>——單次操作 \(O(\sqrt n)\)。它比線段樹慢一個量級，卻換來無價的自由：<b>塊內資訊不需要可合併</b>（可以放排序副本、桶、任何東西）。<b>莫隊</b>是它在詢問側的化身：把區間詢問按（左端點塊號，右端點）排序後，用可增量的雙指標暴力挪動——指標總移動量 \(O((n+q)\sqrt n)\)。1.2 那條「可合併性」分界線以下的世界，這裡全包。</p></div>
+
+<div class="callout proof"><b>🔁 莫隊複雜度為什麼是 O((n+q)√n)？</b>
+<p>同一個左塊內的詢問，r 單調遞增 → r 指標整塊內總共走 \(O(n)\)，全部 \(\sqrt n\) 個塊共 \(O(n\sqrt n)\)；l 每次詢問在塊內抖動 \(O(\sqrt n)\)，共 \(O(q\sqrt n)\)。塊長取 \(n/\sqrt q\) 更精細；<b>奇偶塊交錯排序</b>（奇數塊 r 升序、偶數塊降序）能砍近半常數。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>區間<b>眾數、出現次數類</b>統計——線段樹合併不出來的資訊。</li>
+<li>答案能由「加入/移除一個元素」\(O(1)\) 增量維護 → 莫隊。</li>
+<li>操作太雜（區間開方、區間賦值混搭）→ 分塊逐塊暴力兜底。</li>
+<li>\(n,q\le 10^5\)、時限 1–2s 是根號的舒適區；\(10^6\) 就別想了。</li>
+</ul></div>
+
+<div class="problem" data-problem-id="luogu-p2801">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2801" target="_blank">洛谷 P2801 教主的魔法</a><span class="chip">分塊</span></div>
+<p>區間加、查區間內 ≥ c 的個數。</p>
+<details><summary>思路</summary><p>「≥ c 的個數」不可合併 → 分塊：每塊維護一份<b>排序副本</b>，整塊加打標記、查詢在副本上二分「≥ c − 標記」；散塊暴力改、改完重排該塊。\(O(q\sqrt n\log n)\)。分塊的精髓：<b>塊內可以養任何輔助結構</b>，反正重建只要 \(O(\sqrt n\log)\)。LOJ 6277–6285「數列分塊入門 1–9」是系統練功房。</p></details>
+</div>
+
+<div class="problem" data-problem-id="spoj-dquery">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.spoj.com/problems/DQUERY/" target="_blank">SPOJ DQUERY 區間不同數個數</a><span class="chip">莫隊</span><span class="chip">離線BIT</span></div>
+<p>多次詢問區間內有幾種不同的數。</p>
+<details><summary>思路</summary><p>莫隊入門：桶 <code>cnt[v]</code>，加入元素時 <code>cnt==1</code> 則種類 +1、移除時 <code>cnt==0</code> 則 −1。另一經典解：按 r 離線 + BIT 只在「每個值最後一次出現位置」放 1——兩解都要會，前者練莫隊骨架、後者練「把資訊掛在代表位置」的離線思維。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1494">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1494" target="_blank">洛谷 P1494 [國家集訓隊] 小 Z 的襪子</a><span class="chip">莫隊</span></div>
+<p>詢問區間內隨機抽兩隻襪子同色的機率。</p>
+<details><summary>思路</summary><p>分子 \(=\sum\binom{cnt_v}{2}\)：加入顏色 v 時分子 += 舊 cnt、移除時 −= 新 cnt——<b>增量式維護組合計數</b>是莫隊的標準內功。分數約分用 gcd。莫隊模板題的事實標準。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1903">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1903" target="_blank">洛谷 P1903 [國家集訓隊] 數顏色</a><span class="chip">帶修莫隊</span></div>
+<p>區間不同色數，<b>夾雜單點修改</b>。</p>
+<details><summary>思路</summary><p>帶修莫隊：狀態加第三維「已套用的修改數 t」，指標三個（l, r, t），t 指標「時間旅行」套用/撤銷修改（修改時若位置在 [l,r] 內同步更新桶）。塊長取 \(n^{2/3}\)、總複雜度 \(O(n^{5/3})\)。莫隊框架的可擴展性展示：只要「狀態間單步可轉移」，就能加維。</p></details>
+</div>
+
+<div class="callout idea"><b>🧂 值域分塊：與 BIT 的攻守互換</b>
+<p>權值 BIT 是修改 \(O(\log)\)、查詢 \(O(\log)\)；<b>值域分塊</b>是修改 \(O(1)\)（單點 + 所在塊 +1）、查前綴 \(O(\sqrt V)\)。莫隊裡每移動一步指標都是一次「修改」、每個詢問只查一次——修改多查詢少 → 值域分塊反而全域更優。「<b>按操作頻率再平衡複雜度</b>」是根號世界的核心內功（回滾莫隊、根號平衡都是它）。</p></div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>「只能加入、不能移除」的統計（區間最值出現次數類）→ <b>回滾莫隊</b>（<a href="13-expert.html">2.13.5</a>）；樹上路徑詢問 → 樹上莫隊（歐拉序拍平）；隨機資料 + 區間賦值 → <a href="13-expert.html">ODT</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="09-balanced-bst.html"><span class="dir">← 上一節</span>2.9 平衡樹</a>
+<a class="next" href="11-tree.html"><span class="dir">下一節 →</span>2.11 樹上資料結構</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

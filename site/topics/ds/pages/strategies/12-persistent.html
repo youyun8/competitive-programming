@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.12 可持久化資料結構 — 演算法策略圖鑑</title>
+<meta name="description" content="版本共享 O(log n)：主席樹區間第 k 小、可持久化 01-Trie">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s12" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.12 可持久化資料結構</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>修改時<b>不覆蓋舊節點</b>：沿修改路徑複製 \(O(\log n)\) 個新節點、其餘子樹與舊版本共享——每個版本只多花 \(O(\log n)\) 空間，所有歷史版本永久可查。殺手級應用是<b>主席樹</b>（可持久化權值線段樹）：對每個前綴 \(1..i\) 存一個版本，「區間 \([l,r]\) 的值域資訊」＝<b>版本 r 減版本 l−1</b>（權值樹逐節點可減！），區間第 k 小就在「差樹」上做樹上二分。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「查詢歷史版本」「回到第 i 次操作之後」→ 可持久化陣列/線段樹。</li>
+<li>「區間第 k 小／區間值域統計」且<b>強制線上</b> → 主席樹（能離線 → 整體二分也行，見 <a href="08-sweepline-cdq.html">2.8.4</a>）。</li>
+<li>「區間內與 x 的最大 XOR」→ 可持久化 01-Trie（同款前綴相減）。</li>
+</ul></div>
+
+<details><summary>模板（C++)：主席樹（靜態區間第 k 小）</summary>
+<pre><code class="lang-cpp">int rt[N], ls[M], rs[M], cnt[M], tot;      // M = n * (logV + 1) 左右
+int clone(int u) { int v = ++tot; ls[v]=ls[u]; rs[v]=rs[u]; cnt[v]=cnt[u]; return v; }
+int insert(int u, int l, int r, int x) {   // 回傳新版本的根
+    u = clone(u); cnt[u]++;
+    if (l == r) return u;
+    int m = (l + r) &gt;&gt; 1;
+    if (x &lt;= m) ls[u] = insert(ls[u], l, m, x);
+    else        rs[u] = insert(rs[u], m + 1, r, x);
+    return u;
+}
+int kth(int a, int b, int l, int r, int k) {  // 版本 b 減版本 a：樹上二分
+    if (l == r) return l;
+    int m = (l + r) &gt;&gt; 1, c = cnt[ls[b]] - cnt[ls[a]];
+    return k &lt;= c ? kth(ls[a], ls[b], l, m, k)
+                  : kth(rs[a], rs[b], m + 1, r, k - c);
+}
+// build：rt[i] = insert(rt[i-1], 1, V, a[i])
+// query(l, r, k)：kth(rt[l-1], rt[r], 1, V, k)</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3919">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3919" target="_blank">洛谷 P3919 可持久化陣列模板</a><span class="chip">可持久化</span></div>
+<p>在某歷史版本上單點改（產生新版本）或單點查。</p>
+<details><summary>思路</summary><p>可持久化的最小可行品：線段樹當陣列用，改一次複製一條根到葉的路徑。先寫它搞懂「共享子樹」的指標關係，再上主席樹就只剩「權值化 + 相減」兩步。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3834">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3834" target="_blank">洛谷 P3834 靜態區間第 k 小（主席樹模板）</a><span class="chip">主席樹</span></div>
+<p>\(2\times 10^5\) 次詢問區間第 k 小，強制線上不限。</p>
+<details><summary>思路</summary><p>離散化 → 逐前綴 insert 建版本 → 詢問用兩版本相減做樹上二分。三個理解檢查點：為什麼權值樹可以相減（cnt 是加性資訊）；為什麼樹上二分要同步走兩棵樹；空間為什麼是 \(O(n\log n)\)。這題就是「可持久化」在簡歷上的代表作。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4735">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4735" target="_blank">洛谷 P4735 最大異或和</a><span class="chip">可持久化Trie</span></div>
+<p>序列尾部追加；查詢 \([l,r]\) 內某後綴 XOR 與給定值的最大異或。</p>
+<details><summary>思路</summary><p>前綴 XOR 轉化後變成「在版本區間裡找與 x 最大異或」：可持久化 01-Trie，每個節點存「此前綴下有幾個數經過」，查詢時用 <code>cnt[版本r] − cnt[版本l−1] &gt; 0</code> 判斷該分支在區間內是否存在，貪心走相反位。01-Trie 本體見<a href="../../../strings/index.html">字串主題</a> 2.5；「前綴版本相減」與主席樹一字不差。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2617">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2617" target="_blank">洛谷 P2617 Dynamic Rankings</a><span class="chip">樹套樹</span><span class="chip">BIT套主席樹</span></div>
+<p>帶單點修改的區間第 k 小。</p>
+<details><summary>思路</summary><p>修改破壞「前綴版本」結構——改用 <b>BIT 套權值線段樹</b>：BIT 的每個節點掛一棵動態開點權值樹管它的管轄段；查詢時同時抓 \(O(\log n)\) 棵「加樹」與「減樹」一起樹上二分。單次 \(O(\log^2 n)\)、空間 \(O(n\log^2 n)\)。離線的話整體二分（2.8.4）更好寫——線上/離線的價差在這題最直觀。</p></details>
+</div>
+
+<div class="callout warn"><b>⚠ 空間紀律（又一次）</b>
+<p>主席樹 M = \(n(\lceil\log V\rceil+1)\)；帶修樹套樹 M = \(O(n\log^2)\)——<b>先算再開</b>，可持久化的 MLE 全是空間拍腦袋。另外 clone 出來的節點別忘了它是「值拷貝」：修改 clone 前的舊指標是經典懸案級 bug。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="11-tree.html"><span class="dir">← 上一節</span>2.11 樹上資料結構</a>
+<a class="next" href="13-expert.html"><span class="dir">下一節 →</span>2.13 專家專題</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

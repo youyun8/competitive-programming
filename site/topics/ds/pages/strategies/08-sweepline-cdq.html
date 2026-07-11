@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.8 掃描線、二維數點與離線分治（CDQ／整體二分） — 演算法策略圖鑑</title>
+<meta name="description" content="把一個維度變成時間：矩形面積並、三維偏序、整體二分">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s08" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.8 掃描線、二維數點與離線分治（CDQ／整體二分）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>二維問題的離線總綱：<b>把一個維度變成時間</b>。掃描線讓 x 軸流逝、線段樹管 y 軸；二維數點把矩形詢問差分成 4 個「前綴詢問」按 x 排序處理；CDQ 分治用「分治順序」硬造出一個維度的有序性；整體二分把「答案值域」當作分治維度。四者都是同一句話的變奏：<b>離線 = 重排的自由（1.4）</b>。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>矩形面積並/周長並、天際線 → 掃描線。</li>
+<li>「數平面上矩形內的點」「\(l\le i\le r\) 且 \(a_i\le x\) 的個數」→ 二維數點。</li>
+<li>三維偏序、「帶時間的二維問題」→ CDQ。</li>
+<li>一大堆「第 k 小」型詢問 → 整體二分（主席樹的離線替身）。</li>
+</ul></div>
+
+<h3>2.8.1 掃描線：矩形面積並</h3>
+<p>每個矩形拆成左邊界（+1）右邊界（−1）兩個事件，按 x 排序；線段樹維護 y 軸「被覆蓋 ≥1 的總長」。特技：<b>覆蓋計數標記永不下傳</b>——節點存（本段覆蓋次數 cnt, 子樹內被蓋長度 len），cnt&gt;0 時 len = 整段，否則 = 兒子之和。行得通是因為 +1/−1 嚴格配對、查詢只查全域。</p>
+
+<div class="problem" data-problem-id="luogu-p5490">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5490" target="_blank">洛谷 P5490 掃描線模板</a><span class="chip">掃描線</span><span class="chip">線段樹</span></div>
+<p>n 個矩形的面積並。</p>
+<details><summary>思路</summary><p>y 離散化成 \(O(n)\) 段（線段樹葉子是「段」不是「點」——經典 off-by-one 窩點）；答案 = Σ 覆蓋長 ×（相鄰事件的 x 距離）。把「標記不下傳為什麼對」講明白，才算真的會這題。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-218">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://leetcode.cn/problems/the-skyline-problem/" target="_blank">LC 218 天際線問題</a><span class="chip">掃描線</span><span class="chip">multiset</span></div>
+<p>建築輪廓的關鍵點。</p>
+<details><summary>思路</summary><p>掃描線的輕量版：事件排序後用 <code>multiset</code> 維護「目前活躍高度集合」，最大值變化時輸出關鍵點。體會掃描線的本質是<b>事件驅動</b>，y 軸結構可按需求換（multiset/堆/線段樹）。</p></details>
+</div>
+
+<h3>2.8.2 二維數點</h3>
+<div class="problem" data-problem-id="luogu-p2163">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2163" target="_blank">洛谷 P2163 [SHOI2007] 園丁的煩惱</a><span class="chip">二維數點</span><span class="chip">BIT</span></div>
+<p>百萬級點與矩形詢問：每個矩形內幾個點。</p>
+<details><summary>思路</summary><p>矩形差分成 4 個前綴詢問 \(Q(x,y)\)＝「\(x_i\le x, y_i\le y\) 的點數」；點與詢問<b>混排按 x 掃</b>，權值 BIT 管 y。管線背熟：<b>差分 → 排序 → BIT</b>，這是所有離線二維統計的母版。</p></details>
+</div>
+
+<h3>2.8.3 CDQ 分治：三維偏序</h3>
+<div class="problem" data-problem-id="luogu-p3810">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3810" target="_blank">洛谷 P3810 三維偏序（陌上花開）</a><span class="chip">CDQ</span><span class="chip">BIT</span></div>
+<p>對每個元素數「三維都 ≤ 它」的元素個數。</p>
+<details><summary>思路</summary><p>第一維排序解決；CDQ 分治：算左半對右半的貢獻時，兩半各按第二維有序（歸併），左半元素按序插入 BIT（第三維），右半按序查詢。<b>「分治 + 歸併」憑空造出一維有序，於是三維退化為一維 BIT</b>——「用分治換一層資料結構」的口號由此而來。注意去重（完全相同的元素互相貢獻）。</p></details>
+</div>
+
+<h3>2.8.4 整體二分</h3>
+<div class="problem" data-problem-id="luogu-p1527">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1527" target="_blank">洛谷 P1527 [國家集訓隊] 矩陣乘法</a><span class="chip">整體二分</span><span class="chip">BIT</span></div>
+<p>多次詢問子矩陣第 k 小。</p>
+<details><summary>思路</summary><p>單詢問可以二分答案 + 二維計數；<b>整體二分</b>把所有詢問一起二分：solve(值域[lo,hi], 詢問集 Q) 中把 ≤ mid 的元素插入二維 BIT，按計數把 Q 劈成兩半遞迴。每層總工作量 \(O((n+q)\log)\)，共 \(\log V\) 層。與主席樹（<a href="12-persistent.html">2.12</a>）互為離線/線上替身——主席樹難以二維化，整體二分無壓力，這正是離線的紅利。</p></details>
+</div>
+
+<div class="callout idea"><b>🧭 四兄弟怎麼選</b>
+<p>幾何形狀的並/覆蓋 → 掃描線；純計數且矩形可差分 → 二維數點；「修改也在時間軸上」（帶修改的二維統計）→ CDQ 把修改當點、詢問當區間；答案本身要二分 → 整體二分。共同前提：<b>能離線</b>。強制線上 → 可持久化（2.12）或樹套樹（2.13.6）。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="07-segment-tree-advanced.html"><span class="dir">← 上一節</span>2.7 線段樹進階</a>
+<a class="next" href="09-balanced-bst.html"><span class="dir">下一節 →</span>2.9 平衡樹</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

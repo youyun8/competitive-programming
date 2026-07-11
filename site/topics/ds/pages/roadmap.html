@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學習路線圖 — 演算法策略圖鑑</title>
+<meta name="description" content="四階段學習計畫，每階段附代表題與畢業檢定">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="roadmap" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="strategies/02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="strategies/03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="strategies/04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="strategies/05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="strategies/06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="strategies/07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="strategies/08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="strategies/09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="strategies/10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="strategies/11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="strategies/12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="strategies/13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2><span class="sec-no">6</span>學習路線圖</h2>
+
+<div class="callout idea"><b>🎯 路線圖的使用方式</b>
+<p>資料結構的成長曲線是「模板 → 對拍 → 變形 → 組合」：每學一個結構，先默寫模板並通過一萬組對拍（<a href="method.html">4.4</a>），再做 2–3 道變形題，最後在更高階段回頭把它當零件用。星級是參考；畢業檢定過不了就留在原階段。搭配<a href="../../../pages/problems.html">全站題目總表</a>的 ds 篩選刷題。</p></div>
+
+<div class="stage">
+<h3>第一階段 <span class="stars s1">★</span>–<span class="stars s2">★★</span>：零結構技巧與兩件輕武器（約 2 週）</h3>
+<p><b>目標</b>：前綴和/差分/ST 表、單調棧/佇列、堆、DSU、BIT 的模板全部能默寫。</p>
+<ul>
+<li>靜態三件套：LC 303/304 → P2367 → P3397 → P3865 → P1719</li>
+<li>單調結構：LC 739 → P1886 → LC 42 → LC 84</li>
+<li>堆：P3378 → LC 295</li>
+<li>DSU：P3367 → P1551 → P1892</li>
+<li>BIT：P3374 → P3368 → P1908 → LC 315</li>
+</ul>
+<p class="small">✅ 畢業檢定：P1908 用歸併與 BIT 各寫一遍；說明 BIT 為什麼做不了區間 min。</p>
+</div>
+
+<div class="stage">
+<h3>第二階段 <span class="stars s3">★★★</span>：線段樹成型與離線初體驗（約 1 個月）</h3>
+<p><b>目標</b>：線段樹（含懶標記）閉眼寫對；LCA/樹上差分上手；第一次體會「離線 = 自由」。</p>
+<ul>
+<li>線段樹：P1531 → P3372 → P3373（先乘後加）→ LC 307</li>
+<li>樹上：P3379（倍增 LCA）→ P3128（樹上差分）→ P3178（DFS 序）</li>
+<li>離線思維：P1197（倒序 DSU）→ P1955（離散化）→ SPOJ DQUERY（兩解）</li>
+<li>堆進階：P1801 → LC 480；掃描線輕量版：LC 218</li>
+</ul>
+<p class="small">✅ 畢業檢定：不看模板寫出 P3373 並通過對拍；口頭回答 4.2 的資訊設計四問（以區間加乘為例）。</p>
+</div>
+
+<div class="stage">
+<h3>第三階段 <span class="stars s4">★★★★</span>：重武器庫（約 2–3 月）</h3>
+<p><b>目標</b>：平衡樹、主席樹、樹剖、掃描線、CDQ、莫隊、線段樹進階全部入庫；一題能報出兩種以上解法。</p>
+<ul>
+<li>線段樹進階：P4513（資訊設計）→ P4097（李超）→ 動態開點練習</li>
+<li>掃描線與離線分治：P5490 → P2163 → P3810（CDQ）</li>
+<li>平衡樹：P3369 → P3391 → P1486</li>
+<li>可持久化：P3919 → P3834 → P4735</li>
+<li>樹上：P3384（樹剖）→ CF 600E（DSU on tree）</li>
+<li>根號：P2801 → P1494 → LOJ 分塊入門 1–9</li>
+<li>BIT 進階：P5094 → BIT 上倍增</li>
+</ul>
+<p class="small">✅ 畢業檢定：P3834（主席樹）與 P3810（CDQ）獨立完成；對任一題能先寫出 4.1 的操作規格書再動手。</p>
+</div>
+
+<div class="stage">
+<h3>第四階段 <span class="stars s5">★★★★★</span>：組合與勢能（長期）</h3>
+<p><b>目標</b>：結構的「組合」成為直覺；勢能分析看得懂、講得出。</p>
+<ul>
+<li>組合拳：P4556（樹上差分×線段樹合併）→ P2617（BIT×主席樹）→ P1527（整體二分）</li>
+<li>勢能系：P6242（吉司機）→ CF 896C（ODT）→ AT 歷史研究（回滾莫隊）</li>
+<li>時間軸：P5787（線段樹分治×可撤銷 DSU）</li>
+<li>動態樹：P3690（LCT）；序列平衡樹收尾：P2596</li>
+<li>NOIP 壓軸重溫：P3960 列隊、P1903 帶修莫隊</li>
+</ul>
+<p class="small">✅ 畢業檢定：面對 CF 2400+ 資結題，10 分鐘內完成操作分析表＋兩套候選方案（線上/離線各一）；能向別人講清楚 Segment Tree Beats 的勢能論證。</p>
+</div>
+
+<div class="callout when"><b>📚 配套資源</b>
+<ul>
+<li>OI Wiki「數據結構」章：模板權威對照。</li>
+<li>LOJ「數列分塊入門 1–9」：分塊的漸進式練功房。</li>
+<li>《演算法競賽進階指南》資料結構章、CF EDU 的 Segment Tree 系列：習題成套。</li>
+<li>與本站其他主題聯動：貪心 2.9（貪心×資結）、DP 2.12（資結優化 DP）、字串 2.11（字串×資結）是本主題的「應用考場」。</li>
+</ul></div>
+
+<div class="pagenav">
+<a class="prev" href="method.html"><span class="dir">← 上一節</span>4. 選型方法論</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

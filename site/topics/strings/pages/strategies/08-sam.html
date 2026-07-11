@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.8 後綴自動機（SAM） — 演算法策略圖鑑</title>
+<meta name="description" content="endpos 等價類、parent 樹、線上構造與應用地圖">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s08" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.8 後綴自動機（SAM）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>SAM 是能接受 \(s\) 所有後綴的<b>最小 DFA</b>——同時也是「所有子串」的壓縮索引。基石概念是 <b>endpos 等價類</b>：兩個子串等價 ⟺ 它們在 \(s\) 中的結束位置集合相同。每個 SAM 節點恰是一個等價類，類內子串長度連續（\([\mathit{len}_{link(u)}+1,\ \mathit{len}_u]\)），節點數 \(\le 2n-1\)、轉移數 \(\le 3n-4\)：指數多個子串被壓成線性大小的圖。</p></div>
+
+<div class="callout proof"><b>🔁 兩張圖一起看</b>
+<p>SAM 其實是<b>兩個結構的疊加</b>：① <b>轉移圖（DAG）</b>——沿轉移邊走出的每條路徑對應一個不同子串；② <b>parent 樹（link 樹）</b>——\(link(u)\) 指向「endpos 嚴格更大的最長真後綴類」，樹上越往根子串越短、出現越多；<b>endpos 集合 = 子樹內前綴節點的集合</b>。做題時每一問先想清楚：這問走 DAG（子串本身）還是走 parent 樹（出現位置）？</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「每個子串出現幾次」「出現位置集合」——endpos 就是為此而生。</li>
+<li>需要<b>線上</b>增量（逐字元加入）——SA 做不到。</li>
+<li>兩串/多串的公共子串問題（在 SAM 上走匹配、或廣義 SAM）。</li>
+</ul></div>
+
+<details><summary>模板（C++）：線上增量構造</summary>
+<pre><code class="lang-cpp">struct SAM {
+    int ch[N*2][26], link[N*2], len[N*2], last = 1, tot = 1;
+    long long cnt[N*2];                    // 前綴節點 cnt=1，之後樹上求和
+    void extend(int c) {
+        int p = last, u = ++tot;
+        len[u] = len[p] + 1; cnt[u] = 1; last = u;
+        while (p &amp;&amp; !ch[p][c]) ch[p][c] = u, p = link[p];
+        if (!p) { link[u] = 1; return; }
+        int q = ch[p][c];
+        if (len[q] == len[p] + 1) { link[u] = q; return; }
+        int w = ++tot;                     // clone：拆出「恰好 len[p]+1」的部分
+        len[w] = len[p] + 1; link[w] = link[q];
+        memcpy(ch[w], ch[q], sizeof ch[q]);
+        while (p &amp;&amp; ch[p][c] == q) ch[p][c] = w, p = link[p];
+        link[q] = link[u] = w;
+    }
+};
+// cnt 統計：按 len 基數排序後由長到短 cnt[link[u]] += cnt[u]</code></pre></details>
+
+<h3>2.8.1 應用地圖（背下來）</h3>
+<div class="tbl-wrap"><table>
+<tr><th>問題</th><th>做法</th></tr>
+<tr><td>本質不同子串數</td><td>\(\sum_u \big(len_u - len_{link(u)}\big)\)，或 DAG 路徑計數</td></tr>
+<tr><td>子串 \(t\) 出現次數</td><td>沿轉移走 \(t\) 到節點 \(u\)，答案 = 子樹 cnt 和（預先算好）</td></tr>
+<tr><td>兩串最長公共子串</td><td>對 A 建 SAM，B 在上面走：能走則走並 len+1，失配沿 link 退</td></tr>
+<tr><td>字典序第 k 小子串</td><td>DAG 上按字典序 DFS，用「子樹路徑數」導航</td></tr>
+<tr><td>最小循環移位</td><td>對 \(s+s\) 建 SAM，貪心走最小字元 \(n\) 步</td></tr>
+</table></div>
+
+<div class="problem" data-problem-id="luogu-p3804">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3804" target="_blank">洛谷 P3804 SAM 模板</a><span class="chip">SAM</span><span class="chip">endpos</span></div>
+<p>求「出現次數 &gt; 1 的子串」中，出現次數 × 長度的最大值。</p>
+<details><summary>思路</summary><p>每個節點代表一段長度的等價子串，出現次數 = 子樹 cnt 和，取類內最長 \(len_u\) 最有利：答案 \(=\max_{cnt_u&gt;1} cnt_u\cdot len_u\)。統計順序務必按 \(len\) 由長到短（基數排序），<b>不能</b>隨意沿 link DFS 不排序——第 3 章高頻坑。</p></details>
+</div>
+
+<div class="problem" data-problem-id="strings-distinct-sam">
+<div class="p-head"><span class="stars s4">★★★★</span><span class="p-title">不同子串個數（SAM 版，對照 P2408）</span><span class="chip">SAM</span><span class="chip">去重計數</span></div>
+<p>用 SAM 重做 2.7 的本質不同子串計數。</p>
+<details><summary>思路</summary><p>每個節點貢獻 \(len_u - len_{link(u)}\)（類內長度連續！），一行求和。與 SA 的 \(\frac{n(n+1)}{2}-\sum height\) 對照：SA 按「排序後扣重複前綴」去重、SAM 按「endpos 等價類」去重——同一件事的兩張座標系。</p></details>
+</div>
+
+<div class="problem" data-problem-id="spoj-lcs">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.spoj.com/problems/LCS/" target="_blank">SPOJ LCS 最長公共子串</a><span class="chip">SAM</span><span class="chip">匹配</span></div>
+<p>兩字串的最長公共子串。</p>
+<details><summary>思路</summary><p>對 A 建 SAM，讓 B 在上面「盡量不斷開地走」：有轉移就走、目前匹配長 +1；沒有就沿 link 退（匹配長縮到 \(len_{link}\)）直到有轉移或歸零。全程取匹配長最大值。體會 link 的語意：<b>退一步 = 砍掉最舊的前綴、保留最長可延伸後綴</b>。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cf-235c">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/235/C" target="_blank">CF 235C Cyclical Quest</a><span class="chip">SAM</span><span class="chip">環形匹配</span></div>
+<p>多個查詢串，問每個查詢串的<b>所有旋轉</b>在 s 中出現的總次數。</p>
+<details><summary>思路</summary><p>對 s 建 SAM；查詢串倍長後在 SAM 上滑動匹配（維持匹配長 = |q|：超過就沿轉移前縮、不足沿 link 退），每個「匹配長恰為 |q|」的位置貢獻該節點 cnt；用訪問標記防止同一節點對同一查詢重複計（旋轉可能重複）。SAM 匹配指標控制的高級練習。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3975">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3975" target="_blank">洛谷 P3975 [TJOI2015] 弦論</a><span class="chip">SAM</span><span class="chip">第k小</span></div>
+<p>求字典序第 \(k\) 小子串；t=0 本質不同、t=1 位置不同各算一個。</p>
+<details><summary>思路</summary><p>DAG 上導航：預處理每個節點出發的「路徑數」（t=0 每節點權 1；t=1 權 = cnt），從初始節點按 a..z 試走，\(k\) 夠減就減、不夠就進入該子節點。<b>同一張圖換權值就換語意</b>——把「計數導航」寫成通用函式，兩問合一。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>多串 → <b>廣義 SAM</b>（<a href="11-expert.html">2.11.2</a>）；「endpos 集合本身」要可查詢（區間內出現次數）→ parent 樹上<b>線段樹合併</b>（<a href="11-expert.html">2.11.3</a>）；反串 SAM 的 parent 樹 = 後綴樹（<a href="11-expert.html">2.11.4</a>）。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="07-suffix-array.html"><span class="dir">← 上一節</span>2.7 後綴數組</a>
+<a class="next" href="09-pam.html"><span class="dir">下一節 →</span>2.9 迴文自動機</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

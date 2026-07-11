@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理論基礎：字串的共同語言 — 演算法策略圖鑑</title>
+<meta name="description" content="border 與週期的核心等式、三種匹配思維、複雜度反推與實作工具箱">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script src="../../../assets/site.js"></script>
+<script src="../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../assets/supabase-config.js"></script>
+<script src="../../../assets/progress.js"></script>
+</head>
+<body data-page="theory" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="strategies/01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="strategies/02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="strategies/03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="strategies/04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="strategies/05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="strategies/06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="strategies/07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="strategies/08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="strategies/09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="strategies/10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2><span class="sec-no">1</span>理論基礎：字串的共同語言</h2>
+
+<div class="callout proof"><b>🧪 一條貫穿全指南的等式：border ⟺ 週期</b>
+<p>設 \(|s|=n\)。稱 \(t\) 是 \(s\) 的 <b>border</b>，若 \(t\) 同時是 \(s\) 的真前綴與真後綴；稱 \(p\) 是 \(s\) 的<b>週期</b>，若對所有合法的 \(i\) 都有 \(s_i=s_{i+p}\)。核心等式：<b>\(p\) 是 \(s\) 的週期 ⟺ \(s\) 有長度 \(n-p\) 的 border</b>。證明是一行對齊：把 \(s\) 往右平移 \(p\) 格，重疊部分逐字相等，重疊部分恰是長 \(n-p\) 的前綴與後綴。這條等式是 KMP 的 fail 陣列、循環節判定、失配樹全部的地基——<b>求最長 border 就是求最小週期。</b></p></div>
+
+<h3>1.1 基本名詞</h3>
+<div class="tbl-wrap"><table>
+<tr><th>名詞</th><th>定義</th><th>易混淆點</th></tr>
+<tr><td>子串（substring）</td><td>連續的一段 \(s_{l..r}\)</td><td>與「子序列」不同——子序列可以不連續</td></tr>
+<tr><td>前綴／後綴</td><td>\(s_{1..i}\)／\(s_{i..n}\)；「真」= 不等於自己</td><td>每個子串都是「某個前綴的後綴」——SAM 的視角</td></tr>
+<tr><td>border</td><td>既是真前綴又是真後綴的串</td><td>border 的 border 還是 border（遞迴結構）</td></tr>
+<tr><td>週期（period）</td><td>\(s_i=s_{i+p}\) 對所有合法 \(i\)</td><td>週期不必整除 \(n\)；整除的叫「循環節」</td></tr>
+<tr><td>字典序</td><td>逐字比較，前綴較小</td><td>比較兩子串字典序 = hash 二分 LCP 後比下一字元</td></tr>
+</table></div>
+
+<h3>1.2 border 與週期的結構</h3>
+<ul>
+<li><b>fail 鏈 = 所有 border</b>：\(s\) 的最長 border 是 \(\mathrm{fail}[n]\)，次長是 \(\mathrm{fail}[\mathrm{fail}[n]]\)，……沿鏈走完恰好枚舉所有 border。這是 <a href="strategies/02-kmp.html">2.2</a> 一切應用的來源。</li>
+<li><b>Weak Periodicity Lemma</b>：若 \(p,q\) 都是週期且 \(p+q\le n\)，則 \(\gcd(p,q)\) 也是週期。直覺：兩個週期互相「傳染」，輾轉相減。</li>
+<li><b>border 的等差結構</b>：\(s\) 的所有 border 長度可以分成 \(O(\log n)\) 個等差數列——長度超過 \(n/2\) 的 border 兩兩差距形成等差。這在 ★★★★★ 的 border 理論題（<a href="strategies/11-expert.html">2.11.5</a>）才會用到，此處先陳述。</li>
+</ul>
+
+<h3>1.3 三種匹配思維</h3>
+<div class="tbl-wrap"><table>
+<tr><th>思維</th><th>代表工具</th><th>核心資訊</th><th>特長</th></tr>
+<tr><td><b>滑動比對</b></td><td>KMP、Z、Manacher</td><td>「已匹配的部分」的結構（border／Z-box／迴文鏡像）</td><td>線性、確定性、常數小</td></tr>
+<tr><td><b>指紋比對</b></td><td>多項式 hash</td><td>子串 → 數字，\(O(1)\) 比相等</td><td>萬用膠水：能二分、能塞進 set、能配任何結構</td></tr>
+<tr><td><b>自動機</b></td><td>Trie、ACAM、SAM、PAM</td><td>把所有狀態顯式建成圖</td><td>多模式、子串全體統計、在圖上跑 DP</td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 選型的第一直覺</b>
+<p>先問「<b>我要的答案是關於一個串、兩個串、還是所有子串？</b>」一個模式串 → 滑動比對就夠；答案需要「任意兩個子串比較」→ 指紋；答案是「對所有子串／所有迴文／所有模式串」的統計 → 自動機或後綴結構。完整決策樹見 <a href="method.html">第 4 章</a>。</p></div>
+
+<h3>1.4 複雜度與資料範圍反推</h3>
+<div class="tbl-wrap"><table>
+<tr><th>資料範圍</th><th>暗示</th></tr>
+<tr><td>\(|s|\le 10^6\)</td><td>線性家族：KMP／Z／Manacher／SAM／PAM；\(O(n\log n)\) 的 SA 也常能過</td></tr>
+<tr><td>\(|s|\le 10^5\)</td><td>\(O(n\log n)\) 隨便用：hash+二分、SA、SAM×資料結構</td></tr>
+<tr><td>\(n \le 5000\)</td><td>\(O(n^2)\) 可行：暴力枚舉中心、區間 DP、\(O(n^2)\) hash 表</td></tr>
+<tr><td>\(\Sigma|p_i|\le 10^6\)（多模式）</td><td>AC 自動機；注意字元集大小影響 goto 表空間</td></tr>
+<tr><td>強制線上</td><td>SAM（天然增量）；hash／SA 偏離線</td></tr>
+</table></div>
+
+<h3>1.5 實作工具箱</h3>
+<ul>
+<li><b>下標慣例</b>：本指南 KMP／Z 用 0-indexed 字串 + \(\mathrm{fail}[i]\) 表「長度」；SA 用 1-indexed。每份模板固定自己的慣例，<b>不要現場換</b>。</li>
+<li><b>字元集映射</b>：`c - 'a'` 之前先確認題目字元集；出現數字或大寫時映射表要換（第 3 章高頻坑）。</li>
+<li><b>多測清空</b>：Trie／ACAM 的節點陣列若整包 <code>memset</code>，複雜度變 \(O(T\cdot \text{SIZE})\)——要只清用過的節點，或用版本號打標記。</li>
+<li><b><code>std::string</code> 拷貝</b>：函式傳參用 <code>const string&amp;</code>；`substr` 是 \(O(len)\) 拷貝，迴圈裡呼叫直接退化平方。</li>
+<li><b>讀入</b>：\(10^6\) 級字串用 <code>scanf("%s")</code> 或關同步的 <code>cin</code>；<code>getline</code> 注意殘留換行。</li>
+</ul>
+
+<div class="pagenav">
+<a class="prev" href="../index.html"><span class="dir">← 上一節</span>🏠 字串演算法 首頁</a>
+<a class="next" href="strategies/01-hashing.html"><span class="dir">下一節 →</span>2.1 字串雜湊</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

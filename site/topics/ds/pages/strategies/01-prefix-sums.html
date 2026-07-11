@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.1 前綴和、差分與 ST 表（靜態的力量） — 演算法策略圖鑑</title>
+<meta name="description" content="預處理換查詢：一維/二維前綴和、差分打點、可重複貢獻 RMQ">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s01" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.1 前綴和、差分與 ST 表（靜態的力量）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>沒有修改（或修改全部發生在查詢之前），就不需要「結構」——<b>預處理換查詢</b>。三件套：前綴和把「區間求和」變 \(O(1)\) 相減；差分把「區間加」變兩個端點打點（修改與查詢的<b>對偶</b>：前綴和的逆運算）；ST 表把「可重複貢獻」的區間 min/max/gcd 變 \(O(1)\)（兩個重疊子區間蓋滿整段，重疊不影響答案）。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>「先做完所有修改、再回答所有查詢」——差分收工後做一次前綴和。</li>
+<li>完全靜態的區間和/min/gcd——別開線段樹，會被同行嘲笑。</li>
+<li>二維小規模（\(n\times m \le 10^7\)）的子矩陣統計——二維前綴和 + 容斥。</li>
+</ul></div>
+
+<details><summary>模板（C++）：三件套</summary>
+<pre><code class="lang-cpp">// 一維前綴和：S[i] = S[i-1] + a[i]；sum(l,r) = S[r] - S[l-1]
+// 差分：  d[l] += v, d[r+1] -= v；最後 a = d 的前綴和
+// 二維前綴和：S[i][j] = S[i-1][j] + S[i][j-1] - S[i-1][j-1] + a[i][j]
+// 二維差分：d[x1][y1]+=v; d[x1][y2+1]-=v; d[x2+1][y1]-=v; d[x2+1][y2+1]+=v;
+
+// ST 表：f[j][i] = [i, i + 2^j) 的 max
+for (int i = 1; i &lt;= n; i++) f[0][i] = a[i];
+for (int j = 1; (1 &lt;&lt; j) &lt;= n; j++)
+    for (int i = 1; i + (1 &lt;&lt; j) - 1 &lt;= n; i++)
+        f[j][i] = max(f[j-1][i], f[j-1][i + (1 &lt;&lt; (j-1))]);
+int query(int l, int r) {              // 兩段重疊覆蓋
+    int k = __lg(r - l + 1);
+    return max(f[k][l], f[k][r - (1 &lt;&lt; k) + 1]);
+}</code></pre></details>
+
+<div class="problem" data-problem-id="lc-304">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/range-sum-query-2d-immutable/" target="_blank">LC 304 二維區域和檢索</a><span class="chip">前綴和</span></div>
+<p>多次查子矩陣和（靜態）。一維版 LC 303 ★。</p>
+<details><summary>思路</summary><p>二維前綴和 + 容斥：\(\mathrm{sum}=S_{x_2y_2}-S_{x_1-1,y_2}-S_{x_2,y_1-1}+S_{x_1-1,y_1-1}\)。把「加一減二補一」畫成圖記住，之後二維差分就是它的鏡像。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2367">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2367" target="_blank">洛谷 P2367 語文成績</a><span class="chip">差分</span></div>
+<p>大量區間加，最後問全體最小值。</p>
+<details><summary>思路</summary><p>差分模板：所有修改打完端點再一次前綴和。體會「修改全在查詢前」= 免結構的訊號。LC 1109 航班預訂統計 ★★ 是同一題換皮。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3397">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3397" target="_blank">洛谷 P3397 地毯</a><span class="chip">二維差分</span></div>
+<p>二維平面上鋪矩形地毯，最後問每格層數。</p>
+<details><summary>思路</summary><p>二維差分四個角打點，收工兩次前綴和（先行後列）。自己推一遍四角的正負號，比背模板牢固十倍。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1719">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1719" target="_blank">洛谷 P1719 最大加權矩形</a><span class="chip">前綴和</span><span class="chip">Kadane</span></div>
+<p>找權值和最大的子矩形（\(n\le 120\)）。</p>
+<details><summary>思路</summary><p>枚舉上下界 \(O(n^2)\)，把中間各列壓成一維陣列，套最大子段和（Kadane，見 <a href="../../../dp/index.html">DP 主題</a> 2.1）\(O(n)\)。「<b>降維打擊</b>：枚舉一維、壓縮一維、DP 一維」是二維統計的常青套路。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p3865">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3865" target="_blank">洛谷 P3865 ST 表模板</a><span class="chip">ST表</span><span class="chip">RMQ</span></div>
+<p>靜態區間最大值，\(q\le 2\times 10^6\)。</p>
+<details><summary>思路</summary><p>查詢量卡掉 \(O(q\log n)\) 的線段樹——ST 表 \(O(1)\) 查詢的主場（配快讀）。理解「可重複貢獻」：max 重疊算兩次沒關係，<b>和不行</b>，所以 ST 表做不了區間和。此表也是 <a href="../../../strings/index.html">字串主題</a> SA 的 height RMQ、樹上歐拉序 LCA 的引擎。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>一旦「修改與查詢交錯」，前綴和失效：可差分資訊 → <a href="05-bit.html">BIT</a>；區間修改 → <a href="06-segment-tree.html">線段樹</a>。而「差分」的思想不死：樹上差分（<a href="11-tree.html">2.11.2</a>）、掃描線（<a href="08-sweepline-cdq.html">2.8</a>）都是它的高維化身。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="../theory.html"><span class="dir">← 上一節</span>1. 理論基礎</a>
+<a class="next" href="02-monotonic.html"><span class="dir">下一節 →</span>2.2 單調堆疊與單調佇列</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

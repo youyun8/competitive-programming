@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.4 Manacher（線性迴文半徑） — 演算法策略圖鑑</title>
+<meta name="description" content="插 # 統一奇偶、鏡像繼承、迴文計數與拼接應用">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s04" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.4 Manacher（線性迴文半徑）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>對每個中心 \(i\) 求最長迴文半徑 \(p[i]\)。關鍵觀察：若 \(i\) 落在某個已知大迴文 \([L,R]\)（中心 \(C\)）內，則 \(i\) 關於 \(C\) 的<b>鏡像位置</b> \(i' = 2C-i\) 的半徑可以直接繼承（截斷到不超出 \(R\)），只有頂到 \(R\) 才往外擴張。與 Z 函數的匹配盒一模一樣的均攤論證：\(R\) 只會右移 ⇒ \(O(n)\)。</p></div>
+
+<div class="callout proof"><b>🔁 插 '#' 統一奇偶</b>
+<p>迴文有奇長（單中心）與偶長（雙中心）兩種。把 \(s\) 變成 <code>^#a#b#c#$</code>（頭尾哨兵防越界）：新串裡每個位置的迴文都是奇長，且<b>新串半徑 \(p[i]\)−1 = 原串該迴文的長度</b>；新串迴文的端點必是 '#'，換算回原串下標為 \((i-p[i])/2\)（0-indexed 起點）。這步換算是 Manacher 唯一的細節坑，建議推導一次寫進模板註解。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>只要<b>最長迴文子串</b>、<b>迴文子串總數</b>、「以 \(i\) 開頭／結尾的最長迴文」→ Manacher 一遍搞定。</li>
+<li>要把每個<b>本質不同</b>迴文當對象統計（每個迴文各出現幾次）→ 升級 <a href="09-pam.html">PAM</a>。</li>
+<li>\(n\le 5000\) 時中心擴展暴力 \(O(n^2)\) 完全夠——別殺雞用牛刀。</li>
+</ul></div>
+
+<details><summary>模板（C++）：Manacher</summary>
+<pre><code class="lang-cpp">// t = "^#a#b#…#$"；p[i] = 以 i 為中心的迴文半徑（含自身）
+int manacher(const string&amp; s, vector&lt;int&gt;&amp; p) {
+    string t = "^";
+    for (char c : s) { t += '#'; t += c; }
+    t += "#$";
+    int n = t.size(); p.assign(n, 0);
+    int C = 0, R = 0, best = 0;
+    for (int i = 1; i &lt; n - 1; i++) {
+        if (i &lt; R) p[i] = min(p[2*C - i], R - i);   // 鏡像繼承
+        while (t[i + p[i] + 1] == t[i - p[i] - 1]) p[i]++;
+        if (i + p[i] &gt; R) C = i, R = i + p[i];
+        best = max(best, p[i]);                     // p[i] = 原串迴文長
+    }
+    return best;
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3805">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3805" target="_blank">洛谷 P3805 Manacher 模板</a><span class="chip">Manacher</span></div>
+<p>求最長迴文子串長度，\(|s|\le 1.1\times 10^7\)。</p>
+<details><summary>思路</summary><p>資料規模直接封殺 \(O(n\log n)\) 以上的做法——這就是 Manacher 存在的理由。注意 \(10^7\) 級字串的讀入與記憶體（p 陣列用 int、字串預留 2n+3）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-5">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/longest-palindromic-substring/" target="_blank">LC 5 最長迴文子串</a><span class="chip">Manacher</span><span class="chip">中心擴展</span></div>
+<p>回傳最長迴文子串本身（\(n\le 1000\)）。</p>
+<details><summary>思路</summary><p>\(n\le 1000\) 用 \(O(n^2)\) 中心擴展即可（每個中心向兩側擴），Manacher 當練習。先寫暴力再寫 Manacher，能清楚看到「鏡像繼承」到底省了哪些擴張。</p></details>
+</div>
+
+<div class="problem" data-problem-id="lc-647">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://leetcode.cn/problems/palindromic-substrings/" target="_blank">LC 647 迴文子串數目</a><span class="chip">Manacher</span><span class="chip">計數</span></div>
+<p>數 s 有多少個迴文子串（位置不同算不同）。</p>
+<details><summary>思路</summary><p>以 \(i\) 為中心的迴文有 \(\lceil p[i]/2\rceil\) 個（新串座標），答案 \(=\sum\lceil p[i]/2\rceil\)。半徑陣列天生就是「每個中心的迴文計數」——這是 Manacher 比中心擴展多送的資訊。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1659">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1659" target="_blank">洛谷 P1659 [國家集訓隊] 拉拉队排練</a><span class="chip">Manacher</span><span class="chip">貪心</span></div>
+<p>取出 \(k\) 個最長的<b>奇長</b>迴文子串，求長度乘積（mod）。</p>
+<details><summary>思路</summary><p>Manacher 得出每個中心的最長奇迴文長 → 開桶 <code>cnt[len]</code>。關鍵：長度 \(len\) 的迴文存在 ⇒ 長度 \(len-2\) 的也存在（同中心縮一圈），所以從最長往短做<b>後綴和</b>即得「長度 ≥ len 的迴文個數」，再由長到短貪心取滿 \(k\) 個、快速冪算乘積。「半徑 → 桶 → 後綴和」三連是 Manacher 計數題的標準管線。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p4555">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4555" target="_blank">洛谷 P4555 [國家集訓隊] 最長雙迴文串</a><span class="chip">Manacher</span><span class="chip">DP</span></div>
+<p>求最長的「兩個迴文串拼接」形式的子串。</p>
+<details><summary>思路</summary><p>令 \(f[i]\)＝以 \(i\) 開頭的最長迴文、\(g[i]\)＝以 \(i\) 結尾的最長迴文，答案 \(=\max_i g[i]+f[i+1]\)。從 \(p[]\) 推 \(f,g\)：每個迴文 \([l,r]\) 應更新 \(f[l]\) 與 \(g[r]\)，直接做是平方——利用「同中心縮短仍是迴文」，在 Manacher 擴張時只記邊界值，再左右各掃一遍遞推補全（\(f[i]\ge f[i-1]-2\)）。把「區間貢獻」攤成「掃描遞推」是這題最值得帶走的技巧。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p>Manacher 給你「每個中心最長半徑」，但迴文之間的<b>包含／後綴關係</b>它不維護。要對每個本質不同迴文計數、做迴文分解，升級到 <a href="09-pam.html">2.9 迴文自動機</a>。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="03-z-function.html"><span class="dir">← 上一節</span>2.3 Z 函數</a>
+<a class="next" href="05-trie.html"><span class="dir">下一節 →</span>2.5 Trie 與 01-Trie</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

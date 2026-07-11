@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>競賽資料結構 — 演算法策略圖鑑</title>
+<meta name="description" content="從入門到程式競賽專家的競賽資料結構策略分類與題目整理">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/site.js"></script>
+<script src="../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../assets/supabase-config.js"></script>
+<script src="../../assets/progress.js"></script>
+</head>
+<body data-page="index" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="pages/theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="pages/strategies/01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="pages/strategies/02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="pages/strategies/03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="pages/strategies/04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="pages/strategies/05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="pages/strategies/06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="pages/strategies/07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="pages/strategies/08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="pages/strategies/09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="pages/strategies/10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="pages/strategies/11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="pages/strategies/12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="pages/strategies/13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pages/pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="pages/method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="pages/roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+
+<div class="hero">
+  <h1>🧱 競賽資料結構</h1>
+  <p>從入門到程式競賽專家的競賽資料結構策略分類與題目整理</p>
+  <div class="badges">
+    <span>★ 入門 → ★★★★★ 專家</span>
+    <span>13 大策略分類</span>
+    <span>LeetCode / Codeforces / AtCoder / 洛谷 / POJ</span>
+  </div>
+</div>
+
+<h2><span class="sec-no">0</span>導讀與使用方式</h2>
+
+<div class="callout idea"><b>🗺️ 這份資料結構指南如何組織？</b>
+<p>競賽資料結構題的本質只有一句話：<b>把「每次詢問都暴力重算」換成「維護增量」</b>。所以第 1 章先建立「操作分析」這套方法——先列出（修改型態 × 查詢型態），再問查詢能不能拆成可合併的區間資訊；第 2 章的 13 個策略按「武器重量」排序：從前綴和、單調棧這種零結構技巧，經 BIT／線段樹主戰坦克，到平衡樹、可持久化、LCT 重炮；第 3、4 章分別處理「為什麼寫掛」與「怎麼選結構」，第 6 章是刷題順序。讀每一章都要能回答：<b>它維護什麼資訊、資訊怎麼合併、修改怎麼攤銷、什麼時候它是過度設計。</b></p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>操作外觀</th><th>優先翻閱</th><th>最先檢查的限制</th></tr>
+<tr><td>靜態區間和／min／gcd</td><td>2.1 前綴和、差分、ST 表</td><td>真的沒有修改嗎</td></tr>
+<tr><td>下一個更大元素、滑窗最值</td><td>2.2 單調棧／單調佇列</td><td>要的是「支配關係」而非任意查詢</td></tr>
+<tr><td>動態最值、動態中位數</td><td>2.3 堆與對頂堆</td><td>需不需要刪除任意元素</td></tr>
+<tr><td>連通性、分組、傳遞關係</td><td>2.4 並查集</td><td>有沒有「刪邊」（→ 離線倒序／線段樹分治）</td></tr>
+<tr><td>單點改 + 區間和/名次</td><td>2.5 BIT</td><td>資訊可差分嗎（min 不行）</td></tr>
+<tr><td>區間改 + 區間查</td><td>2.6–2.7 線段樹</td><td>標記能複合嗎、值域要不要動態開點</td></tr>
+<tr><td>矩形、偏序、二維統計</td><td>2.8 掃描線／CDQ</td><td>能離線嗎</td></tr>
+<tr><td>插入刪除 + 名次/區間翻轉</td><td>2.9 平衡樹</td><td>能不能用權值線段樹/pb_ds 混過去</td></tr>
+<tr><td>區間眾數這類「不可合併」統計</td><td>2.10 分塊與莫隊</td><td>允許 O(n√n) 嗎、能離線嗎</td></tr>
+<tr><td>樹上路徑/子樹操作</td><td>2.11 樹上資料結構</td><td>樹形固定嗎（動態 → LCT）</td></tr>
+<tr><td>歷史版本、區間第 k 小</td><td>2.12 可持久化</td><td>強制線上嗎（離線可整體二分）</td></tr>
+</table></div>
+
+<div class="callout idea"><b>💡 一句話判斷「這題是不是資料結構題」</b>
+<p>題面出現「\(q\) 次操作／詢問」且單次暴力是 \(O(n)\)，總量 \(nq\ge 10^8\) 就是資料結構題。更細的訊號藏在<b>資料範圍</b>：\(n,q\le 10^5\sim10^6\) → \(O((n+q)\log n)\) 的 BIT/線段樹；\(n\le 10^5\) 且統計「不可合併」→ \(O(n\sqrt n)\) 分塊/莫隊；值域 \(10^9\) → 離散化或動態開點；「強制線上」四個字 → 可持久化或平衡樹。</p></div>
+
+<h3>難度分級</h3>
+<div class="tbl-wrap"><table>
+<tr><th>星級</th><th>定位</th><th>大約對應</th></tr>
+<tr><td><span class="stars s1">★</span></td><td>入門：前綴和一行公式、STL 直接用</td><td>LeetCode Easy／洛谷 紅題</td></tr>
+<tr><td><span class="stars s2">★★</span></td><td>基礎：BIT／單調棧模板直接套</td><td>LeetCode Medium／CF 1200 以下</td></tr>
+<tr><td><span class="stars s3">★★★</span></td><td>進階：線段樹懶標記、離線技巧、LCA</td><td>LeetCode Hard 邊緣／CF 1400–1800／NOIP 提高</td></tr>
+<tr><td><span class="stars s4">★★★★</span></td><td>競賽：平衡樹、主席樹、樹剖、CDQ、莫隊</td><td>CF 1900–2300／省選／USACO Platinum</td></tr>
+<tr><td><span class="stars s5">★★★★★</span></td><td>專家：吉司機線段樹、LCT、線段樹分治、樹套樹</td><td>CF 2400+／NOI／ICPC 區域賽壓軸</td></tr>
+</table></div>
+
+<h3>標籤系統</h3>
+<p>每道題帶<b>策略標籤</b>（前綴和、單調棧、堆、DSU、BIT、線段樹、掃描線、CDQ、平衡樹、莫隊、樹剖、可持久化 …）與<b>難度星級</b>；側欄「📋 <a href="../../pages/problems.html">全站題目總表</a>」可複選篩選。同一題在多主題出現時（例如琪露諾在 DP 主題講轉移優化、在本主題講單調佇列本身），進度標記一次、全站同步。</p>
+
+<div class="callout when"><b>🔗 與其他主題的分工</b>
+<ul>
+<li>「資料結構<b>優化 DP 轉移</b>」的套路（斜率、單調佇列優化）→ <a href="../dp/index.html">DP 主題</a> 2.12。</li>
+<li>「貪心決策用資料結構加速」（反悔堆、DSU 找空位）→ <a href="../greedy/index.html">貪心主題</a> 2.4／2.9。</li>
+<li>Trie／01-Trie 本體與字串自動機 → <a href="../strings/index.html">字串主題</a> 2.5；本主題只收它的可持久化版本。</li>
+</ul></div>
+
+
+<h2>快速導覽</h2>
+<p class="lede">每個子主題都是獨立頁面，可從側欄或下面的卡片進入；頁尾有「上一節 / 下一節」可依順序閱讀。</p>
+<div class="card-grid">
+<a class="topic-card" href="pages/theory.html"><span class="tc-no">1</span><div class="tc-title">理論基礎</div><div class="tc-desc">操作分析法、可合併性、均攤與勢能、離線 vs 線上、複雜度預算</div></a>
+<a class="topic-card" href="pages/strategies/01-prefix-sums.html"><span class="tc-no">2.1</span><div class="tc-title">2.1 前綴和・差分・ST 表</div><div class="tc-desc">預處理換查詢：一維/二維前綴和、差分打點、可重複貢獻 RMQ</div></a>
+<a class="topic-card" href="pages/strategies/02-monotonic.html"><span class="tc-no">2.2</span><div class="tc-title">2.2 單調堆疊與單調佇列</div><div class="tc-desc">維護有用候選人：下一個更大元素、滑窗最值、均攤 O(n)</div></a>
+<a class="topic-card" href="pages/strategies/03-heap.html"><span class="tc-no">2.3</span><div class="tc-title">2.3 堆與對頂堆</div><div class="tc-desc">動態中位數、懶惰刪除、multiset 的替代範圍</div></a>
+<a class="topic-card" href="pages/strategies/04-dsu.html"><span class="tc-no">2.4</span><div class="tc-title">2.4 並查集</div><div class="tc-desc">等價類維護：種類/帶權 DSU、離線倒序、可撤銷預告</div></a>
+<a class="topic-card" href="pages/strategies/05-bit.html"><span class="tc-no">2.5</span><div class="tc-title">2.5 樹狀數組 BIT</div><div class="tc-desc">lowbit 切前綴：逆序對、雙 BIT 區間和、BIT 上倍增求第 k 小</div></a>
+<a class="topic-card" href="pages/strategies/06-segment-tree.html"><span class="tc-no">2.6</span><div class="tc-title">2.6 線段樹基礎</div><div class="tc-desc">懶標記三函式分工、先乘後加、最大子段和四元組</div></a>
+<a class="topic-card" href="pages/strategies/07-segment-tree-advanced.html"><span class="tc-no">2.7</span><div class="tc-title">2.7 線段樹進階</div><div class="tc-desc">值域當下標、用到才開點、樹上二分與線段樹合併、李超樹</div></a>
+<a class="topic-card" href="pages/strategies/08-sweepline-cdq.html"><span class="tc-no">2.8</span><div class="tc-title">2.8 掃描線與離線分治</div><div class="tc-desc">把一個維度變成時間：矩形面積並、三維偏序、整體二分</div></a>
+<a class="topic-card" href="pages/strategies/09-balanced-bst.html"><span class="tc-no">2.9</span><div class="tc-title">2.9 平衡樹</div><div class="tc-desc">split/merge 兩原語打天下：名次、區間翻轉、整體偏移</div></a>
+<a class="topic-card" href="pages/strategies/10-sqrt.html"><span class="tc-no">2.10</span><div class="tc-title">2.10 分塊與莫隊</div><div class="tc-desc">不可合併資訊的救生圈：整塊標記散塊暴力、詢問重排</div></a>
+<a class="topic-card" href="pages/strategies/11-tree.html"><span class="tc-no">2.11</span><div class="tc-title">2.11 樹上資料結構</div><div class="tc-desc">把樹線性化：DFS 序、歐拉序、重鏈剖分序與樹上差分</div></a>
+<a class="topic-card" href="pages/strategies/12-persistent.html"><span class="tc-no">2.12</span><div class="tc-title">2.12 可持久化</div><div class="tc-desc">版本共享 O(log n)：主席樹區間第 k 小、可持久化 01-Trie</div></a>
+<a class="topic-card" href="pages/strategies/13-expert.html"><span class="tc-no">2.13</span><div class="tc-title">2.13 專家專題</div><div class="tc-desc">吉司機線段樹、線段樹分治、LCT、ODT、回滾莫隊、樹套樹</div></a>
+<a class="topic-card" href="pages/pitfalls.html"><span class="tc-no">P</span><div class="tc-title">3. 常見錯誤與陷阱</div><div class="tc-desc">線段樹 4n、標記複合順序、離散化漏值、莫隊指標順序——高頻坑與修法</div></a>
+<a class="topic-card" href="pages/method.html"><span class="tc-no">M</span><div class="tc-title">4. 選型方法論</div><div class="tc-desc">操作規格書、選型決策表、五種離線重排與對拍驗證器</div></a>
+<a class="topic-card" href="pages/roadmap.html"><span class="tc-no">6</span><div class="tc-title">6. 學習路線圖</div><div class="tc-desc">四階段學習計畫，每階段附代表題與畢業檢定</div></a>
+</div>
+
+<div class="pagenav">
+<a class="next" href="pages/theory.html"><span class="dir">下一節 →</span>1. 理論基礎</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

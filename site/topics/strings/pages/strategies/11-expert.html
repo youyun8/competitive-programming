@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.11 專家專題 — 演算法策略圖鑑</title>
+<meta name="description" content="失配樹、廣義 SAM、SAM×線段樹合併、border 理論、位平行">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s11" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="../../index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../../../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.11 專家專題</h2>
+
+<p class="lede">本章每一節都值一整篇專文；這裡給出「是什麼、什麼時候需要、代表題」三件事，作為 ★★★★★ 的路標。</p>
+
+<h3>2.11.1 失配樹（border 樹）</h3>
+<p>把 KMP 的 \(\mathrm{fail}[i]\to i\) 全部畫出來：一棵以 0 為根的樹，節點 \(i\) 的祖先鏈 = 前綴 \(s_{1..i}\) 的所有 border。於是「前綴 \(x\) 與前綴 \(y\) 的最長公共 border」= 失配樹上 \(\mathrm{LCA}(x,y)\)（若 LCA 是 \(x\) 或 \(y\) 本身要再跳一層——border 須為<b>真</b>前後綴）。</p>
+
+<div class="problem" data-problem-id="luogu-p5829">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P5829" target="_blank">洛谷 P5829 失配樹模板</a><span class="chip">fail樹</span><span class="chip">LCA</span></div>
+<p>多次詢問兩個前綴的最長公共 border。</p>
+<details><summary>思路</summary><p>建失配樹 + 倍增 LCA（LCA 工具見<a href="../../../ds/index.html">資料結構主題</a> 2.11）。「把指標鏈變成樹、把鏈上問題變成樹上問題」——fail 樹（ACAM）、parent 樹（SAM）、失配樹（KMP）三位一體，看懂一個就看懂全部。</p></details>
+</div>
+
+<h3>2.11.2 廣義 SAM（多串）</h3>
+<p>把多個串壓進同一台 SAM：先把所有串插進 Trie，<b>對 Trie 做 BFS</b>、按層 extend（每個節點的 last 取其 Trie 父節點對應的 SAM 節點）。避免「逐串重置 last」的線上寫法在重複前綴上製造壞節點。節點意義不變：所有串的所有子串的 endpos 等價類（endpos 帶「屬於哪些串」的資訊）。</p>
+
+<div class="problem" data-problem-id="luogu-p6139">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P6139" target="_blank">洛谷 P6139 廣義 SAM 模板</a><span class="chip">廣義SAM</span></div>
+<p>多個串，求本質不同子串總數。</p>
+<details><summary>思路</summary><p>建好後仍是 \(\sum(len_u - len_{link(u)})\)。模板重點全在建構的正確性：Trie + BFS、extend 裡對「節點已存在」的兩個特判（直接返回 \(q\) 或 clone 後返回 \(w\)）。多串子串交集/計數類題的地基。</p></details>
+</div>
+
+<h3>2.11.3 SAM × 線段樹合併：endpos 集合實體化</h3>
+<p>cnt 只是 endpos 的<b>大小</b>；當題目問「子串 \(t\) 在 \(s_{l..r}\) 中出現幾次」這種帶區間的問題，需要 endpos <b>集合本身</b>。做法：每個前綴節點掛一棵動態開點線段樹（下標 = 結束位置），parent 樹自底向上<b>線段樹合併</b>——每個節點得到自己的 endpos 集合，可查任意區間內出現次數。</p>
+
+<div class="problem" data-problem-id="cf-1037h">
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://codeforces.com/problemset/problem/1037/H" target="_blank">CF 1037H Security</a><span class="chip">SAM</span><span class="chip">線段樹合併</span><span class="chip">貪心</span></div>
+<p>多次詢問：字典序大於 \(t\) 且是 \(s_{l..r}\) 子串的最小字串。</p>
+<details><summary>思路</summary><p>在 SAM 上按字典序貪心逐字元構造答案，每步用該節點的 endpos 線段樹判「這個延伸在 \([l+\text{目前長}, r]\) 內是否出現」——可行就走更小字元，否則回溯放大。字串壓軸的標準配方：<b>SAM 提供結構、線段樹合併提供可查詢的 endpos、貪心逐位定答案</b>。線段樹合併見<a href="../../../ds/index.html">資料結構主題</a> 2.7。</p></details>
+</div>
+
+<h3>2.11.4 後綴樹視角</h3>
+<p>後綴樹 = 所有後綴的壓縮 Trie。兩個免費獲得的事實：① <b>反串 SAM 的 parent 樹就是原串的後綴樹</b>——會 SAM 就會後綴樹；② SA 是後綴樹葉子的 DFS 序、height 是相鄰葉子 LCA 的深度——SA 與 SAM 在後綴樹上會師。Ukkonen 線上構造了解存在即可，競賽中幾乎總是用 SAM 代替。用後綴樹「講」題往往最清楚（例：不同子串數 = 樹上邊長總和），實作再翻譯回 SAM／SA。</p>
+
+<h3>2.11.5 border 理論深入</h3>
+<ul>
+<li><b>Periodicity Lemma（Fine–Wilf）</b>：\(p,q\) 是週期且 \(p+q-\gcd(p,q)\le n\) ⇒ \(\gcd(p,q)\) 是週期——比 1.2 的弱版界更緊。</li>
+<li><b>border 等差結構</b>：所有 border 長度可劃分成 \(O(\log n)\) 個等差數列。應用：「所有長度 ≥ n/2 的 border」可 \(O(1)\) 批次處理，是 CF 3000+ 週期題（如 CF 1286E）與 PAM 的 series link（CF 906E）背後的共同引理。</li>
+<li><b>runs 定理</b>：字串的極大週期段（run）不超過 \(n\) 個，總可用 Lyndon 根枚舉——理論題的終點站，先知道存在。</li>
+</ul>
+
+<h3>2.11.6 位平行匹配（Shift-And / bitset）</h3>
+<p>把「匹配進度集合」壓進 bitset：<code>D = ((D &lt;&lt; 1) | 1) &amp; mask[c]</code>，一步更新所有進度。\(O(nm/64)\) 的「暴力」在 \(m\le 10^4\)、帶萬用字元、帶「多處小修改」的匹配題裡經常吊打理論更優的做法。LCS 的 bitset 壓位同款思想（<a href="../../../dp/index.html">DP 主題</a> 2.12.9）。實戰價值：當你想不出正解時，先估 bitset 暴力能不能過。</p>
+
+<div class="callout idea"><b>🎓 專家題的共同形狀</b>
+<p>★★★★★ 字串題幾乎都是「<b>結構 × 結構</b>」：SAM×線段樹合併、fail 樹×BIT（P2414）、PAM×等差 DP（CF 906E）、SA×單調棧（P4248）。先用字串結構把問題「座標化」（節點、樹、序），再套通用資料結構收割——所以本主題與<a href="../../../ds/index.html">資料結構主題</a>是搭檔，兩邊都到 ★★★★ 後這章才會真正順手。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="10-lyndon.html"><span class="dir">← 上一節</span>2.10 最小表示與 Lyndon</a>
+<a class="next" href="../pitfalls.html"><span class="dir">下一節 →</span>3. 常見錯誤與陷阱</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

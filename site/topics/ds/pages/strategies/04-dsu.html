@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.4 並查集（DSU） — 演算法策略圖鑑</title>
+<meta name="description" content="等價類維護：種類/帶權 DSU、離線倒序、可撤銷預告">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../../../assets/site.css">
+<script src="../../../../assets/site.js"></script>
+<script src="../../../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../../../assets/supabase-config.js"></script>
+<script src="../../../../assets/progress.js"></script>
+</head>
+<body data-page="s04" data-topic="ds">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../../../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../../../dp/index.html">📈 DP</a>
+    <a class="" data-topic="strings" href="../../../strings/index.html">🔤 字串</a>
+    <a class="active" data-topic="ds" href="../../index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../../../pages/problems.html#topic=ds"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="../../index.html">🏠 競賽資料結構 首頁</a>
+    <a class="lv1" data-page="theory" href="../theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="01-prefix-sums.html">2.1 前綴和・差分・ST 表</a>
+    <a class="lv2" data-page="s02" href="02-monotonic.html">2.2 單調堆疊與單調佇列</a>
+    <a class="lv2" data-page="s03" href="03-heap.html">2.3 堆與對頂堆</a>
+    <a class="lv2" data-page="s04" href="04-dsu.html">2.4 並查集</a>
+    <a class="lv2" data-page="s05" href="05-bit.html">2.5 樹狀數組 BIT</a>
+    <a class="lv2" data-page="s06" href="06-segment-tree.html">2.6 線段樹基礎</a>
+    <a class="lv2" data-page="s07" href="07-segment-tree-advanced.html">2.7 線段樹進階</a>
+    <a class="lv2" data-page="s08" href="08-sweepline-cdq.html">2.8 掃描線與離線分治</a>
+    <a class="lv2" data-page="s09" href="09-balanced-bst.html">2.9 平衡樹</a>
+    <a class="lv2" data-page="s10" href="10-sqrt.html">2.10 分塊與莫隊</a>
+    <a class="lv2" data-page="s11" href="11-tree.html">2.11 樹上資料結構</a>
+    <a class="lv2" data-page="s12" href="12-persistent.html">2.12 可持久化</a>
+    <a class="lv2" data-page="s13" href="13-expert.html">2.13 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="../pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="../method.html">4. 選型方法論</a>
+    <a class="lv1" data-page="roadmap" href="../roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+<h2>2.4 並查集（DSU）</h2>
+
+<div class="callout idea"><b>💡 核心想法</b>
+<p>維護「不相交集合」的兩個操作：find（我屬於哪個等價類）與 union（合併兩類）。路徑壓縮 + 按秩（大小）合併後均攤 \(O(\alpha(n))\)≈常數。等價類的語意可以很寬：連通性、朋友圈、「這些變數相等」、「這一段已被佔用」——<b>凡是自反、對稱、傳遞的關係，都可以丟給 DSU</b>。</p></div>
+
+<div class="callout when"><b>🔎 適用特徵</b>
+<ul>
+<li>只合併、不分裂（分裂 → 離線倒序或 LCT）。</li>
+<li>「加邊後問連通」「分組」「傳遞約束（相等/同組）」。</li>
+<li>帶「關係量」的約束（距離、奇偶、mod k 類別）→ 帶權/種類 DSU。</li>
+</ul></div>
+
+<details><summary>模板（C++）：路徑壓縮 + 按大小合併</summary>
+<pre><code class="lang-cpp">int fa[N], sz[N];
+int find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+bool unite(int x, int y) {
+    x = find(x); y = find(y);
+    if (x == y) return false;
+    if (sz[x] &lt; sz[y]) swap(x, y);
+    fa[y] = x; sz[x] += sz[y];
+    return true;
+}
+// 帶權版：w[x] = x 到父節點的關係量，find 時沿路累積並壓縮
+int find(int x) {
+    if (fa[x] == x) return x;
+    int r = find(fa[x]);
+    w[x] += w[fa[x]];          // 關係量按語意複合（加法/異或/mod）
+    return fa[x] = r;
+}</code></pre></details>
+
+<div class="problem" data-problem-id="luogu-p3367">
+<div class="p-head"><span class="stars s1">★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3367" target="_blank">洛谷 P3367 並查集模板</a><span class="chip">DSU</span></div>
+<p>合併與查詢是否同集合。P1551 親戚 ★ 同款敘事版。</p>
+<details><summary>思路</summary><p>模板。兩個優化各自就夠 \(O(\log n)\)，合用近常數；競賽寫「路徑壓縮 + 按大小」最順手（size 常有語意）。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1892">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1892" target="_blank">洛谷 P1892 團伙</a><span class="chip">DSU</span><span class="chip">種類</span></div>
+<p>朋友的朋友是朋友；敵人的敵人是朋友。問最多幾個團伙。</p>
+<details><summary>思路</summary><p>種類（拆點）DSU：每人拆成「本體 \(x\)」與「敵人陣營 \(x+n\)」；\(x\) 與 \(y\) 為敵 → 合併 \((x, y+n)\) 與 \((y, x+n)\)。「用拆點編碼關係」是 DSU 最重要的變形之一，食物鏈是它的三倍點升級。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1197">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1197" target="_blank">洛谷 P1197 [JSOI2008] 星球大戰</a><span class="chip">DSU</span><span class="chip">離線倒序</span></div>
+<p>依序摧毀節點，每次摧毀後問連通塊數。</p>
+<details><summary>思路</summary><p>DSU 不會刪——<b>時間倒流</b>：從全毀狀態開始，倒序「復活」節點並加回相鄰邊，連通塊數的變化反著記錄。離線思維的第一課（1.4）：把刪除變成插入。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1955">
+<div class="p-head"><span class="stars s3">★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1955" target="_blank">洛谷 P1955 [NOI2015] 程序自動分析</a><span class="chip">DSU</span><span class="chip">離散化</span></div>
+<p>一堆 \(x_i=x_j\) 與 \(x_i\ne x_j\) 約束，判可滿足性。</p>
+<details><summary>思路</summary><p>等式是等價關係 → 先把所有等式 union，再逐條檢查不等式兩端是否同根。兩個要點：<b>等式全部優先處理</b>（順序自由是因為約束無方向）；值域 \(10^9\) → 離散化。DSU 判可滿足性的原型題。</p></details>
+</div>
+
+<div class="problem" data-problem-id="luogu-p2024">
+<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P2024" target="_blank">洛谷 P2024 [NOI2001] 食物鏈</a><span class="chip">DSU</span><span class="chip">帶權</span></div>
+<p>A 吃 B、B 吃 C、C 吃 A 的三類動物，判斷 k 句話中幾句是假話。</p>
+<details><summary>思路</summary><p>兩種等價解法：<b>拆三倍點</b>（x 的「同類/獵物/天敵」三分身，每句話合併三對）或<b>帶權 DSU</b>（w[x] = 與根的關係 mod 3，find 時累加、union 時解方程）。帶權版更通用（奇偶、距離、異或關係全是同一模板換運算），值得逼自己寫這版。</p></details>
+</div>
+
+<div class="callout when"><b>⏫ 進階去向</b>
+<p><b>可撤銷 DSU</b>：不壓縮、只按秩，用棧記錄修改逐步回滾——單獨沒用（只能撤最近的），配上<b>線段樹分治</b>（<a href="13-expert.html">2.13.2</a>）就能處理「邊有存活時間區間」的離線動態連通性；真·強制線上動態連通性才需要 LCT（<a href="13-expert.html">2.13.3</a>）。另見貪心主題 2.9 的「DSU 找下一個空位」——把 fa 指標當跳轉表用的妙招。</p></div>
+
+<div class="pagenav">
+<a class="prev" href="03-heap.html"><span class="dir">← 上一節</span>2.3 堆與對頂堆</a>
+<a class="next" href="05-bit.html"><span class="dir">下一節 →</span>2.5 樹狀數組 BIT</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>

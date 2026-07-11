@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>字串演算法 — 演算法策略圖鑑</title>
+<meta name="description" content="從入門到程式競賽專家的字串演算法策略分類與題目整理">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A7%AD</text></svg>">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/site.js"></script>
+<script src="../../assets/math-config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+<script src="../../assets/supabase-config.js"></script>
+<script src="../../assets/progress.js"></script>
+</head>
+<body data-page="index" data-topic="strings">
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="logo"><a href="../../index.html">🧭 演算法策略圖鑑</a></div>
+  <div class="toolbtns">
+    <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
+  </div>
+  <div id="authBox" class="authbox"></div>
+  <span class="lv1-label">主題</span>
+  <div id="topicSwitcher">
+    <a class="" data-topic="greedy" href="../greedy/index.html">🧭 貪心</a>
+    <a class="" data-topic="dp" href="../dp/index.html">📈 DP</a>
+    <a class="active" data-topic="strings" href="index.html">🔤 字串</a>
+    <a class="" data-topic="ds" href="../ds/index.html">🧱 資結</a>
+    </div>
+  <a class="sitewide" href="../../pages/problems.html#topic=strings"><span class="sitewide-icon" aria-hidden="true">📋</span><span>全站題目總表</span></a>
+  <hr class="sidebar-divider">
+  <nav id="toc">
+    <a class="lv1" data-page="index" href="index.html">🏠 字串演算法 首頁</a>
+    <a class="lv1" data-page="theory" href="pages/theory.html">1. 理論基礎</a>
+    <span class="lv1-label">2. 策略分類</span>
+    <a class="lv2" data-page="s01" href="pages/strategies/01-hashing.html">2.1 字串雜湊</a>
+    <a class="lv2" data-page="s02" href="pages/strategies/02-kmp.html">2.2 KMP 與週期</a>
+    <a class="lv2" data-page="s03" href="pages/strategies/03-z-function.html">2.3 Z 函數</a>
+    <a class="lv2" data-page="s04" href="pages/strategies/04-manacher.html">2.4 Manacher</a>
+    <a class="lv2" data-page="s05" href="pages/strategies/05-trie.html">2.5 Trie 與 01-Trie</a>
+    <a class="lv2" data-page="s06" href="pages/strategies/06-aho-corasick.html">2.6 AC 自動機</a>
+    <a class="lv2" data-page="s07" href="pages/strategies/07-suffix-array.html">2.7 後綴數組</a>
+    <a class="lv2" data-page="s08" href="pages/strategies/08-sam.html">2.8 後綴自動機</a>
+    <a class="lv2" data-page="s09" href="pages/strategies/09-pam.html">2.9 迴文自動機</a>
+    <a class="lv2" data-page="s10" href="pages/strategies/10-lyndon.html">2.10 最小表示與 Lyndon</a>
+    <a class="lv2" data-page="s11" href="pages/strategies/11-expert.html">2.11 專家專題</a>
+    <a class="lv1" data-page="pitfalls" href="pages/pitfalls.html">3. 常見錯誤與陷阱</a>
+    <a class="lv1" data-page="method" href="pages/method.html">4. 模板整理與選型</a>
+    <a class="lv1" data-page="roadmap" href="pages/roadmap.html">6. 學習路線圖</a>
+  </nav>
+</aside>
+<button id="sidebarToggle" class="sidebar-toggle" type="button"
+        aria-label="收合側欄" aria-expanded="true" title="收合側欄">‹</button>
+<button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
+
+<main>
+
+<div class="hero">
+  <h1>🔤 字串演算法</h1>
+  <p>從入門到程式競賽專家的字串演算法策略分類與題目整理</p>
+  <div class="badges">
+    <span>★ 入門 → ★★★★★ 專家</span>
+    <span>11 大策略分類</span>
+    <span>LeetCode / Codeforces / AtCoder / 洛谷 / POJ</span>
+  </div>
+</div>
+
+<h2><span class="sec-no">0</span>導讀與使用方式</h2>
+
+<div class="callout idea"><b>🗺️ 這份字串指南如何組織？</b>
+<p>競賽字串題看似五花八門，本質上繞著四個問題族打轉：<b>匹配</b>（A 在 B 裡出現在哪）、<b>週期</b>（字串自我重複的結構）、<b>迴文</b>、<b>子串結構</b>（所有子串的統計與排序）。第 1 章先建立 border／週期這套共同語言；第 2 章的 11 個策略按「工具」組織——從雜湊、KMP 這種十行模板，一路到後綴自動機這種需要整章理解的重型結構；第 3、4 章分別處理「為什麼被卡」與「怎麼選工具」，第 6 章才是刷題順序。讀每一章時都要能回答：<b>這個工具回答哪一族問題、線性複雜度從哪裡來、什麼時候它是殺雞用牛刀。</b></p></div>
+
+<div class="tbl-wrap"><table>
+<tr><th>題目外觀</th><th>優先翻閱</th><th>最先檢查的限制</th></tr>
+<tr><td>一個模式串找出現位置</td><td>2.1 hash、2.2 KMP、2.3 Z</td><td>會不會被卡 hash、要不要出現次數</td></tr>
+<tr><td>很多模式串同時匹配</td><td>2.6 AC 自動機</td><td>Σ|模式| 的規模、要不要每個串各自的次數</td></tr>
+<tr><td>循環節、前綴後綴相等</td><td>2.2 KMP（border/週期）</td><td>是否只需要 fail 陣列的性質</td></tr>
+<tr><td>迴文子串</td><td>2.4 Manacher、2.9 PAM</td><td>只要最長/計數 → Manacher；逐個迴文統計 → PAM</td></tr>
+<tr><td>本質不同子串、子串排序</td><td>2.7 SA、2.8 SAM</td><td>要 height 分組還是 endpos 結構、是否強制線上</td></tr>
+<tr><td>XOR 最值、二進位前綴</td><td>2.5 01-Trie</td><td>值域位數、要不要可持久化（→ <a href="../ds/index.html">資料結構主題</a>）</td></tr>
+<tr><td>環同構、字典序最小旋轉</td><td>2.10 最小表示法 / Lyndon</td><td>只要一個答案還是要整個分解</td></tr>
+</table></div>
+
+<p><b>字串演算法</b>的統一主線是：暴力比較會在「重複比較已知相等的部分」上浪費時間，而每個工具都是一種<b>把已知資訊記下來重複利用</b>的方法——KMP 記住 border、Z 記住匹配盒、Manacher 記住迴文鏡像、自動機把所有狀態顯式建出來。看懂這一點，11 個策略就不是 11 份互不相關的模板。</p>
+
+<div class="callout idea"><b>💡 一句話判斷「這題是不是字串題」</b>
+<p>資料是序列而且<b>比較的單位是「連續片段」</b>（子串、前綴、後綴、迴文段），就是字串題；若只在乎「選哪些位置」而不在乎連續性，多半是 DP 或貪心（子序列問題幾乎都是 <a href="../dp/index.html">DP</a>）。競賽中更實用的訊號是資料範圍：\(|s| \le 10^6\) 幾乎鎖定線性家族（KMP／Z／Manacher／SAM）；\(|s| \le 10^5\) 允許 \(O(n \log n)\)（SA、hash+二分）；\(n \le 5000\) 的 \(O(n^2)\) 常常直接暴力 DP。</p></div>
+
+<h3>難度分級</h3>
+<div class="tbl-wrap"><table>
+<tr><th>星級</th><th>定位</th><th>大約對應</th></tr>
+<tr><td><span class="stars s1">★</span></td><td>入門：呼叫模板或十行內暴力</td><td>LeetCode Easy／洛谷 紅題</td></tr>
+<tr><td><span class="stars s2">★★</span></td><td>基礎：單一模板直接套用</td><td>LeetCode Medium／CF 1200 以下</td></tr>
+<tr><td><span class="stars s3">★★★</span></td><td>進階：需要一步轉化或組合兩個工具</td><td>LeetCode Hard 邊緣／CF 1400–1800</td></tr>
+<tr><td><span class="stars s4">★★★★</span></td><td>競賽：SA/SAM/PAM 級工具或 fail 樹思維</td><td>CF 1900–2300／省選</td></tr>
+<tr><td><span class="stars s5">★★★★★</span></td><td>專家：廣義 SAM、SAM×線段樹合併、border 理論</td><td>CF 2400+／NOI／ICPC 區域賽壓軸</td></tr>
+</table></div>
+
+<h3>標籤系統</h3>
+<p>每道題目帶兩類標籤：<b>策略標籤</b>（hash、KMP、Z函數、Manacher、Trie、ACAM、SA、SAM、PAM、Lyndon、fail樹 …）與<b>難度星級</b>。側欄的「📋 <a href="../../pages/problems.html">全站題目總表</a>」可以按主題、標籤與星級複選篩選；同一道題若也收錄在其他主題（例如 GT 考試同時是 KMP 自動機與矩陣冪 DP 的代表題），練習進度只需標記一次、兩邊自動同步。</p>
+
+<div class="callout when"><b>🔗 與其他主題的分工</b>
+<ul>
+<li>字串上的 <b>DP</b>（編輯距離、正則匹配、自動機上計數）→ <a href="../dp/index.html">DP 主題</a> 2.5／2.6。</li>
+<li><b>字典序貪心</b>（單調棧刪字元、拼接最大數）→ <a href="../greedy/index.html">貪心主題</a> 2.6。</li>
+<li>01-Trie 的<b>可持久化</b>、fail 樹上的 BIT／線段樹 → <a href="../ds/index.html">資料結構主題</a>。</li>
+</ul></div>
+
+
+<h2>快速導覽</h2>
+<p class="lede">每個子主題都是獨立頁面，可從側欄或下面的卡片進入；頁尾有「上一節 / 下一節」可依順序閱讀。</p>
+<div class="card-grid">
+<a class="topic-card" href="pages/theory.html"><span class="tc-no">1</span><div class="tc-title">理論基礎</div><div class="tc-desc">border 與週期的核心等式、三種匹配思維、複雜度反推與實作工具箱</div></a>
+<a class="topic-card" href="pages/strategies/01-hashing.html"><span class="tc-no">2.1</span><div class="tc-title">2.1 字串雜湊</div><div class="tc-desc">O(1) 子串比較、防卡雙模數、hash+二分求 LCP</div></a>
+<a class="topic-card" href="pages/strategies/02-kmp.html"><span class="tc-no">2.2</span><div class="tc-title">2.2 KMP 與週期</div><div class="tc-desc">fail 鏈 = 所有 border、最小週期 n−fail[n]、KMP 自動機</div></a>
+<a class="topic-card" href="pages/strategies/03-z-function.html"><span class="tc-no">2.3</span><div class="tc-title">2.3 Z 函數</div><div class="tc-desc">Z-box 線性構造、exkmp、Z 與 fail 的方向對照</div></a>
+<a class="topic-card" href="pages/strategies/04-manacher.html"><span class="tc-no">2.4</span><div class="tc-title">2.4 Manacher</div><div class="tc-desc">插 # 統一奇偶、鏡像繼承、迴文計數與拼接應用</div></a>
+<a class="topic-card" href="pages/strategies/05-trie.html"><span class="tc-no">2.5</span><div class="tc-title">2.5 Trie 與 01-Trie</div><div class="tc-desc">前綴樹、逐位貪心求最大 XOR、樹上路徑 XOR 轉化</div></a>
+<a class="topic-card" href="pages/strategies/06-aho-corasick.html"><span class="tc-no">2.6</span><div class="tc-title">2.6 AC 自動機</div><div class="tc-desc">Trie 圖、fail 樹子樹和、自動機上 DP</div></a>
+<a class="topic-card" href="pages/strategies/07-suffix-array.html"><span class="tc-no">2.7</span><div class="tc-title">2.7 後綴數組</div><div class="tc-desc">倍增構造、height 陣列與 LCP Lemma、去重與分組應用</div></a>
+<a class="topic-card" href="pages/strategies/08-sam.html"><span class="tc-no">2.8</span><div class="tc-title">2.8 後綴自動機</div><div class="tc-desc">endpos 等價類、parent 樹、線上構造與應用地圖</div></a>
+<a class="topic-card" href="pages/strategies/09-pam.html"><span class="tc-no">2.9</span><div class="tc-title">2.9 迴文自動機</div><div class="tc-desc">本質不同迴文至多 n 個、雙根增量構造、出現次數統計</div></a>
+<a class="topic-card" href="pages/strategies/10-lyndon.html"><span class="tc-no">2.10</span><div class="tc-title">2.10 最小表示與 Lyndon</div><div class="tc-desc">雙指標批量淘汰、Duval 演算法、最小後綴</div></a>
+<a class="topic-card" href="pages/strategies/11-expert.html"><span class="tc-no">2.11</span><div class="tc-title">2.11 專家專題</div><div class="tc-desc">失配樹、廣義 SAM、SAM×線段樹合併、border 理論、位平行</div></a>
+<a class="topic-card" href="pages/pitfalls.html"><span class="tc-no">P</span><div class="tc-title">3. 常見錯誤與陷阱</div><div class="tc-desc">hash 被卡全家桶、下標制混用、統計順序、多測清空——高頻坑與修法</div></a>
+<a class="topic-card" href="pages/method.html"><span class="tc-no">M</span><div class="tc-title">4. 模板整理與選型</div><div class="tc-desc">選型決策樹、一題三解對照、模板風格約定與對拍驗證器</div></a>
+<a class="topic-card" href="pages/roadmap.html"><span class="tc-no">6</span><div class="tc-title">6. 學習路線圖</div><div class="tc-desc">四階段學習計畫，每階段附代表題與畢業檢定</div></a>
+</div>
+
+<div class="pagenav">
+<a class="next" href="pages/theory.html"><span class="dir">下一節 →</span>1. 理論基礎</a>
+</div>
+<footer class="site-footer">
+  <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
+</footer>
+</main>
+</div>
+
+<div id="settingsOverlay" class="settings-overlay" hidden>
+  <div class="settings-card" role="dialog" aria-label="顯示設定">
+    <div class="settings-card-head">
+      <h3>⚙️ 顯示設定</h3>
+      <button id="settingsCloseBtn" class="settings-close" aria-label="關閉">✕</button>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">主題</span>
+      <div class="seg" data-group="theme">
+        <button data-value="light">☀️ 淺色</button>
+        <button data-value="dark">🌙 深色</button>
+        <button data-value="system">🖥️ 跟隨系統</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">內文字體大小</span>
+      <div class="seg" data-group="fontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">側欄字體大小</span>
+      <div class="seg" data-group="sidebarFontSize">
+        <button data-value="sm">小</button>
+        <button data-value="md">中</button>
+        <button data-value="lg">大</button>
+        <button data-value="xl">特大</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">版面寬度</span>
+      <div class="seg" data-group="width">
+        <button data-value="narrow">窄</button>
+        <button data-value="normal">預設</button>
+        <button data-value="wide">寬</button>
+        <button data-value="full">全螢幕</button>
+      </div>
+    </div>
+    <button id="settingsResetBtn" class="settings-reset">還原預設值</button>
+  </div>
+</div>
+</body>
+</html>
