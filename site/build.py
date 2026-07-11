@@ -27,7 +27,6 @@ import os
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 SITE_NAME = "演算法策略圖鑑"
-SITE_TAGLINE = "策略分類 × 競程題單"
 FAVICON = (
     'data:image/svg+xml,'
     '<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>'
@@ -361,7 +360,7 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
 <div class="layout">
 
 <aside id="sidebar">
-  <div class="logo"><a href="{home}">🧭 {site_name}<span>{tagline}</span></a></div>
+  <div class="logo"><a href="{home}">🧭 {site_name}</a></div>
   <div class="toolbtns">
     <button id="settingsBtn" class="toolbtn">⚙️ 設定</button>
   </div>
@@ -380,7 +379,6 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
 {body}
 {pagenav}
 <footer class="site-footer">
-  <p>{site_name} · 純靜態多頁網站 · TeX 數學排版 · 深淺色主題自適應</p>
   <p>題目連結指向 LeetCode（力扣）、Codeforces、AtCoder、洛谷、POJ 等原站。</p>
 </footer>
 </main>
@@ -393,7 +391,7 @@ def render_shell(path, page_id, title, desc, topic, body_html, pagenav_html=""):
         title=full_title, desc=desc, favicon=FAVICON, css=css, js=js,
         math_config=math_config,
         supabase_cfg=supabase_cfg, progress_js=progress_js, pid=page_id, topic_attr=topic_attr,
-        home=rel(path, "index.html"), site_name=SITE_NAME, tagline=SITE_TAGLINE,
+        home=rel(path, "index.html"), site_name=SITE_NAME,
         switcher=render_topic_switcher(path, topic["id"] if topic else None),
         problems=problems_href,
         nav=render_nav(path, topic), body=body_html, pagenav=pagenav_html,
