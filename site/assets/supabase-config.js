@@ -8,6 +8,6 @@
    也不會發出任何雲端請求。
    ═══════════════════════════════════════════════════════════════ */
 window.SUPABASE_CONFIG = {
-  url: "YOUR_SUPABASE_URL",
-  publishableKey: "YOUR_SUPABASE_PUBLISHABLE_KEY"
+  url: "https://gcoezuhysnwknqokqhsl.supabase.co",
+  publishableKey: "sb_publishable_8ik2y9dKnELP7nnV648IBQ_HOunjhy6"
 };
