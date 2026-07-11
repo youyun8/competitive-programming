@@ -44,16 +44,16 @@
 <details><summary>思路</summary><p>逆推模板：\(E[u]=\frac{1}{\operatorname{outdeg}(u)}\sum_{(u,v)}\left(E[v]+w(u,v)\right)\)，且 \(E[\text{終點}]=0\)，按<b>反拓撲序</b>遞推。為什麼逆推？「從 \(u\) 到終點的期望」與怎麼到 \(u\) 的無關（無後效性）；順推的「從起點到 \(u\) 的期望」還得除以到達機率，麻煩得多。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">// 反圖拓撲序遞推
-for (int u : topo_reverse) {
-    if (u == t) {
-        e[u] = 0;
+for (int node : topo_reverse) {
+    if (node == target) {
+        expected_steps[node] = 0;
         continue;
     }
-    double s = 0;
-    for (auto [v, w] : g[u]) {
-        s += e[v] + w;
+    double total = 0;
+    for (auto [neighbor, weight] : g[node]) {
+        total += expected_steps[neighbor] + weight;
     }
-    e[u] = s / g[u].size();
+    expected_steps[node] = total / g[node].size();
 }</code></pre></details>
 </div>
 

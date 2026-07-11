@@ -86,13 +86,13 @@
 <p>移除最少的區間，使其餘互不重疊 \(\Longleftrightarrow\) 選出最多互不重疊的區間。</p>
 <details><summary>思路</summary><p>按<b>右端點遞增</b>排序，能選就選（左端點 \(\ge\) 上一個選中的右端點）。證明用領先論證：貪心第 \(k\) 個選中區間的右端點 \(\le\) 任意解第 \(k\) 個的右端點（歸納），所以任何解能塞下的，貪心都塞得下。<b>為什麼不是左端點</b>：一個很早開始但很長的區間會堵死後面 — 反例 \([1,100],[2,3],[4,5]\)。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; a, auto&amp; b) { return a[1] &lt; b[1]; });
+<pre><code class="lang-cpp">sort(iv.begin(), iv.end(), [](auto&amp; lhs, auto&amp; rhs) { return lhs[1] &lt; rhs[1]; });
 int keep = 0;
 long long last_end = LLONG_MIN;
-for (auto&amp; v : iv) {
-    if (v[0] &gt;= last_end) {
+for (auto&amp; interval : iv) {
+    if (interval[0] &gt;= last_end) {
         keep++;
-        last_end = v[1];
+        last_end = interval[1];
     }
 }
 return iv.size() - keep;</code></pre></details>
@@ -122,11 +122,11 @@ for (int i = 0; i + 1 &lt; n; i++) {
 <details><summary>程式碼（C++，小根堆）</summary>
 <pre><code class="lang-cpp">sort(iv.begin(), iv.end());
 priority_queue&lt;int, vector&lt;int&gt;, greater&lt;&gt;&gt; rooms;  // 各房結束時間
-for (auto&amp; [s, e] : iv) {
-    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= s) {
+for (auto&amp; [start, end_time] : iv) {
+    if (!rooms.empty() &amp;&amp; rooms.top() &lt;= start) {
         rooms.pop();
     }
-    rooms.push(e);
+    rooms.push(end_time);
 }
 return rooms.size();</code></pre></details>
 </div>

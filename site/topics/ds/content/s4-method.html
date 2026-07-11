@@ -41,28 +41,28 @@
 <h3>4.4 對拍驗證器</h3>
 <details><summary>對拍範例（C++）：隨機操作序列 + 暴力陣列</summary>
 <pre><code class="lang-cpp">// 以「區間加 + 區間和」為例：暴力就是裸陣列
-int n = rng() % 8 + 1, q = rng() % 20 + 1;
+int n = rng() % 8 + 1, query_count = rng() % 20 + 1;
 vector&lt;long long&gt; a(n + 1, 0);
 init_segtree(n);                       // 你的結構
-while (q--) {
-    int op = rng() % 2;
-    int l = rng() % n + 1, r = rng() % n + 1;
-    if (l &gt; r) {
-        swap(l, r);
+while (query_count--) {
+    int operation = rng() % 2;
+    int left = rng() % n + 1, right = rng() % n + 1;
+    if (left &gt; right) {
+        swap(left, right);
     }
-    if (op == 0) {
-        long long v = (long long)(rng() % 21) - 10;
-        for (int i = l; i &lt;= r; i++) {
-            a[i] += v;   // 暴力
+    if (operation == 0) {
+        long long value = (long long)(rng() % 21) - 10;
+        for (int i = left; i &lt;= right; i++) {
+            a[i] += value;   // 暴力
         }
-        update(1, 1, n, l, r, v);                  // 待測
+        update(1, 1, n, left, right, value);                  // 待測
     } else {
-        long long s = 0;
-        for (int i = l; i &lt;= r; i++) {
-            s += a[i];
+        long long sum = 0;
+        for (int i = left; i &lt;= right; i++) {
+            sum += a[i];
         }
-        long long t = query(1, 1, n, l, r);
-        if (s != t) {
+        long long tree_sum = query(1, 1, n, left, right);
+        if (sum != tree_sum) {
             dump_case();
             return 1;      // 印出完整操作序列
         }

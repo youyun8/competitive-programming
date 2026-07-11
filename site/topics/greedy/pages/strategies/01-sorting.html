@@ -88,13 +88,13 @@
 <details><summary>思路</summary>
 <p>按「單位重量價值 \(v/w\)」由大到小排序，依序裝滿，最後一件裝部分。與 0/1 背包的對比是理解貪心邊界的第一課：<b>可分割</b>使得「先拿性價比最高的」永遠不會後悔 — 交換論證中把最優解裡任何一單位重量換成更高性價比的都不變差。0/1 背包不可分割，交換會破壞容量可行性，貪心失效（見第 3 章反例）。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">sort(items.begin(), items.end(), [](auto&amp; a, auto&amp; b) {
-    return a.v * b.w &gt; b.v * a.w;  // v/w 大者在前，交叉相乘避免浮點
+<pre><code class="lang-cpp">sort(items.begin(), items.end(), [](auto&amp; lhs, auto&amp; rhs) {
+    return lhs.v * rhs.w &gt; rhs.v * lhs.w;  // v/w 大者在前，交叉相乘避免浮點
 });
 double ans = 0, cap = capacity;
-for (auto&amp; [w, v] : items) {
-    double take = min(cap, (double)w);
-    ans += take * v / w;
+for (auto&amp; [weight, value] : items) {
+    double take = min(cap, (double)weight);
+    ans += take * value / weight;
     cap -= take;
     if (cap == 0) {
         break;
@@ -123,7 +123,7 @@ for (auto&amp; [w, v] : items) {
 <details><summary>思路</summary><p>比較兩個字串 \(a,b\)：若 <code>a + b &gt; b + a</code>（字串串接後字典序）則 \(a\) 排前面。正確性：相鄰交換論證 — 任意相鄰逆序對交換後結果變大，故完全排序後最大。<b>陷阱</b>：必須驗證這個比較關係是嚴格弱序（可證其可傳遞，因 \(a+b>b+a\) \(\Longleftrightarrow\) 把字串視為 \(k\) 進位數後 \(\frac{a}{10^{|a|}-1} > \frac{b}{10^{|b|}-1}\)，是一個實數鍵值），否則 <code>std::sort</code> 是 UB。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">sort(strs.begin(), strs.end(),
-    [](const string&amp; a, const string&amp; b) { return a + b &gt; b + a; });
+    [](const string&amp; lhs, const string&amp; rhs) { return lhs + rhs &gt; rhs + lhs; });
 string ans = accumulate(strs.begin(), strs.end(), string());
 return ans[0] == '0' ? "0" : ans;  // 全零特判</code></pre></details>
 </div>
@@ -143,12 +143,12 @@ return ans[0] == '0' ? "0" : ans;  // 全零特判</code></pre></details>
 <details><summary>思路</summary><p>排序後<b>最重配最輕</b>：若 \(\text{最重}+\text{最輕}\le\text{limit}\) 則同船，否則最重者單獨一船。交換論證：最重的人反正要一艘船，讓他帶走「還能帶的人中任意一個」都不會比帶最輕的更好 — 因為最輕的人與任何人都相容，留下他最保值。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">sort(p.begin(), p.end());
-int i = 0, j = p.size() - 1, boats = 0;
-while (i &lt;= j) {
-    if (p[i] + p[j] &lt;= limit) {
-        i++;
+int left = 0, right = p.size() - 1, boats = 0;
+while (left &lt;= right) {
+    if (p[left] + p[right] &lt;= limit) {
+        left++;
     }
-    j--;
+    right--;
     boats++;
 }</code></pre></details>
 </div>

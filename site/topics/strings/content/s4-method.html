@@ -68,10 +68,11 @@ int main() {
     mt19937 rng(random_device{}());
     for (int t = 0; t &lt; 100000; t++) {
         string s = gen(rng);
-        int a = brute_min_period(s), b = kmp_min_period(s);   // 你的模板
-        if (a != b) {
-            cout &lt;&lt; "WA " &lt;&lt; s &lt;&lt; " brute=" &lt;&lt; a
-                 &lt;&lt; " yours=" &lt;&lt; b &lt;&lt; "\n";
+        int brute_answer = brute_min_period(s), kmp_answer = kmp_min_period(s);
+        // 你的模板
+        if (brute_answer != kmp_answer) {
+            cout &lt;&lt; "WA " &lt;&lt; s &lt;&lt; " brute=" &lt;&lt; brute_answer
+                 &lt;&lt; " yours=" &lt;&lt; kmp_answer &lt;&lt; "\n";
             return 1;
         }
     }

@@ -104,13 +104,13 @@
 <details><summary>思路</summary><p>\(\mathrm{dp}[i]=a_i+\max_{j\in[i-R,i-L]}\mathrm{dp}[j]\)。決策窗口隨 \(i\) 平移，使用<b>單調遞減佇列</b>維護窗口最大值：隊尾比新值差就彈掉（它永遠不會再當最大），隊首過期就出隊，每次操作攤還 \(O(1)\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">deque&lt;int&gt; q;  // 存下標，dp 值遞減
-for (int i = l; i &lt;= n; i++) {
-    int j = i - l;  // j 進入窗口
+for (int i = min_jump; i &lt;= n; i++) {
+    int j = i - min_jump;  // j 進入窗口
     while (!q.empty() &amp;&amp; dp[q.back()] &lt;= dp[j]) {
         q.pop_back();
     }
     q.push_back(j);
-    while (q.front() &lt; i - r) {
+    while (q.front() &lt; i - max_jump) {
         q.pop_front();
     }
     dp[i] = dp[q.front()] + a[i];
@@ -130,20 +130,20 @@ for (int i = l; i &lt;= n; i++) {
 <details><summary>思路</summary><p>設 \(f_i=\mathrm{dp}[i]\)、\(x_j=s_j\)（前綴函數），展開得 \(f_i=\min_j\left\{-2A_i x_j+(x_j^2+f_j)\right\}+\text{只含 }i\text{ 的項}\)。把每個決策 \(j\) 看成直線 \(y=-2x_jt+(x_j^2+f_j)\)，查詢點 \(t=A_i\)。當 \(A_i\) 與 \(x_j\) 都單調時，維護下凸殼，隊首兩線比較即可彈出過期最優，總複雜度 \(O(n)\)。<b>推導三步：展開 → 分離 \(i/j\) → 交叉項當斜率</b>。不單調時改用 Li Chao 線段樹或 CDQ 分治插線，複雜度 \(O(n\log n)\)。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">// 維護下凸殼（斜率遞增），X(j), Y(j) 為決策 j 的座標
-auto slope = [&amp;](int a, int b) {
-    return (double)(Y(b) - Y(a)) / (X(b) - X(a));
+auto slope = [&amp;](int j1, int j2) {
+    return (double)(Y(j2) - Y(j1)) / (X(j2) - X(j1));
 };
-int h = 0, t = 0;
-q[t++] = 0;
+int head = 0, tail = 0;
+q[tail++] = 0;
 for (int i = 1; i &lt;= n; i++) {
-    while (t - h &gt;= 2 &amp;&amp; slope(q[h], q[h + 1]) &lt;= K(i)) {
-        h++;  // 查詢斜率遞增：隊首彈出
+    while (tail - head &gt;= 2 &amp;&amp; slope(q[head], q[head + 1]) &lt;= K(i)) {
+        head++;  // 查詢斜率遞增：隊首彈出
     }
-    dp[i] = calc(i, q[h]);
-    while (t - h &gt;= 2 &amp;&amp; slope(q[t - 2], q[t - 1]) &gt;= slope(q[t - 1], i)) {
-        t--;  // 維護凸性
+    dp[i] = calc(i, q[head]);
+    while (tail - head &gt;= 2 &amp;&amp; slope(q[tail - 2], q[tail - 1]) &gt;= slope(q[tail - 1], i)) {
+        tail--;  // 維護凸性
     }
-    q[t++] = i;
+    q[tail++] = i;
 }</code></pre></details>
 </div>
 
@@ -199,8 +199,8 @@ for (int i = 1; i &lt;= n; i++) {
 <p>可行性背包 <code>dp |= dp &lt;&lt; w</code>：一行完成一件物品的全部轉移，複雜度 \(O(nW/64)\)。字串類（LCS 的 bitset 演算法）、傳遞閉包、可達性 DP 同理。<b>當 DP 值只有 \(0/1\) 且轉移是平移／或／與，就想 bitset</b>——它經常把「明顯超時」的 \(O(n^2)\) 直接壓進時限。</p>
 <pre><code class="lang-cpp">bitset&lt;100001&gt; can;
 can[0] = 1;
-for (int w : items) {
-    can |= can &lt;&lt; w;  // 可行性 0/1 背包
+for (int weight : items) {
+    can |= can &lt;&lt; weight;  // 可行性 0/1 背包
 }</code></pre></div>
 
 <div class="pagenav">

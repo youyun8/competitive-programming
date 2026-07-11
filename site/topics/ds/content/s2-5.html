@@ -11,18 +11,18 @@
 </ul></div>
 
 <details><summary>模板（C++）：BIT + 上面的三個變形</summary>
-<pre><code class="lang-cpp">int c[N], n;
-void add(int i, int v) {
-    for (; i &lt;= n; i += i &amp; -i) {
-        c[i] += v;
+<pre><code class="lang-cpp">int tree[N], n;
+void add(int pos, int value) {
+    for (; pos &lt;= n; pos += pos &amp; -pos) {
+        tree[pos] += value;
     }
 }
-int qry(int i) {
-    int s = 0;
-    for (; i; i -= i &amp; -i) {
-        s += c[i];
+int qry(int pos) {
+    int sum = 0;
+    for (; pos; pos -= pos &amp; -pos) {
+        sum += tree[pos];
     }
-    return s;
+    return sum;
 }
 // 區間加 + 單點查：對差分陣列開 BIT，add(l,v), add(r+1,-v)，查 = qry(i)
 // 區間加 + 區間和：兩個 BIT 維護 d[i] 與 i*d[i]，
@@ -31,9 +31,9 @@ int qry(int i) {
 int kth(int k) {
     int pos = 0;
     for (int j = __lg(n); j &gt;= 0; j--) {
-        if (pos + (1 &lt;&lt; j) &lt;= n &amp;&amp; c[pos + (1 &lt;&lt; j)] &lt; k) {
+        if (pos + (1 &lt;&lt; j) &lt;= n &amp;&amp; tree[pos + (1 &lt;&lt; j)] &lt; k) {
             pos += 1 &lt;&lt; j;
-            k -= c[pos];
+            k -= tree[pos];
         }
     }
     return pos + 1;

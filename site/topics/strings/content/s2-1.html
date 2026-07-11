@@ -21,17 +21,18 @@ h(s)=\left(\sum_{i=1}^{n} s_i\cdot B^{\,n-i}\right)\bmod M.
 <details><summary>模板（C++）：前綴 hash + O(1) 子串</summary>
 <pre><code class="lang-cpp">typedef unsigned long long ull;
 const ull MOD = 1e9 + 7;
-ull base, h[N], pw[N];          // base 開賽隨機化
+ull base, prefix_hash[N], power[N];          // base 開賽隨機化
 
-void build(const char* s, int n) {         // s 為 1-indexed
-    pw[0] = 1;
+void build(const char* text, int n) {         // text 為 1-indexed
+    power[0] = 1;
     for (int i = 1; i &lt;= n; i++) {
-        h[i]  = (h[i-1] * base + s[i]) % MOD;
-        pw[i] = pw[i-1] * base % MOD;
+        prefix_hash[i]  = (prefix_hash[i-1] * base + text[i]) % MOD;
+        power[i] = power[i-1] * base % MOD;
     }
 }
-ull get(int l, int r) {                    // s[l..r] 的 hash
-    return (h[r] + MOD * MOD - h[l-1] * pw[r-l+1]) % MOD;
+ull get(int left, int right) {                    // text[left..right] 的 hash
+    return (prefix_hash[right] + MOD * MOD -
+        prefix_hash[left-1] * power[right-left+1]) % MOD;
 }</code></pre></details>
 
 <h3>2.1.1 hash + 二分：LCP 與子串字典序</h3>
@@ -68,8 +69,8 @@ ull get(int l, int r) {                    // s[l..r] 的 hash
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">bool ok(int k, int n) {                 // 存在長 k 的重複子串？
     unordered_set&lt;ull&gt; seen;
-    for (int l = 1; l + k - 1 &lt;= n; l++) {
-        if (!seen.insert(get(l, l + k - 1)).second) {
+    for (int start = 1; start + k - 1 &lt;= n; start++) {
+        if (!seen.insert(get(start, start + k - 1)).second) {
             return true;
         }
     }

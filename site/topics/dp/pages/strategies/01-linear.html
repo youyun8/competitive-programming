@@ -84,13 +84,13 @@
 <p>每次爬 \(1\) 或 \(2\) 階，爬到第 \(n\) 階有幾種走法？</p>
 <details><summary>思路</summary><p>\(\mathrm{dp}[i]\) 為到第 \(i\) 階的走法數。最後一步要嘛從 \(i-1\) 跨 \(1\) 階、要嘛從 \(i-2\) 跨 \(2\) 階：\(\mathrm{dp}[i]=\mathrm{dp}[i-1]+\mathrm{dp}[i-2]\)——就是斐波那契。這題示範了轉移方程的萬用推導法：<b>枚舉最後一步</b>。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">int a = 1, b = 1;  // dp[0], dp[1]
+<pre><code class="lang-cpp">int two_back = 1, one_back = 1;  // dp[0], dp[1]
 for (int i = 2; i &lt;= n; i++) {
-    int c = a + b;
-    a = b;
-    b = c;
+    int current = two_back + one_back;
+    two_back = one_back;
+    one_back = current;
 }
-return b;  // 滾動到只剩兩個變數</code></pre></details>
+return one_back;  // 滾動到只剩兩個變數</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="lc-198">
@@ -125,16 +125,16 @@ return best;</code></pre></details>
 <p>求最長嚴格遞增子序列長度。</p>
 <details><summary>思路</summary><p>\(O(n^2)\)：\(\mathrm{dp}[i]=1+\max_{j<i,\,a_j<a_i}\mathrm{dp}[j]\)，表示以 \(i\) 結尾的 LIS。\(\,O(n\log n)\)：維護陣列 \(g\)，其中 \(g[k]\) 是長度 \(k+1\) 的遞增子序列的<b>最小可能結尾</b>。\(g\) 單調遞增，每個 \(a_i\) 用 <code>lower_bound</code> 替換第一個大於或等於它的位置。這是「DP + 貪心維護決策集合」的第一課，也是 BIT 優化轉移（<a href="12-optimization.html">2.12.8</a>）的入門素材。</p></details>
 <details><summary>程式碼（C++）</summary>
-<pre><code class="lang-cpp">vector&lt;int&gt; g;
+<pre><code class="lang-cpp">vector&lt;int&gt; tails;
 for (int x : nums) {
-    auto it = lower_bound(g.begin(), g.end(), x);  // 非嚴格遞增改 upper_bound
-    if (it == g.end()) {
-        g.push_back(x);
+    auto it = lower_bound(tails.begin(), tails.end(), x);  // 非嚴格遞增改 upper_bound
+    if (it == tails.end()) {
+        tails.push_back(x);
     } else {
         *it = x;
     }
 }
-return g.size();</code></pre></details>
+return tails.size();</code></pre></details>
 </div>
 
 <div class="problem" data-problem-id="luogu-p1020">

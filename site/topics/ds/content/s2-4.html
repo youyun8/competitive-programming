@@ -11,31 +11,31 @@
 </ul></div>
 
 <details><summary>模板（C++）：路徑壓縮 + 按大小合併</summary>
-<pre><code class="lang-cpp">int fa[N], sz[N];
-int find(int x) {
-    return fa[x] == x ? x : fa[x] = find(fa[x]);
+<pre><code class="lang-cpp">int parent[N], sz[N];
+int find(int node) {
+    return parent[node] == node ? node : parent[node] = find(parent[node]);
 }
-bool unite(int x, int y) {
-    x = find(x);
-    y = find(y);
-    if (x == y) {
+bool unite(int node_a, int node_b) {
+    node_a = find(node_a);
+    node_b = find(node_b);
+    if (node_a == node_b) {
         return false;
     }
-    if (sz[x] &lt; sz[y]) {
-        swap(x, y);
+    if (sz[node_a] &lt; sz[node_b]) {
+        swap(node_a, node_b);
     }
-    fa[y] = x;
-    sz[x] += sz[y];
+    parent[node_b] = node_a;
+    sz[node_a] += sz[node_b];
     return true;
 }
-// 帶權版：w[x] = x 到父節點的關係量，find 時沿路累積並壓縮
-int find(int x) {
-    if (fa[x] == x) {
-        return x;
+// 帶權版：relation[node] = node 到父節點的關係量，find 時沿路累積並壓縮
+int find(int node) {
+    if (parent[node] == node) {
+        return node;
     }
-    int r = find(fa[x]);
-    w[x] += w[fa[x]];          // 關係量按語意複合（加法/異或/mod）
-    return fa[x] = r;
+    int root = find(parent[node]);
+    relation[node] += relation[parent[node]];  // 關係量按語意複合（加法/異或/mod）
+    return parent[node] = root;
 }</code></pre></details>
 
 <div class="problem" data-problem-id="luogu-p3367">

@@ -27,9 +27,9 @@
 <details><summary>思路</summary><p>兩個狀態：\(\mathrm{hold}\)（持股）、\(\mathrm{free}\)（空手）。轉移為 \(\mathrm{hold}[i]=\max\left(\mathrm{hold}[i-1],\mathrm{free}[i-1]-p_i\right)\)、\(\mathrm{free}[i]=\max\left(\mathrm{free}[i-1],\mathrm{hold}[i-1]+p_i\right)\)。121 只是把買入時的 \(\mathrm{free}[i-1]\) 換成 \(0\)（只准一筆）。整個股票系列共用這張兩節點狀態機，差別只在邊上的限制。</p></details>
 <details><summary>程式碼（C++）</summary>
 <pre><code class="lang-cpp">int hold = INT_MIN, free_ = 0;
-for (int p : prices) {
-    hold = max(hold, free_ - p);
-    free_ = max(free_, hold + p);
+for (int price : prices) {
+    hold = max(hold, free_ - price);
+    free_ = max(free_, hold + price);
 }
 return free_;</code></pre></details>
 </div>
