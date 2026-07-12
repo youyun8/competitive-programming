@@ -58,6 +58,29 @@
 <button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
+
+<aside class="beginner-guide" aria-label="本頁初學者閱讀指南">
+  <div class="beginner-guide-head">
+    <span aria-hidden="true">🧭</span>
+    <div><b>初學者閱讀指南</b><small>2.6 線段樹基礎（build／懶標記／資訊設計）</small></div>
+  </div>
+  <h3>這頁要解決什麼問題？</h3>
+  <p><b>先問：</b>資料會被怎樣修改？每次又要查哪一段、哪個集合或哪個排名？</p>
+  <p>本頁聚焦「懶標記三函式分工、先乘後加、最大子段和四元組」。先在紙上用 3～8 個元素走一次，再對照正文的公式與程式碼。</p>
+  <p><b>暴力做法的代價：</b>若每次操作都重新掃過全部資料，單次通常要 O(n)；操作數也接近 n 時，總時間容易變成 O(n²)。</p>
+  <h3>核心直覺</h3>
+  <p>資料結構的工作，是把上一次已整理好的資訊留下來；下一次只修補受影響的部分，而不是全部重算。</p>
+  <div class="callout proof"><b>閱讀程式前先找不變量</b><p>先說清楚每個欄位代表哪一段資料，以及更新前後必須永遠成立的關係。</p></div>
+  <details class="predict-box"><summary>先猜猜看：什麼時候該想到這頁？</summary>
+    <p>修改與查詢交錯、需要維護集合關係、區間資訊、排名或動態最值。</p>
+  </details>
+
+  <div class="mini-trace">
+    <h3>最小可手算例子</h3>
+    <ol><li>陣列 [2,1,3,4] 的根存總和 10，左右孩子分別存 3、7。</li><li>查 [2,4] 時拆成葉 [2,2] 與完整節點 [3,4]，得到 1+7。</li><li>區間加 [1,2]+5 時先在 [1,2] 記 lazy，不必立刻改兩個葉。</li></ol>
+  </div>
+
+</aside>
 <h2>2.6 線段樹基礎（build／懶標記／資訊設計）</h2>
 
 <div class="callout idea"><b>💡 核心想法</b>
@@ -150,6 +173,32 @@ long long query(int node, int left, int right, int query_left, int query_right) 
 
 <div class="callout when"><b>⏫ 進階去向</b>
 <p>下標從「位置」換成「值域」→ 權值線段樹；不先建滿 → 動態開點；兩棵樹合併 → 線段樹合併；插入直線 → 李超樹——全在 <a href="07-segment-tree-advanced.html">2.7</a>。掃描線的「覆蓋計數不下傳」特技在 <a href="08-sweepline-cdq.html">2.8</a>。</p></div>
+
+<section class="beginner-recap" aria-label="本頁複習與除錯">
+  <h3>常見誤解與除錯順序</h3>
+  <ol class="bug-list"><li>只背操作模板，卻說不出節點、陣列格或 parent 指標代表什麼。</li>
+<li>混用 0-based、1-based 或閉區間、半開區間，造成 off-by-one。</li>
+<li>只算單次操作，忘記乘上操作次數與節點數，也沒有估算記憶體。</li></ol>
+  <p><b>最小測資順序：</b>先測空集合或最短輸入，再測單一元素、全部相同、嚴格遞增／遞減、
+  重複值與最大邊界；若答案可能累加，另外檢查 32-bit overflow。</p>
+  <h3>複雜度與適用時機</h3>
+  <p>不要只記正文最後的 Big-O。請把它拆成「狀態／節點／候選數量 × 每次轉移或操作成本」，
+  再代入題目的最大資料範圍。若乘積超過時間預算，就回頭找是否重算、能否排序、離線、
+  壓縮狀態或使用更合適的資料結構。</p>
+  <h3>參考資料</h3>
+  <ul class="reference-list"><li><a href="https://cp-algorithms.com/data_structures/segment_tree.html" target="_blank" rel="noopener">cp-algorithms：Segment Tree</a>——從可合併資訊理解區間資料結構的正式定義與複雜度。</li>
+<li><a href="https://usaco.guide/gold/" target="_blank" rel="noopener">USACO Guide Gold</a>——用分級題目練習資料結構選型。</li>
+<li><a href="https://oi-wiki.org/ds/" target="_blank" rel="noopener">OI Wiki 資料結構</a>——補強中文術語、變形與進階應用。</li></ul>
+  <div class="callout idea"><b>你現在應該記得什麼</b>
+    <ul>
+      <li>本頁主題：懶標記三函式分工、先乘後加、最大子段和四元組。</li>
+      <li>看到的題型訊號：修改與查詢交錯、需要維護集合關係、區間資訊、排名或動態最值。</li>
+      <li>最重要的不變量：先說清楚每個欄位代表哪一段資料，以及更新前後必須永遠成立的關係。</li>
+      <li>複雜度要從處理的資料量與每次操作成本相乘推回來。</li>
+      <li>先用最小反例驗證直覺，再套模板；模板不是正確性證明。</li>
+    </ul>
+  </div>
+</section>
 
 <div class="pagenav">
 <a class="prev" href="05-bit.html"><span class="dir">← 上一節</span>2.5 樹狀數組 BIT</a>

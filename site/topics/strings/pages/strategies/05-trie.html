@@ -56,6 +56,29 @@
 <button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
+
+<aside class="beginner-guide" aria-label="本頁初學者閱讀指南">
+  <div class="beginner-guide-head">
+    <span aria-hidden="true">🧭</span>
+    <div><b>初學者閱讀指南</b><small>2.5 Trie 與 01-Trie</small></div>
+  </div>
+  <h3>這頁要解決什麼問題？</h3>
+  <p><b>先問：</b>字串比較中有哪些前綴、後綴或子串資訊被反覆重算？失配後能否利用已知結構跳過位置？</p>
+  <p>本頁聚焦「前綴樹、逐位貪心求最大 XOR、樹上路徑 XOR 轉化」。先在紙上用 3～8 個元素走一次，再對照正文的公式與程式碼。</p>
+  <p><b>暴力做法的代價：</b>從每個起點重新逐字比較，最壞會反覆檢查相同字元，讓長字串退化到 O(nm) 或 O(n²)。</p>
+  <h3>核心直覺</h3>
+  <p>字串演算法的核心常是記住『已經匹配了多少』或『哪些片段相同』，失敗時不必完全從零開始。</p>
+  <div class="callout proof"><b>閱讀程式前先找不變量</b><p>先固定下標制與陣列定義；每個 pi、z、fail、len 或 link 值都必須能用一句話精確描述。</p></div>
+  <details class="predict-box"><summary>先猜猜看：什麼時候該想到這頁？</summary>
+    <p>大量模式匹配、重複子串、border、週期、迴文、前綴統計或字典序比較。</p>
+  </details>
+
+  <div class="mini-trace">
+    <h3>最小可手算例子</h3>
+    <ol><li>插入 "cat"、"car"；根→c→a 的兩個節點被共用。</li><li>第三個字元才分成 t 與 r；查 "cap" 時在 p 邊失敗。</li><li>Trie 把共同前綴只存一次，每走一條邊就消耗一個字元。</li></ol>
+  </div>
+
+</aside>
 <h2>2.5 Trie 與 01-Trie</h2>
 
 <div class="callout idea"><b>💡 核心想法</b>
@@ -130,6 +153,32 @@ int max_xor(int value) {
 
 <div class="callout when"><b>⏫ 進階去向</b>
 <p>「區間內與 \(x\) 的最大 XOR」→ <b>可持久化 01-Trie</b>（前綴版本相減），見<a href="../../../ds/index.html">資料結構主題</a> 2.12；多字串匹配 → 給 Trie 加 fail 指標，就是下一章的 <a href="06-aho-corasick.html">AC 自動機</a>。</p></div>
+
+<section class="beginner-recap" aria-label="本頁複習與除錯">
+  <h3>常見誤解與除錯順序</h3>
+  <ol class="bug-list"><li>0-based 與 1-based 公式混用，尤其是長度、右端點與回退位置。</li>
+<li>把子串和子序列混為一談，或忘記空字串、單字元與全部相同字元。</li>
+<li>只背建表程式，無法手算一個短字串，因此失配時不知道該跳去哪裡。</li></ol>
+  <p><b>最小測資順序：</b>先測空集合或最短輸入，再測單一元素、全部相同、嚴格遞增／遞減、
+  重複值與最大邊界；若答案可能累加，另外檢查 32-bit overflow。</p>
+  <h3>複雜度與適用時機</h3>
+  <p>不要只記正文最後的 Big-O。請把它拆成「狀態／節點／候選數量 × 每次轉移或操作成本」，
+  再代入題目的最大資料範圍。若乘積超過時間預算，就回頭找是否重算、能否排序、離線、
+  壓縮狀態或使用更合適的資料結構。</p>
+  <h3>參考資料</h3>
+  <ul class="reference-list"><li><a href="https://cp-algorithms.com/string/prefix-function.html" target="_blank" rel="noopener">cp-algorithms：Prefix Function</a>——從 KMP 的 prefix function 建立失配跳轉與線性分析直覺。</li>
+<li><a href="https://usaco.guide/adv/string-search" target="_blank" rel="noopener">USACO Guide：String Searching</a>——補強匹配演算法與題目選型。</li>
+<li><a href="https://oi-wiki.org/string/" target="_blank" rel="noopener">OI Wiki 字串</a>——補強中文術語、圖示與進階結構。</li></ul>
+  <div class="callout idea"><b>你現在應該記得什麼</b>
+    <ul>
+      <li>本頁主題：前綴樹、逐位貪心求最大 XOR、樹上路徑 XOR 轉化。</li>
+      <li>看到的題型訊號：大量模式匹配、重複子串、border、週期、迴文、前綴統計或字典序比較。</li>
+      <li>最重要的不變量：先固定下標制與陣列定義；每個 pi、z、fail、len 或 link 值都必須能用一句話精確描述。</li>
+      <li>複雜度要從處理的資料量與每次操作成本相乘推回來。</li>
+      <li>先用最小反例驗證直覺，再套模板；模板不是正確性證明。</li>
+    </ul>
+  </div>
+</section>
 
 <div class="pagenav">
 <a class="prev" href="04-manacher.html"><span class="dir">← 上一節</span>2.4 Manacher</a>

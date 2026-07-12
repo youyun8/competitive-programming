@@ -58,87 +58,463 @@
 <button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
-<h2>2.7 線段樹進階（權值／動態開點／合併／二分／李超）</h2>
+<h2>2.7 線段樹進階：可導航、可稀疏、可合併的統計工具</h2>
 
-<div class="callout idea"><b>💡 核心想法</b>
-<p>四個正交的升級，可自由組合：① <b>權值化</b>——下標改成值域，「插入 x」= 位置 x 加一，名次/第 k 小變成樹上導航；② <b>動態開點</b>——用到才 new 節點，值域 \(10^9\) 不用離散化，空間 \(O(q\log V)\)；③ <b>樹上二分</b>——第 k 小/第一個滿足條件的位置直接在樹上走，省掉「二分套查詢」的一個 log；④ <b>線段樹合併</b>——兩棵動態開點樹遞迴合併，重疊才遞迴，總複雜度 = 總插入量 \(O(n\log n)\)。</p></div>
+<p class="lede">這頁不假設你已經懂「權值化」「動態開點」「樹上二分」或「線段樹合併」。
+我們會從四個可手算的小問題出發，先建立直覺，再看正式不變量與可直接使用的 C++ 範本。</p>
 
-<div class="callout when"><b>🔎 適用特徵</b>
+<div class="callout idea"><b>這頁要解決什麼問題？</b>
+<p>目前插入的數字是 <code>[2, 5, 5, 8]</code>，現在要問第 3 小。每次查詢都重新排序可以得到答案，
+但若有十萬次插入與查詢，就會反覆做大量相同工作。真正需要維護的是「每個值出現幾次」。</p>
 <ul>
-<li>「第 k 小」「排名」「值域統計」→ 權值線段樹（值域大 + 動態開點）。</li>
-<li>樹上每個節點要一個「自己的集合」，且集合沿樹自底向上匯流 → 線段樹合併。</li>
-<li>「插入一次函數、查單點最值」（斜率優化的線上版）→ 李超樹。</li>
+<li><b>權值化</b>省掉反覆排序：沿數值範圍的計數找排名。</li>
+<li><b>動態開點</b>省掉巨大空樹：走到某段值域時才建立節點。</li>
+<li><b>樹上二分</b>省掉外層 binary search：直接用子樹資訊導航。</li>
+<li><b>線段樹合併</b>省掉逐元素重插：對齊相同值域的節點合併。</li>
 </ul></div>
 
-<details><summary>模板（C++）：動態開點 + 樹上二分 + 合併</summary>
-<pre><code class="lang-cpp">int ls[M], rs[M], cnt[M], tot;              // M ≈ 插入次數 × logV
-void insert(int&amp; node, int left, int right, int value, int delta) {
-    if (!node) {
-        node = ++tot;
-    }
-    cnt[node] += delta;
-    if (left == right) {
-        return;
-    }
-    int mid = (left + right) &gt;&gt; 1;
-    if (value &lt;= mid) {
-        insert(ls[node], left, mid, value, delta);
-    } else {
-        insert(rs[node], mid + 1, right, value, delta);
-    }
-}
-int kth(int node, int left, int right, int k) {       // 樹上二分：第 k 小
-    if (left == right) {
-        return left;
-    }
-    int mid = (left + right) &gt;&gt; 1;
-    return cnt[ls[node]] &gt;= k ? kth(ls[node], left, mid, k)
-                           : kth(rs[node], mid + 1, right, k - cnt[ls[node]]);
-}
-int merge(int root_a, int root_b, int left, int right) {     // 線段樹合併
-    if (!root_a || !root_b) {
-        return root_a | root_b;             // 一邊為空直接接管
-    }
-    if (left == right) {
-        cnt[root_a] += cnt[root_b];
-        return root_a;
-    }
-    int mid = (left + right) &gt;&gt; 1;
-    ls[root_a] = merge(ls[root_a], ls[root_b], left, mid);
-    rs[root_a] = merge(rs[root_a], rs[root_b], mid + 1, right);
-    cnt[root_a] = cnt[ls[root_a]] + cnt[rs[root_a]];
-    return root_a;
-}</code></pre></details>
+<div class="tbl-wrap"><table>
+<thead><tr><th>功能</th><th>解決的痛點</th><th>範例問題</th><th>可搭配的功能</th></tr></thead>
+<tbody>
+<tr><td>權值化</td><td>要依數值大小統計</td><td>第 k 小</td><td>動態開點、樹上二分</td></tr>
+<tr><td>動態開點</td><td>值域太大</td><td>座標達 <code>10^9</code></td><td>權值化、線段樹合併</td></tr>
+<tr><td>樹上二分</td><td>不想做 binary search + query</td><td>第一個 prefix 達標位置</td><td>權值化</td></tr>
+<tr><td>線段樹合併</td><td>多棵樹要合成一棵</td><td>子樹統計、DSU on tree</td><td>動態開點、權值化</td></tr>
+</tbody></table></div>
+<p class="figure-caption">讀者應從這張表理解：四者不是互斥模板。它們分別改變座標的意義、
+節點的建立時機、查詢走法與資料合併方式，因此可以自由組合。</p>
 
-<div class="problem" data-problem-id="ds-wseg-inversion">
-<div class="p-head"><span class="stars s2">★★</span><span class="p-title">逆序對（權值線段樹版，對照 P1908）</span><span class="chip">權值線段樹</span></div>
-<p>用權值線段樹重做逆序對。</p>
-<details><summary>思路</summary><p>與權值 BIT 完全同構——這題的意義是校準工具箱：<b>可差分計數用 BIT（短），要樹上二分/區間值域查詢/合併時才值得上權值線段樹</b>。寫一次感受碼量差。</p></details>
+<h3>核心直覺：線段樹的外形不變，改的是它代表的世界</h3>
+<p>把線段樹想成一張可以逐層縮小搜尋範圍的地圖。權值化換掉地圖座標的意義；
+動態開點只畫真正走過的道路；樹上二分利用路標直接選方向；線段樹合併則把兩張同尺度地圖疊起來。
+四種升級都沒有改變「區間對半切、父節點由孩子合成」這個基本骨架。</p>
+
+<section id="weighted">
+<h3>一、權值化：位置不再代表插入順序，而代表數值</h3>
+
+<pre class="data-example"><code>目前插入的數字是 [2, 5, 5, 8]。
+現在要問：第 3 小的數字是什麼？</code></pre>
+
+<p>一般陣列下標 <code>0, 1, 2, 3</code> 只表示元素放在哪裡。「下標 1 比下標 3 小」
+不代表那裡的數值也較小，所以不能直接拿來找排名。</p>
+
+<p><b>權值化</b>在處理「我們在意數值大小，而不是原本位置」的問題。做法是換掉座標軸：
+座標 5 表示「數值 5」，插入 5 就是 <code>count[5] += 1</code>。因為 5 出現兩次，
+它的葉節點計數是 2。建立值域 [1,10] 的線段樹後，每個節點儲存該數值範圍內共有幾個元素。</p>
+
+<div class="tree-diagram" role="img" aria-label="數值 2、5、5、8 的權值線段樹">
+<div class="tree-level"><span class="tree-node active">[1,10]<small>count = 4</small></span></div>
+<div class="tree-level split"><span class="tree-node active">[1,5]<small>count = 3</small></span><span class="tree-node active">[6,10]<small>count = 1</small></span></div>
+<div class="tree-level split four"><span class="tree-node active">[1,3]<small>1</small></span><span class="tree-node active">[4,5]<small>2</small></span><span class="tree-node active">[6,8]<small>1</small></span><span class="tree-node muted">[9,10]<small>0</small></span></div>
+<div class="tree-level leaves"><span class="tree-node active">2<small>1 次</small></span><span class="tree-node active">5<small>2 次</small></span><span class="tree-node active">8<small>1 次</small></span></div>
+</div>
+<p class="figure-caption">讀者應理解：節點 count 是區間內的元素總數，不是不同數值的種類數；
+重複的 5 必須算兩次。</p>
+
+<div class="tbl-wrap"><table>
+<thead><tr><th>操作後</th><th>count[2]</th><th>count[5]</th><th>count[8]</th><th>根 count</th></tr></thead>
+<tbody>
+<tr><td>插入 2</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+<tr><td>插入 5</td><td>1</td><td>1</td><td>0</td><td>2</td></tr>
+<tr><td>再插入 5</td><td>1</td><td>2</td><td>0</td><td>3</td></tr>
+<tr><td>插入 8</td><td>1</td><td>2</td><td>1</td><td>4</td></tr>
+</tbody></table></div>
+
+<h4>逐步找第 3 小</h4>
+
+<div class="trace-viewer">
+<div class="trace-step"><span class="step-no">1</span><div><b>[1,10]，k = 3</b><p>左半 [1,5] 有 3 個數。
+因為 <code>left_count >= k</code>，第 3 小仍在左邊。</p></div></div>
+<div class="trace-step"><span class="step-no">2</span><div><b>[1,5]，k = 3</b><p>左半 [1,3] 只有 1 個數。
+跳過這個較小的數，令 <code>k = 3 - 1 = 2</code>，往右到 [4,5]。</p></div></div>
+<div class="trace-step"><span class="step-no">3</span><div><b>[4,5]，k = 2</b><p>左半 [4,4] 有 0 個數，
+所以 k 不變，往右到 [5,5]。</p></div></div>
+<div class="trace-step"><span class="step-no">4</span><div><b>葉節點 [5,5]</b><p>葉節點只代表一個數值，
+所以第 3 小是 <strong>5</strong>。</p></div></div>
+</div>
+<p class="figure-caption">往右時不是忘掉左邊，而是把確定更小的元素從排名扣掉；
+這正是 <code>k -= left_count</code> 的理由。</p>
+
+<div class="callout proof"><b>正式定義與不變量</b>
+<p>權值線段樹就是把線段樹的下標／座標軸改成值域。節點區間
+<code>[value_left, value_right]</code> 儲存這段值域內的出現次數，並維持：</p>
+<p class="formula">\(\text{count(node)}=\text{count(left child)}+\text{count(right child)}\)</p>
+<p>它適合頻率、排名、第 k 小、第 k 大與 median。值域小時可用普通線段樹；
+值域巨大且稀疏時，可再搭配動態開點。</p></div>
+</section>
+
+<section id="dynamic">
+<h3>二、動態開點：只替真正走過的路配置節點</h3>
+
+<pre class="data-example"><code>值域是 [1, 10^9]，
+但實際上只插入 7、42、1000000000 三個數。</code></pre>
+
+<p>普通線段樹通常配置約 <code>4 × V</code> 個節點。當 \(V=10^9\) 時會需要數十 GB，
+但實際只用了三個位置。問題在於我們預先替永遠不會走到的區間也建了節點。</p>
+
+<p><b>動態開點</b>像沒有訪客就不開燈的旅館：根先存在；插入一個值時，只沿包含該值的
+二分路徑前進，某段區間第一次被走到才建立節點。</p>
+
+<div class="tbl-wrap"><table>
+<thead><tr><th>層</th><th>插入 7 時的區間</th><th>判斷</th><th>動作</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>[1, 1,000,000,000]</td><td>7 在左半</td><td>使用根，往左</td></tr>
+<tr><td>1</td><td>[1, 500,000,000]</td><td>仍在左半</td><td>第一次走到，建立節點</td></tr>
+<tr><td>2</td><td>[1, 250,000,000]</td><td>仍在左半</td><td>第一次走到，建立節點</td></tr>
+<tr><td>…</td><td>區間持續折半</td><td>…</td><td>每層至多新建一個</td></tr>
+<tr><td>27</td><td>[1,8]</td><td>7 在 [5,8]</td><td>往右</td></tr>
+<tr><td>28</td><td>[5,8]</td><td>7 在 [7,8]</td><td>往右</td></tr>
+<tr><td>29</td><td>[7,8]</td><td>7 在 [7,7]</td><td>建立葉節點並加一</td></tr>
+</tbody></table></div>
+<p class="figure-caption">值域雖有十億格，單次插入每次都把候選範圍折半，只走約 30 層。</p>
+
+<p>插入 42 時，前段路徑會與 7 共用，分岔後才建立新節點；插入
+<code>1,000,000,000</code> 則一路走右側。每次更新最多建立 \(O(\log V)\) 個節點，
+所以 \(q\) 次操作的安全空間上界約為 \(O(q\log V)\)。實際通常更少，因為路徑會共用。</p>
+
+<div class="tbl-wrap"><table>
+<thead><tr><th>方法</th><th>優點</th><th>代價</th><th>適合情況</th></tr></thead>
+<tbody>
+<tr><td>座標壓縮</td><td>空間通常 \(O(q)\)，常數小</td><td>要先知道所有座標；距離資訊可能消失</td><td>離線、操作可預讀</td></tr>
+<tr><td>動態開點</td><td>保留原值域，可線上加入新座標</td><td>空間約 \(O(q\log V)\)，常數較大</td><td>強制線上、座標不可預知、要保留區間長度</td></tr>
+</tbody></table></div>
+
+<div class="callout warn"><b>值域大不代表一定要動態開點</b>
+<p>若所有操作可先讀入，且只比較大小或統計頻率，座標壓縮通常更省空間也更容易除錯。
+動態開點的價值在於真正線上或必須保留原始區間。</p></div>
+</section>
+
+<section id="tree-walk">
+<h3>三、樹上二分：不要在樹外反覆問同一類問題</h3>
+
+<p>維護非負陣列 <code>[2, 1, 0, 4, 3, 0, 2, 1]</code>，找最左邊使
+<code>prefix_sum >= 6</code> 的位置。前綴和是 <code>[2, 3, 3, 7, 10, 10, 12, 13]</code>，
+答案是位置 4（本節採 1-based）。</p>
+
+<h4>做法 A：外部 binary search + query</h4>
+<p>因為元素非負，達標狀態有單調性，可以 binary search 位置；但每試一個中點都要再查
+<code>sum(1, middle)</code>。外層試 \(O(\log n)\) 次，每次查詢 \(O(\log n)\)，
+總時間是 \(O(\log^2 n)\)。</p>
+
+<h4>做法 B：直接看左子樹總和</h4>
+
+<div class="tree-diagram compact" role="img" aria-label="前綴和樹上二分導航">
+<div class="tree-level"><span class="tree-node chosen">[1,8]<small>sum = 13，target = 6</small></span></div>
+<div class="tree-level split"><span class="tree-node chosen">[1,4]<small>sum = 7 ≥ 6</small></span><span class="tree-node muted">[5,8]<small>sum = 6</small></span></div>
+<div class="tree-level split"><span class="tree-node passed">[1,2]<small>sum = 3，跳過</small></span><span class="tree-node chosen">[3,4]<small>target = 3</small></span></div>
+<div class="tree-level split"><span class="tree-node passed">[3,3]<small>sum = 0</small></span><span class="tree-node answer">[4,4]<small>答案 4</small></span></div>
 </div>
 
-<div class="problem" data-problem-id="luogu-p4097">
-<div class="p-head"><span class="stars s4">★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4097" target="_blank">洛谷 P4097 [HEOI2013] Segment（李超樹）</a><span class="chip">李超樹</span></div>
-<p>動態插入線段，查 x 座標處最高的線段。</p>
-<details><summary>思路</summary><p>李超樹：每節點存「這段區間的優勢線段」，插入時與現任比較——在中點贏的當現任，輸的一半區間還有機會、遞迴下去（每層只走一邊 → \(O(\log^2)\)）。它是<a href="../../../dp/index.html">DP 主題</a>斜率優化的線上替代：斜率不單調、x 不單調時的救星。</p></details>
+<div class="trace-viewer">
+<div class="trace-step"><span class="step-no">1</span><div><b>[1,8]</b><p>左子樹 [1,4] 的和是 7，
+已足以湊到 target 6，所以最左答案在左邊。</p></div></div>
+<div class="trace-step"><span class="step-no">2</span><div><b>[1,4]</b><p>左子樹 [1,2] 的和只有 3。
+跳過這整段，令 <code>target = 6 - 3 = 3</code>，往 [3,4]。</p></div></div>
+<div class="trace-step"><span class="step-no">3</span><div><b>[3,4]</b><p>左葉 [3,3] 的和是 0，
+仍不足 3；往右到 [4,4]，得到答案 4。</p></div></div>
+</div>
+<p class="figure-caption">每層用已存好的子樹資訊排除半棵樹，因此只走樹高 \(O(\log n)\)。</p>
+
+<div class="callout proof"><b>導航成立需要什麼？</b>
+<p>元素非負使 prefix sum 不會下降；節點的區間和又能判斷左側是否已足夠。
+更一般地，需要一個能由子樹資訊判斷，且排除半邊後仍成立的條件。</p></div>
+
+<div class="callout warn"><b>不適用反例</b>
+<p>陣列 <code>[5, -10, 10]</code> 的前綴和是 <code>[5, -5, 5]</code>。對 target 4，
+達標狀態是 true、false、true，沒有單調性。只存區間總和也會漏掉中途曾達標的位置。
+若要支援負數，節點至少要改存「區間總和 + 最大前綴和」，導航條件也要跟著改。</p></div>
+</section>
+
+<section id="merge">
+<h3>四、線段樹合併：把兩份值域統計接成一份</h3>
+
+<pre class="data-example"><code>左子樹收集到的數值：[2, 5, 5]
+右子樹收集到的數值：[1, 5, 8]</code></pre>
+
+<p>原始資料若是一棵樹，父節點常要回答整個子樹的第 k 小、眾數或頻率。
+若兩個孩子各有一棵權值線段樹，父節點便要把兩份統計合成一份。
+逐元素重插會重走很多已存在的路徑。</p>
+
+<p><b>線段樹合併</b>改成「相同值域對相同值域」遞迴。兩邊都有節點時才深入；
+某一邊沒有這段資料時，直接接上另一邊的節點，不需複製或逐元素插入。</p>
+
+<div class="tbl-wrap"><table>
+<thead><tr><th>數值</th><th>左樹頻率</th><th>右樹頻率</th><th>合併後</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><td>2</td><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>5</td><td>2</td><td>1</td><td>3</td></tr>
+<tr><td>8</td><td>0</td><td>1</td><td>1</td></tr>
+<tr><td><b>總數</b></td><td>3</td><td>3</td><td><b>6</b></td></tr>
+</tbody></table></div>
+
+<div class="merge-visual" role="img" aria-label="兩棵權值線段樹合併">
+<div><b>左樹</b><span>[1,8]: 3</span><span>[1,4]: 1</span><span>[5,8]: 2</span></div>
+<div class="merge-arrow">＋</div>
+<div><b>右樹</b><span>[1,8]: 3</span><span>[1,4]: 1</span><span>[5,8]: 2</span></div>
+<div class="merge-arrow">→</div>
+<div><b>合併後</b><span>[1,8]: 6</span><span>[1,4]: 2</span><span>[5,8]: 4</span></div>
+</div>
+<p class="figure-caption">合併不是把兩棵樹掛在新根下，而是把代表同一值域的節點疊在一起。
+合併後仍是權值線段樹，因此可以直接查第 k 小；本例第 4 小是 5。</p>
+
+<ol>
+<li><b>A 空、B 存在：</b>直接回傳 B，因為 A 沒有資訊。</li>
+<li><b>A、B 都是同一葉節點：</b>頻率相加。</li>
+<li><b>A、B 都存在且不是葉：</b>分別合併左右孩子，再重新計算目前節點。</li>
+</ol>
+
+<p>為何總複雜度常寫成 \(O(n\log V)\)？動態開點時，每個元素只建立一條
+\(O(\log V)\) 路徑，所以全部樹共有 \(O(n\log V)\) 個節點。合併遇到一邊為空就停止；
+真正深入時，兩個存在節點會永久合成一個。若合併後不再保留來源版本，
+全部合併工作可以用總節點數界住。這是<b>破壞式合併</b>的分析。</p>
+
+<div class="tbl-wrap"><table>
+<thead><tr><th>方法</th><th>核心做法</th><th>適合情況</th></tr></thead>
+<tbody>
+<tr><td>逐元素重插</td><td>把一份集合的值逐個插入另一棵樹</td><td>集合很小、清楚比極致效率重要</td></tr>
+<tr><td>線段樹合併</td><td>對齊相同值域，空側直接接管</td><td>很多子樹值域統計自底向上匯流</td></tr>
+<tr><td>DSU on tree</td><td>保留大兒子資料，逐個加入小兒子</td><td>答案能用 add/remove 維護，不一定需要排名</td></tr>
+<tr><td>可持久化</td><td>版本共享未修改節點</td><td>要保留歷史版本，而不是吃掉來源</td></tr>
+</tbody></table></div>
+</section>
+
+<h3>程式碼導讀：動態權值線段樹</h3>
+
+<p>下列範本同時實作動態開點、第 k 小與破壞式合併。先記住四個不變量：</p>
+<ul>
+<li>索引 0 永遠代表空節點，空節點 count 為 0。</li>
+<li>非葉節點的 count 等於兩個孩子 count 的和；葉節點 count 是該值的頻率。</li>
+<li><code>kth_smallest</code> 前必須保證 <code>1 &lt;= k &lt;= root.count</code>。</li>
+<li><code>merge_trees</code> 修改第一棵樹；合併後不可再把第二個 root 當獨立版本。</li>
+</ul>
+
+<pre><code class="lang-cpp">#include &lt;stdexcept&gt;
+#include &lt;vector&gt;
+
+using std::vector;
+
+class DynamicFrequencySegmentTree {
+public:
+    DynamicFrequencySegmentTree(int minimum_value, int maximum_value)
+        : minimum_value_(minimum_value), maximum_value_(maximum_value) {
+        nodes_.push_back(Node{});
+    }
+
+    void add_value(int&amp; root, int value, int delta) {
+        if (value &lt; minimum_value_ || value &gt; maximum_value_) {
+            throw std::out_of_range("value is outside the domain");
+        }
+        add_value_impl(root, minimum_value_, maximum_value_, value, delta);
+    }
+
+    int kth_smallest(int root, int k) const {
+        if (root == 0 || k &lt; 1 || k &gt; nodes_[root].count) {
+            throw std::out_of_range("k is outside the multiset size");
+        }
+        return kth_smallest_impl(root, minimum_value_, maximum_value_, k);
+    }
+
+    int merge_trees(int first_root, int second_root) {
+        return merge_impl(
+            first_root, second_root, minimum_value_, maximum_value_);
+    }
+
+private:
+    struct Node {
+        int left_child = 0;
+        int right_child = 0;
+        int count = 0;
+    };
+
+    int create_node() {
+        nodes_.push_back(Node{});
+        return static_cast&lt;int&gt;(nodes_.size()) - 1;
+    }
+
+    int node_count(int node_index) const {
+        return node_index == 0 ? 0 : nodes_[node_index].count;
+    }
+
+    void add_value_impl(
+        int&amp; node_index,
+        int value_left,
+        int value_right,
+        int value,
+        int delta) {
+        if (node_index == 0) {
+            node_index = create_node();
+        }
+        if (value_left == value_right) {
+            nodes_[node_index].count += delta;
+            if (nodes_[node_index].count &lt; 0) {
+                throw std::logic_error("frequency cannot become negative");
+            }
+            return;
+        }
+
+        const int middle = value_left + (value_right - value_left) / 2;
+        if (value &lt;= middle) {
+            int child = nodes_[node_index].left_child;
+            add_value_impl(child, value_left, middle, value, delta);
+            nodes_[node_index].left_child = child;
+        } else {
+            int child = nodes_[node_index].right_child;
+            add_value_impl(child, middle + 1, value_right, value, delta);
+            nodes_[node_index].right_child = child;
+        }
+        nodes_[node_index].count =
+            node_count(nodes_[node_index].left_child) +
+            node_count(nodes_[node_index].right_child);
+    }
+
+    int kth_smallest_impl(
+        int node_index,
+        int value_left,
+        int value_right,
+        int k) const {
+        if (value_left == value_right) {
+            return value_left;
+        }
+        const int left_child = nodes_[node_index].left_child;
+        const int left_count = node_count(left_child);
+        const int middle = value_left + (value_right - value_left) / 2;
+        if (left_count &gt;= k) {
+            return kth_smallest_impl(left_child, value_left, middle, k);
+        }
+        return kth_smallest_impl(
+            nodes_[node_index].right_child,
+            middle + 1,
+            value_right,
+            k - left_count);
+    }
+
+    int merge_impl(
+        int first_node,
+        int second_node,
+        int value_left,
+        int value_right) {
+        if (first_node == 0) {
+            return second_node;
+        }
+        if (second_node == 0) {
+            return first_node;
+        }
+        if (value_left == value_right) {
+            nodes_[first_node].count += nodes_[second_node].count;
+            return first_node;
+        }
+
+        const int middle = value_left + (value_right - value_left) / 2;
+        nodes_[first_node].left_child = merge_impl(
+            nodes_[first_node].left_child,
+            nodes_[second_node].left_child,
+            value_left,
+            middle);
+        nodes_[first_node].right_child = merge_impl(
+            nodes_[first_node].right_child,
+            nodes_[second_node].right_child,
+            middle + 1,
+            value_right);
+        nodes_[first_node].count =
+            node_count(nodes_[first_node].left_child) +
+            node_count(nodes_[first_node].right_child);
+        return first_node;
+    }
+
+    int minimum_value_;
+    int maximum_value_;
+    vector&lt;Node&gt; nodes_;
+};</code></pre>
+
+<div class="callout idea"><b>為什麼孩子索引要先複製再寫回？</b>
+<p><code>create_node()</code> 可能讓 vector 擴容，使指向 vector 元素內欄位的 reference 失效。
+所以更新時先把孩子索引複製到局部變數，遞迴後再寫回。這是 vector 節點池常見的隱蔽 bug。</p></div>
+
+<h3>複雜度與適用時機：如何辨識題型</h3>
+
+<div class="tbl-wrap"><table>
+<thead><tr><th>操作</th><th>時間</th><th>額外空間</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>插入／刪除一個值</td><td>\(O(\log V)\)</td><td>最多 \(O(\log V)\) 新節點</td><td>值域每層折半</td></tr>
+<tr><td>第 k 小／prefix 導航</td><td>\(O(\log V)\)</td><td>\(O(\log V)\) 遞迴堆疊</td><td>每層只走一個孩子</td></tr>
+<tr><td>外部二分 + query</td><td>\(O(\log^2 V)\)</td><td>依 query 實作</td><td>試 log 次，每次查 log</td></tr>
+<tr><td>q 次動態更新</td><td>\(O(q\log V)\)</td><td>安全上界 \(O(q\log V)\)</td><td>每次一條根到葉路徑</td></tr>
+<tr><td>一批破壞式合併</td><td>常見總計 \(O(n\log V)\)</td><td>沿用既有節點</td><td>用總動態節點數攤還</td></tr>
+</tbody></table></div>
+
+<div class="callout when"><b>看到什麼訊號時該想到它？</b>
+<ul>
+<li>「排名、第 k 小、第 k 大、中位數、比 x 小的有幾個」：想到權值化。</li>
+<li>座標到 \(10^9\) 或 \(10^{18}\)，操作只有 \(10^5\)：比較座標壓縮與動態開點。</li>
+<li>「第一個 prefix 達標」「第 k 個仍存活的位置」：檢查能否樹上導航。</li>
+<li>每個原樹節點要統計整個子樹的值域分布：比較線段樹合併與 DSU on tree。</li>
+<li>要保留每次插入後的版本：應使用<a href="12-persistent.html">可持久化線段樹</a>，不是破壞式合併。</li>
+</ul></div>
+
+<h3>常見誤解與除錯</h3>
+
+<ol class="bug-list">
+<li><b>把不同值的種類數當元素數。</b><code>[2,5,5,8]</code> 有 3 種值，但排名要算 4 個元素。</li>
+<li><b>往右時忘記扣 left_count。</b>跳過的左側元素都比右側小，必須從 k 扣掉。</li>
+<li><b>沒有檢查 k。</b>空樹查第 1 小或 4 個元素查第 5 小，會走到空孩子。</li>
+<li><b>刪除不存在的值。</b>count 變負數後，排名判斷會全面失真。</li>
+<li><b>中點 overflow。</b>使用 <code>left + (right - left) / 2</code>；到 \(10^{18}\) 時邊界用 64-bit。</li>
+<li><b>負數仍照抄 prefix sum 導航。</b><code>[5,-10,10]</code> 已證明達標狀態不單調。</li>
+<li><b>合併後繼續修改第二棵樹。</b>破壞式合併會共享／接管節點，舊 root 不再是獨立版本。</li>
+<li><b>節點池容量靠猜。</b>至少用「更新次數 × 最大樹高」估算並留餘裕。</li>
+</ol>
+
+<h3>練習與參考資料</h3>
+
+<div class="problem" data-problem-id="ds-wseg-kth-demo">
+<div class="p-head"><span class="stars s1">★</span><span class="p-title">手算權值線段樹</span><span class="chip">權值化</span></div>
+<p>插入 <code>[4,1,4,7,2]</code>，畫出值域 [1,8] 的非空節點，再手算第 4 小。
+主要練習：重複值計數與往右時更新 k。</p>
+<details><summary>核對答案</summary><p>排序後是 <code>[1,2,4,4,7]</code>，第 4 小是 4。</p></details>
+</div>
+
+<div class="problem" data-problem-id="cses-hotel-queries">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://cses.fi/problemset/task/1143" target="_blank" rel="noopener">CSES Hotel Queries</a><span class="chip">樹上二分</span></div>
+<p>找最左邊容量足夠的旅館。主要練習：節點存區間最大值，依左子樹是否可行導航。</p>
+</div>
+
+<div class="problem" data-problem-id="luogu-p1908">
+<div class="p-head"><span class="stars s2">★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P1908" target="_blank" rel="noopener">洛谷 P1908 逆序對</a><span class="chip">權值統計</span></div>
+<p>先用 BIT，再用權值線段樹各做一次。主要練習：辨認何時兩者同構。</p>
 </div>
 
 <div class="problem" data-problem-id="luogu-p4556">
-<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4556" target="_blank">洛谷 P4556 [Vani有約會] 雨天的尾巴</a><span class="chip">線段樹合併</span><span class="chip">樹上差分</span></div>
-<p>樹上路徑發放物品（多種），問每個節點收到最多的物品種類。</p>
-<details><summary>思路</summary><p>路徑操作 → <b>樹上差分</b>（\(u,v\) 打 +1、\(\mathrm{lca}\) 與其父打 −1，見 <a href="11-tree.html">2.11.2</a>）；「收和」不是數字而是<b>整個值域分布</b> → 每個節點開權值線段樹，DFS 回溯時<b>線段樹合併</b>，順帶維護每棵樹的眾數。差分 + 合併的組合拳，是線段樹合併的招牌應用。</p></details>
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P4556" target="_blank" rel="noopener">洛谷 P4556 雨天的尾巴</a><span class="chip">線段樹合併</span><span class="chip">樹上差分</span></div>
+<p>主要練習：每個節點持有一棵權值線段樹，DFS 回溯時合併並維護眾數。</p>
 </div>
 
 <div class="problem" data-problem-id="luogu-p3960">
-<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3960" target="_blank">洛谷 P3960 [NOIP2017] 列隊</a><span class="chip">動態開點</span><span class="chip">第k個空位</span></div>
-<p>\(n\times m\)（\(10^9\) 級）方陣反覆離隊補位，問每次離隊者編號。</p>
-<details><summary>思路</summary><p>每行只關心「第 k 個<b>還在</b>的位置」：動態開點線段樹（或 BIT+倍增）維護「已刪個數」，樹上二分找第 k 個活著的；行尾與最後一列用 vector 追加。值域巨大但操作稀疏——動態開點的主場。NOIP 壓軸的資料結構代表作。</p></details>
+<div class="p-head"><span class="stars s5">★★★★★</span><a class="p-title" href="https://www.luogu.com.cn/problem/P3960" target="_blank" rel="noopener">洛谷 P3960 列隊</a><span class="chip">動態開點</span><span class="chip">第 k 個空位</span></div>
+<p>主要練習：巨大位置範圍、稀疏刪除，以及找第 k 個仍存在的位置。</p>
 </div>
 
-<div class="callout warn"><b>⚠ 空間紀律</b>
-<p>① 動態開點的 M 要<b>算</b>不要猜：每次插入新開 \(\le \log V\) 個節點 → \(M = q\lceil\log_2 V\rceil\) 再留餘裕。② 線段樹合併的節點會被「吃掉」但不回收，M 按總插入量算。MLE 的動態開點題九成是 M 拍腦袋。</p></div>
+<ul class="reference-list">
+<li><a href="https://cp-algorithms.com/data_structures/segment_tree.html" target="_blank" rel="noopener">cp-algorithms：Segment Tree</a>——補強找第 k 個零與第一個達標位置的樹上下降。</li>
+<li><a href="https://usaco.guide/plat/sparse-segtree" target="_blank" rel="noopener">USACO Guide：Sparse Segment Trees</a>——補強動態開點與空間估算。</li>
+<li><a href="https://usaco.guide/plat/segtree-ext" target="_blank" rel="noopener">USACO Guide：More Applications of Segment Tree</a>——練習 walking on a segment tree。</li>
+<li><a href="https://oi-wiki.org/ds/seg-merge-split/" target="_blank" rel="noopener">OI Wiki：線段樹合併與分裂</a>——補強破壞式合併流程與複雜度。</li>
+<li><a href="https://codeforces.com/edu/course/2/lesson/4" target="_blank" rel="noopener">Codeforces EDU：Segment Tree</a>——用分步課程與題目鞏固基本與進階走法。</li>
+</ul>
 
-<div class="callout when"><b>⏫ 進階去向</b>
-<p>權值線段樹 + 「歷史版本」= 主席樹（<a href="12-persistent.html">2.12</a>）；「維護 max/min 又要區間取 min」→ Segment Tree Beats（<a href="13-expert.html">2.13.1</a>）；「修改有存活區間」→ 線段樹分治（<a href="13-expert.html">2.13.2</a>）。</p></div>
+<h3>李超樹在這張地圖的位置</h3>
+<p>李超樹也使用區間二分成樹的外形，但節點存的是函數，不是頻率。它處理「動態加入直線／線段，
+查某個 x 的最小值或最大值」，需要另外理解中點比較與兩條直線至多交一次，不能直接把 count
+欄位換掉就使用。可先掌握本頁四個正交升級，再到<a href="13-expert.html">專家專題</a>深入。</p>
+
+<div class="callout idea"><b>你現在應該記得什麼</b>
+<ul>
+<li>權值化把座標從元素位置改成數值；count 是值域內的元素總數。</li>
+<li>動態開點只建立更新路徑；離線時要先比較通常更省的座標壓縮。</li>
+<li>樹上二分每層排除半棵樹，把常見 \(O(\log^2 n)\) 降成 \(O(\log n)\)。</li>
+<li>線段樹合併只在兩邊節點都存在時深入，總工作常由 \(O(n\log V)\) 個節點界住。</li>
+<li>最常見陷阱是重複值沒計數、往右忘記扣 k、負數破壞單調性與誤用合併後的舊 root。</li>
+</ul></div>
 
 <div class="pagenav">
 <a class="prev" href="06-segment-tree.html"><span class="dir">← 上一節</span>2.6 線段樹基礎</a>

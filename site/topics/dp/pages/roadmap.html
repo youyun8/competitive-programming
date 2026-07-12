@@ -58,6 +58,24 @@
 <button id="menuBtn" aria-label="開啟目錄" aria-expanded="false">☰</button>
 
 <main>
+
+<aside class="beginner-guide" aria-label="本頁初學者閱讀指南">
+  <div class="beginner-guide-head">
+    <span aria-hidden="true">🧭</span>
+    <div><b>初學者閱讀指南</b><small>學習路線圖</small></div>
+  </div>
+  <h3>這頁要解決什麼問題？</h3>
+  <p><b>先問：</b>暴力遞迴會重複計算哪些相同子問題？要記住哪些資訊，才能讓未來決策不需要回頭看完整歷史？</p>
+  <p>本頁聚焦「四階段學習計畫，每階段附代表題與畢業檢定」。先在紙上用 3～8 個元素走一次，再對照正文的公式與程式碼。</p>
+  <p><b>暴力做法的代價：</b>直接枚舉所有選擇常形成指數級遞迴樹；同一個剩餘問題會從不同路徑被算很多次。</p>
+  <h3>核心直覺</h3>
+  <p>DP 像填表：每格只保存『未來真正需要知道的摘要』，並從已算好的較小問題轉移過來。</p>
+  <div class="callout proof"><b>閱讀程式前先找不變量</b><p>寫轉移前先用一句完整中文定義 dp 狀態，包含範圍、是否必選、恰好或至多等條件。</p></div>
+  <details class="predict-box"><summary>先猜猜看：什麼時候該想到這頁？</summary>
+    <p>求最優值、方案數或可行性，而且問題能由較小範圍、較少物品或較短前綴組成。</p>
+  </details>
+
+</aside>
 <h2><span class="sec-no">6</span>學習路線圖</h2>
 
 <div class="callout idea"><b>🎯 路線圖的使用方式</b>
@@ -127,6 +145,32 @@
 </ul>
 <p class="small">✅ 畢業檢定：對一道陌生的「恰好 \(k\) 個」最優化題，能先驗證凸性、再完整實作 wqs 二分（含相同值的邊界處理）。</p>
 </div>
+
+<section class="beginner-recap" aria-label="本頁複習與除錯">
+  <h3>常見誤解與除錯順序</h3>
+  <ol class="bug-list"><li>狀態定義少了條件，導致不同歷史被錯誤合併。</li>
+<li>初始化把不可達狀態設成 0，讓不存在的方案參與轉移。</li>
+<li>迴圈順序與轉移依賴相反，讀到本輪剛更新的值或尚未計算的值。</li></ol>
+  <p><b>最小測資順序：</b>先測空集合或最短輸入，再測單一元素、全部相同、嚴格遞增／遞減、
+  重複值與最大邊界；若答案可能累加，另外檢查 32-bit overflow。</p>
+  <h3>複雜度與適用時機</h3>
+  <p>不要只記正文最後的 Big-O。請把它拆成「狀態／節點／候選數量 × 每次轉移或操作成本」，
+  再代入題目的最大資料範圍。若乘積超過時間預算，就回頭找是否重算、能否排序、離線、
+  壓縮狀態或使用更合適的資料結構。</p>
+  <h3>參考資料</h3>
+  <ul class="reference-list"><li><a href="https://usaco.guide/gold/intro-dp" target="_blank" rel="noopener">USACO Guide：Introduction to DP</a>——補強狀態與轉移的入門推導。</li>
+<li><a href="https://cp-algorithms.com/dynamic_programming/intro-to-dp.html" target="_blank" rel="noopener">cp-algorithms：Introduction to DP</a>——比較記憶化與遞推。</li>
+<li><a href="https://atcoder.jp/contests/dp/tasks" target="_blank" rel="noopener">AtCoder Educational DP Contest</a>——用一組漸進題目建立 DP 題型辨識。</li></ul>
+  <div class="callout idea"><b>你現在應該記得什麼</b>
+    <ul>
+      <li>本頁主題：四階段學習計畫，每階段附代表題與畢業檢定。</li>
+      <li>看到的題型訊號：求最優值、方案數或可行性，而且問題能由較小範圍、較少物品或較短前綴組成。</li>
+      <li>最重要的不變量：寫轉移前先用一句完整中文定義 dp 狀態，包含範圍、是否必選、恰好或至多等條件。</li>
+      <li>複雜度要從處理的資料量與每次操作成本相乘推回來。</li>
+      <li>先用最小反例驗證直覺，再套模板；模板不是正確性證明。</li>
+    </ul>
+  </div>
+</section>
 
 <div class="pagenav">
 <a class="prev" href="method.html"><span class="dir">← 上一節</span>4. 狀態設計方法論</a>

@@ -364,6 +364,323 @@ GLOBAL_PAGES = {
     "problems": dict(id="problems", path="pages/problems.html"),
 }
 
+# 每頁共用的初學者教學骨架。專屬演算法、公式與範例仍放在 content/；
+# 這裡只提供一致的閱讀入口、除錯流程、題型辨識與可靠延伸資源。
+BEGINNER_META = {
+    "ds": {
+        "question": "資料會被怎樣修改？每次又要查哪一段、哪個集合或哪個排名？",
+        "brute": "若每次操作都重新掃過全部資料，單次通常要 O(n)；操作數也接近 n 時，總時間容易變成 O(n²)。",
+        "intuition": "資料結構的工作，是把上一次已整理好的資訊留下來；下一次只修補受影響的部分，而不是全部重算。",
+        "invariant": "先說清楚每個欄位代表哪一段資料，以及更新前後必須永遠成立的關係。",
+        "errors": [
+            "只背操作模板，卻說不出節點、陣列格或 parent 指標代表什麼。",
+            "混用 0-based、1-based 或閉區間、半開區間，造成 off-by-one。",
+            "只算單次操作，忘記乘上操作次數與節點數，也沒有估算記憶體。",
+        ],
+        "signals": "修改與查詢交錯、需要維護集合關係、區間資訊、排名或動態最值。",
+        "refs": [
+            ("https://cp-algorithms.com/data_structures/segment_tree.html", "cp-algorithms：Segment Tree", "從可合併資訊理解區間資料結構的正式定義與複雜度。"),
+            ("https://usaco.guide/gold/", "USACO Guide Gold", "用分級題目練習資料結構選型。"),
+            ("https://oi-wiki.org/ds/", "OI Wiki 資料結構", "補強中文術語、變形與進階應用。"),
+        ],
+    },
+    "dp": {
+        "question": "暴力遞迴會重複計算哪些相同子問題？要記住哪些資訊，才能讓未來決策不需要回頭看完整歷史？",
+        "brute": "直接枚舉所有選擇常形成指數級遞迴樹；同一個剩餘問題會從不同路徑被算很多次。",
+        "intuition": "DP 像填表：每格只保存『未來真正需要知道的摘要』，並從已算好的較小問題轉移過來。",
+        "invariant": "寫轉移前先用一句完整中文定義 dp 狀態，包含範圍、是否必選、恰好或至多等條件。",
+        "errors": [
+            "狀態定義少了條件，導致不同歷史被錯誤合併。",
+            "初始化把不可達狀態設成 0，讓不存在的方案參與轉移。",
+            "迴圈順序與轉移依賴相反，讀到本輪剛更新的值或尚未計算的值。",
+        ],
+        "signals": "求最優值、方案數或可行性，而且問題能由較小範圍、較少物品或較短前綴組成。",
+        "refs": [
+            ("https://usaco.guide/gold/intro-dp", "USACO Guide：Introduction to DP", "補強狀態與轉移的入門推導。"),
+            ("https://cp-algorithms.com/dynamic_programming/intro-to-dp.html", "cp-algorithms：Introduction to DP", "比較記憶化與遞推。"),
+            ("https://atcoder.jp/contests/dp/tasks", "AtCoder Educational DP Contest", "用一組漸進題目建立 DP 題型辨識。"),
+        ],
+    },
+    "greedy": {
+        "question": "能不能現在做一個局部選擇，而且保證不會害未來失去最佳答案？",
+        "brute": "暴力會枚舉每一步的所有選擇，形成龐大決策樹；貪心想證明其中大多數分支永遠不必探索。",
+        "intuition": "貪心不是『看起來最好就選』，而是證明某個最佳答案可以被交換成包含目前選擇，且不會變差。",
+        "invariant": "每做一次選擇後，都要說清楚剩餘問題仍保留什麼性質，以及被丟掉的候選人為何不可能更好。",
+        "errors": [
+            "只憑直覺挑最大或最小，沒有交換論證、領先論證或反證。",
+            "排序鍵選錯，或忘記相同主鍵時的 tie-break 會影響答案。",
+            "只測隨機資料，沒有刻意構造讓局部最佳與全域最佳衝突的小反例。",
+        ],
+        "signals": "排序後逐一決策、要求字典序最小、選最多活動、成本可交換比較，或可撤銷最差選擇。",
+        "refs": [
+            ("https://cp-algorithms.com/schedules/schedule-with-completion-duration.html", "cp-algorithms：Scheduling with Deadlines", "觀察排序、集合與貪心決策如何配合。"),
+            ("https://usaco.guide/silver/greedy-sorting", "USACO Guide：Greedy with Sorting", "練習從排序鍵建立貪心直覺。"),
+            ("https://cses.fi/problemset/list/", "CSES Problem Set", "用 Sorting and Searching 類題目練習可證明的局部選擇。"),
+        ],
+    },
+    "strings": {
+        "question": "字串比較中有哪些前綴、後綴或子串資訊被反覆重算？失配後能否利用已知結構跳過位置？",
+        "brute": "從每個起點重新逐字比較，最壞會反覆檢查相同字元，讓長字串退化到 O(nm) 或 O(n²)。",
+        "intuition": "字串演算法的核心常是記住『已經匹配了多少』或『哪些片段相同』，失敗時不必完全從零開始。",
+        "invariant": "先固定下標制與陣列定義；每個 pi、z、fail、len 或 link 值都必須能用一句話精確描述。",
+        "errors": [
+            "0-based 與 1-based 公式混用，尤其是長度、右端點與回退位置。",
+            "把子串和子序列混為一談，或忘記空字串、單字元與全部相同字元。",
+            "只背建表程式，無法手算一個短字串，因此失配時不知道該跳去哪裡。",
+        ],
+        "signals": "大量模式匹配、重複子串、border、週期、迴文、前綴統計或字典序比較。",
+        "refs": [
+            ("https://cp-algorithms.com/string/prefix-function.html", "cp-algorithms：Prefix Function", "從 KMP 的 prefix function 建立失配跳轉與線性分析直覺。"),
+            ("https://usaco.guide/adv/string-search", "USACO Guide：String Searching", "補強匹配演算法與題目選型。"),
+            ("https://oi-wiki.org/string/", "OI Wiki 字串", "補強中文術語、圖示與進階結構。"),
+        ],
+    },
+}
+
+# 48 個策略頁各自的最小手算。這些例子刻意很小，讓讀者能在看模板前先走完一次。
+MINI_TRACES = {
+    ("ds", "s01"): (
+        "<li>陣列 [3,1,4,2] 的前綴和依序是 0,3,4,8,10。</li>"
+        "<li>區間 [2,4] 的和不用重加三個數，只算 10-3=7。</li>"
+        "<li>讀者應理解：預處理保存了從開頭累積的重工。</li>"
+    ),
+    ("ds", "s02"): (
+        "<li>依序讀 [2,1,4,3]；找下一個更大值時，堆疊先放 2。</li>"
+        "<li>1 不可能回答 2，保留；4 到來時連續彈出 1、2，兩者答案都是 4。</li>"
+        "<li>每個元素只進出一次，這就是均攤 O(n) 的來源。</li>"
+    ),
+    ("ds", "s03"): (
+        "<li>串流加入 [5,1,8,3]；小根堆可隨時取目前最小值 1。</li>"
+        "<li>若要中位數，左半用大根堆 [3,1]，右半用小根堆 [5,8]。</li>"
+        "<li>兩堆大小差至多 1，中位數便在堆頂。</li>"
+    ),
+    ("ds", "s04"): (
+        "<li>初始 {1},{2},{3},{4}；合併 1-2 後 parent[2]=1。</li>"
+        "<li>再合併 2-3，find(2) 先找到根 1，因此把 3 接到 1。</li>"
+        "<li>查 1 與 3 時根相同，表示兩者已由傳遞關係連通。</li>"
+    ),
+    ("ds", "s05"): (
+        "<li>對 [2,1,3,4] 建 BIT；tree[4] 管整段 [1,4]，tree[3] 只管 [3,3]。</li>"
+        "<li>查 prefix(3) 先取 tree[3]=3，再跳到 tree[2]=3，得到 6。</li>"
+        "<li>每次用 lowbit 刪掉最右側一段已統計範圍。</li>"
+    ),
+    ("ds", "s06"): (
+        "<li>陣列 [2,1,3,4] 的根存總和 10，左右孩子分別存 3、7。</li>"
+        "<li>查 [2,4] 時拆成葉 [2,2] 與完整節點 [3,4]，得到 1+7。</li>"
+        "<li>區間加 [1,2]+5 時先在 [1,2] 記 lazy，不必立刻改兩個葉。</li>"
+    ),
+    ("ds", "s07"): (
+        "<li>[2,5,5,8] 改用值域計數後，左半 [1,5] 的 count 是 3。</li>"
+        "<li>查第 3 小先往左；跳過 [1,3] 的 1 個數後，把 k 改成 2。</li>"
+        "<li>最後到葉 5；完整四功能 trace 見本頁正文。</li>"
+    ),
+    ("ds", "s08"): (
+        "<li>三個點 (1,3),(2,1),(3,2) 依 x 排序後，x 維度已由掃描順序處理。</li>"
+        "<li>掃到每個點時，用 BIT 查目前 y 以下有幾點，再把自己的 y 加入。</li>"
+        "<li>離線的意思是先重排詢問，讓一個維度不再需要資料結構維護。</li>"
+    ),
+    ("ds", "s09"): (
+        "<li>Treap 中鍵值 [1,3,5] 要插入 4，先 split 成 ≤3 與 >3。</li>"
+        "<li>得到 [1,3]、[5]，把新節點 4 放中間再 merge。</li>"
+        "<li>BST 順序由鍵值維持，樹高則由隨機 priority 維持。</li>"
+    ),
+    ("ds", "s10"): (
+        "<li>n=8、塊長約 3，可分 [1..3]、[4..6]、[7..8]。</li>"
+        "<li>查 [2,7]：左右零散位置逐個算，中間完整塊直接讀摘要。</li>"
+        "<li>零散最多 O(√n)，完整塊也最多 O(√n)。</li>"
+    ),
+    ("ds", "s11"): (
+        "<li>樹邊 1-2、1-3、3-4；root=1 時 depth 為 0,1,1,2。</li>"
+        "<li>LCA(2,4) 先把 4 提到深度 1，再一起上跳，於節點 1 相遇。</li>"
+        "<li>樹上技巧常先把路徑拆成少數祖先區段，再交給線性資料結構。</li>"
+    ),
+    ("ds", "s12"): (
+        "<li>版本 0 的 [1,4] 全為 0；把位置 3 加一得到版本 1。</li>"
+        "<li>只複製根、[3,4]、[3,3] 三個路徑節點，其餘節點與版本 0 共用。</li>"
+        "<li>每次修改只新增 O(log n) 節點，舊版本仍可查詢。</li>"
+    ),
+    ("ds", "s13"): (
+        "<li>一條邊在時間 2～4 存活，就把它放進覆蓋 [2,4] 的時間線段樹節點。</li>"
+        "<li>DFS 進入節點時 union，離開時 rollback，葉子即該時間的圖。</li>"
+        "<li>抽象重點：把難以刪除的操作改成可撤銷的加入。</li>"
+    ),
+    ("dp", "s01"): (
+        "<li>爬 4 階：dp[0]=1，dp[1]=1。</li>"
+        "<li>dp[2]=dp[1]+dp[0]=2，dp[3]=3，dp[4]=5。</li>"
+        "<li>每格代表到達該位置的方法數，來源只可能是前 1 或前 2 階。</li>"
+    ),
+    ("dp", "s02"): (
+        "<li>2×3 網格中，dp[row][column] 表示走到該格的方法數。</li>"
+        "<li>第一列與第一欄都只有 1 種；右下格由上方 1 與左方 2 相加得 3。</li>"
+        "<li>先畫箭頭確認每格依賴誰，再決定迴圈順序。</li>"
+    ),
+    ("dp", "s03"): (
+        "<li>容量 5，物品 (重量2,價值3)、(重量3,價值4)。</li>"
+        "<li>0/1 背包倒序更新：第二件加入後 dp[5]=dp[2]+4=7。</li>"
+        "<li>若正序，第二件可能在同一輪被重複使用，會錯變完全背包。</li>"
+    ),
+    ("dp", "s04"): (
+        "<li>石堆 [1,2,3]；長度 2 的成本是 merge(1,2)=3、merge(2,3)=5。</li>"
+        "<li>整段 [1,3] 枚舉最後切點：3+總和6 或 5+總和6。</li>"
+        "<li>取較小得 9；區間 DP 通常依區間長度由短到長填。</li>"
+    ),
+    ("dp", "s05"): (
+        "<li>比較 \"ab\" 與 \"ac\"；dp[i][j] 是兩個前綴的 LCS 長度。</li>"
+        "<li>a=a，所以 dp[1][1]=1；b≠c，dp[2][2]=max(dp[1][2],dp[2][1])=1。</li>"
+        "<li>雙序列 DP 的兩個座標分別代表各自看了多少字元。</li>"
+    ),
+    ("dp", "s06"): (
+        "<li>股價 [3,1,4]；每天只需記「手上有股票」與「手上沒股票」兩種狀態。</li>"
+        "<li>第 2 天持有=max(原持有 -3, 昨天空手0-1)=-1。</li>"
+        "<li>第 3 天空手=max(原空手0, 昨天持有-1+4)=3。</li>"
+    ),
+    ("dp", "s07"): (
+        "<li>三個工作用 mask 的三個 bit 表示是否完成；000 是空集合。</li>"
+        "<li>從 001 可加入工作 2 或 3，分別到 011、101。</li>"
+        "<li>狀態數是 2³=8；每個 bit 都有明確語意才不會轉移錯位。</li>"
+    ),
+    ("dp", "s08"): (
+        "<li>樹 1 連 2、3；每點權重為 5、4、3，不能同時選相鄰點。</li>"
+        "<li>選 1 時孩子都不能選，值 5；不選 1 時可選 2、3，值 7。</li>"
+        "<li>父節點狀態決定孩子允許哪些狀態，後序 DFS 才能先取得孩子答案。</li>"
+    ),
+    ("dp", "s09"): (
+        "<li>計算 0～25 中不含數字 2 的個數，從十位開始逐位決定。</li>"
+        "<li>若目前位選得比上界小，tight 變 false，後面可自由選 0～9。</li>"
+        "<li>若仍貼住上界，下一位最多只能選上界對應數字。</li>"
+    ),
+    ("dp", "s10"): (
+        "<li>擲公平硬幣直到第一次正面；設期望次數為 E。</li>"
+        "<li>每次一定先擲 1 次；反面機率 1/2 時又回到同一狀態。</li>"
+        "<li>E=1+(1/2)E，解得 E=2；先列狀態方程再移項。</li>"
+    ),
+    ("dp", "s11"): (
+        "<li>DAG 有 1→2、1→3、2→4、3→4。</li>"
+        "<li>依拓撲序 1,2,3,4 推最長路，dp[4] 從 dp[2]+1、dp[3]+1 取大。</li>"
+        "<li>有環時無法直接排依賴，需先縮 SCC 或改用其他模型。</li>"
+    ),
+    ("dp", "s12"): (
+        "<li>轉移只會看前 3 個 dp 值時，不必每格重新掃三個候選。</li>"
+        "<li>單調佇列保留可能成為最大值的索引；新值進來時淘汰尾端較差者。</li>"
+        "<li>優化不改狀態定義，只加速同一個轉移中的候選搜尋。</li>"
+    ),
+    ("dp", "s13"): (
+        "<li>2×3 棋盤逐格掃描時，只需記住掃描線上兩格是否已有連接。</li>"
+        "<li>處理下一格後，把舊輪廓左移並加入新局部狀態。</li>"
+        "<li>輪廓 DP 把整個已處理區域壓成邊界摘要，而不是保存完整圖形。</li>"
+    ),
+    ("greedy", "s01"): (
+        "<li>工作時長 [3,1,2]；若目標減少總等待，排序成 [1,2,3]。</li>"
+        "<li>等待時間是 0+1+3=4；原順序則是 0+3+4=7。</li>"
+        "<li>短工作放前面，能少被更多後續工作重複等待。</li>"
+    ),
+    ("greedy", "s02"): (
+        "<li>活動 [1,3]、[2,5]、[4,6]，按結束時間排序。</li>"
+        "<li>先選 [1,3]，跳過重疊的 [2,5]，再選 [4,6]，共 2 個。</li>"
+        "<li>最早結束留下最大的後續可用時間。</li>"
+    ),
+    ("greedy", "s03"): (
+        "<li>兩工作 A、B 若排 AB，局部成本為某個式子 C(AB)。</li>"
+        "<li>再算交換後 C(BA)，把共同項消掉，只比較剩下的不等式。</li>"
+        "<li>若所有相鄰逆序都能交換不變差，排序規則便有證明。</li>"
+    ),
+    ("greedy", "s04"): (
+        "<li>期限內暫時接受工作時長 [2,1,3]；總時間超標時反悔。</li>"
+        "<li>最大堆彈出目前最耗時的 3，保留 2、1。</li>"
+        "<li>反悔不是隨機撤銷，而是撤銷最能釋放資源的既有選擇。</li>"
+    ),
+    ("greedy", "s05"): (
+        "<li>合併重量 [1,2,6]；先合 1+2=3，再合 3+6=9，總成本 12。</li>"
+        "<li>若先合 2+6=8，再合 1+8=9，總成本 17。</li>"
+        "<li>小值會被重複計入，越早合併越能控制總成本。</li>"
+    ),
+    ("greedy", "s06"): (
+        "<li>從 \"1432\" 刪 1 位求最小；讀到 3 時，前面的 4 比 3 大。</li>"
+        "<li>刪掉 4 得 \"132\"；若刪其他位置，第一個不同位會更大。</li>"
+        "<li>字典序問題優先保住更小的高位，單調堆疊負責反悔。</li>"
+    ),
+    ("greedy", "s07"): (
+        "<li>把 [1,7,9] 全移到同一位置，選中位數 7，距離和 6+0+2=8。</li>"
+        "<li>選平均附近 6 時成本 5+1+3=9。</li>"
+        "<li>絕對值距離的斜率在中位數左右改變符號，因此中位數最優。</li>"
+    ),
+    ("greedy", "s08"): (
+        "<li>三點邊權：AB=1、BC=2、AC=5。</li>"
+        "<li>Kruskal 先選 AB、BC，三點已連通，跳過形成環且更貴的 AC。</li>"
+        "<li>每一步選跨越目前連通塊的最便宜安全邊。</li>"
+    ),
+    ("greedy", "s09"): (
+        "<li>期限 1、2、2 的工作收益為 5、4、3。</li>"
+        "<li>按收益由大到小，DSU 找不超過期限的最晚空位。</li>"
+        "<li>資料結構只加速『下一個可用位置』，貪心順序仍需獨立證明。</li>"
+    ),
+    ("greedy", "s10"): (
+        "<li>在位置 [1,2,8] 放 2 個基地，猜最小距離至少 5。</li>"
+        "<li>從 1 開始貪心放下一個最早可行位置 8，成功。</li>"
+        "<li>若距離 8 失敗，所有更大的距離也失敗，因此答案可二分。</li>"
+    ),
+    ("greedy", "s11"): (
+        "<li>先在三個元素的小集合列出所有可行子集，檢查加入順序是否影響可行性。</li>"
+        "<li>若較小獨立集總能從較大獨立集補一個元素，才具有擬陣交換性。</li>"
+        "<li>專家級貪心先辨認結構定理，不能從普通排序模板硬猜。</li>"
+    ),
+    ("strings", "s01"): (
+        "<li>字串 \"abcd\" 用 base 多項式建立前綴 hash。</li>"
+        "<li>比較子串 \"bc\" 與另一段時，用兩個前綴值相減並校正次方。</li>"
+        "<li>O(1) 比較來自預先保存所有前綴貢獻；碰撞風險仍需雙 hash 或核對。</li>"
+    ),
+    ("strings", "s02"): (
+        "<li>模式 \"abab\" 的最長真前後綴長度依序是 0,0,1,2。</li>"
+        "<li>匹配到 \"aba\" 後失配，不必退回開頭，跳到長度 1 的 border。</li>"
+        "<li>fail/pi 保存的是可重用的已匹配前綴。</li>"
+    ),
+    ("strings", "s03"): (
+        "<li>字串 \"ababa\" 的 Z 值是 [5,0,3,0,1]。</li>"
+        "<li>Z[2]=3 表示從位置 2 開始的 \"aba\" 與整串前綴相同。</li>"
+        "<li>Z-box 讓落在已知匹配區間內的位置先繼承資訊，再向外擴展。</li>"
+    ),
+    ("strings", "s04"): (
+        "<li>字串 \"aba\" 以 b 為中心可向兩側擴 1，迴文半徑覆蓋整串。</li>"
+        "<li>處理新中心時，先利用對稱位置的已知半徑，再檢查邊界外字元。</li>"
+        "<li>Manacher 省掉每個中心重複比較已知相同的內部區域。</li>"
+    ),
+    ("strings", "s05"): (
+        "<li>插入 \"cat\"、\"car\"；根→c→a 的兩個節點被共用。</li>"
+        "<li>第三個字元才分成 t 與 r；查 \"cap\" 時在 p 邊失敗。</li>"
+        "<li>Trie 把共同前綴只存一次，每走一條邊就消耗一個字元。</li>"
+    ),
+    ("strings", "s06"): (
+        "<li>模式 \"he\"、\"she\" 建成 Trie；處理 \"she\" 時走 s→h→e。</li>"
+        "<li>h 節點失配後可沿 fail 接到根的 h；e 節點因此也能報告 \"he\"。</li>"
+        "<li>fail 邊讓多模式匹配共享失配後仍有用的後綴。</li>"
+    ),
+    ("strings", "s07"): (
+        "<li>\"aba\" 的後綴是 \"aba\"、\"ba\"、\"a\"。</li>"
+        "<li>排序後為 \"a\"、\"aba\"、\"ba\"，所以 SA=[3,1,2]（1-based）。</li>"
+        "<li>倍增法先按 1 字元排名，再按 2、4、8 字元排名。</li>"
+    ),
+    ("strings", "s08"): (
+        "<li>依序加入 \"a\"、\"b\"、\"a\"；SAM 每步新增代表所有新後綴的狀態。</li>"
+        "<li>最後一步新增的不同子串是 \"a\"、\"ba\"、\"aba\" 中尚未出現者。</li>"
+        "<li>狀態代表 endpos 相同的一群子串，不是單一子串。</li>"
+    ),
+    ("strings", "s09"): (
+        "<li>讀 \"ababa\" 時，本質不同迴文依序出現 a、b、aba、bab、ababa。</li>"
+        "<li>每加入一字元，只可能新增一個以目前位置結尾的最長新迴文。</li>"
+        "<li>fail 指向目前迴文的最長真迴文後綴。</li>"
+    ),
+    ("strings", "s10"): (
+        "<li>環狀字串 \"baca\" 的旋轉有 baca、acab、caba、abac。</li>"
+        "<li>比較候選起點時，一旦某位置較大，就能批量淘汰一段不可能起點。</li>"
+        "<li>最小表示答案是 \"abac\"，起點在最後一個 a。</li>"
+    ),
+    ("strings", "s11"): (
+        "<li>先用 \"ababa\" 列出所有 border、不同子串與迴文，觀察同一資訊在不同結構中的表示。</li>"
+        "<li>例如 SAM 擅長一般子串，PAM 擅長迴文；不要只因名稱相似就混用。</li>"
+        "<li>專家題通常是把自動機狀態再接 DP、線段樹或樹上統計。</li>"
+    ),
+}
+
 
 def rel(current_path, target_path):
     """回傳從 current_path 所在目錄到 target_path 的相對路徑（皆為相對於 site/ 根目錄的路徑）。"""
@@ -439,6 +756,90 @@ def render_pagenav(current_path, topic, current_id):
                       (rel(current_path, nxt["path"]), nxt["nav"]))
     parts.append("</div>")
     return "\n".join(parts)
+
+
+def render_beginner_intro(topic, page):
+    """在每個主題頁正文前加入一致但依主題調整的初學者閱讀入口。"""
+    meta = BEGINNER_META[topic["id"]]
+    title = page.get("title", topic["name"])
+    desc = page.get("desc", topic["home_desc"])
+    trace = MINI_TRACES.get((topic["id"], page["id"]))
+    trace_html = ""
+    if trace:
+        trace_html = """
+  <div class="mini-trace">
+    <h3>最小可手算例子</h3>
+    <ol>%s</ol>
+  </div>
+""" % trace
+    return """
+<aside class="beginner-guide" aria-label="本頁初學者閱讀指南">
+  <div class="beginner-guide-head">
+    <span aria-hidden="true">🧭</span>
+    <div><b>初學者閱讀指南</b><small>%s</small></div>
+  </div>
+  <h3>這頁要解決什麼問題？</h3>
+  <p><b>先問：</b>%s</p>
+  <p>本頁聚焦「%s」。%s</p>
+  <p><b>暴力做法的代價：</b>%s</p>
+  <h3>核心直覺</h3>
+  <p>%s</p>
+  <div class="callout proof"><b>閱讀程式前先找不變量</b><p>%s</p></div>
+  <details class="predict-box"><summary>先猜猜看：什麼時候該想到這頁？</summary>
+    <p>%s</p>
+  </details>
+%s
+</aside>
+""" % (
+        title,
+        meta["question"],
+        desc,
+        "先在紙上用 3～8 個元素走一次，再對照正文的公式與程式碼。",
+        meta["brute"],
+        meta["intuition"],
+        meta["invariant"],
+        meta["signals"],
+        trace_html,
+    )
+
+
+def render_beginner_recap(topic, page):
+    """在每頁正文後加入除錯、自我檢查與可靠參考資料。"""
+    meta = BEGINNER_META[topic["id"]]
+    errors = "\n".join("<li>%s</li>" % item for item in meta["errors"])
+    refs = "\n".join(
+        '<li><a href="%s" target="_blank" rel="noopener">%s</a>——%s</li>' % item
+        for item in meta["refs"]
+    )
+    return """
+<section class="beginner-recap" aria-label="本頁複習與除錯">
+  <h3>常見誤解與除錯順序</h3>
+  <ol class="bug-list">%s</ol>
+  <p><b>最小測資順序：</b>先測空集合或最短輸入，再測單一元素、全部相同、嚴格遞增／遞減、
+  重複值與最大邊界；若答案可能累加，另外檢查 32-bit overflow。</p>
+  <h3>複雜度與適用時機</h3>
+  <p>不要只記正文最後的 Big-O。請把它拆成「狀態／節點／候選數量 × 每次轉移或操作成本」，
+  再代入題目的最大資料範圍。若乘積超過時間預算，就回頭找是否重算、能否排序、離線、
+  壓縮狀態或使用更合適的資料結構。</p>
+  <h3>參考資料</h3>
+  <ul class="reference-list">%s</ul>
+  <div class="callout idea"><b>你現在應該記得什麼</b>
+    <ul>
+      <li>本頁主題：%s。</li>
+      <li>看到的題型訊號：%s</li>
+      <li>最重要的不變量：%s</li>
+      <li>複雜度要從處理的資料量與每次操作成本相乘推回來。</li>
+      <li>先用最小反例驗證直覺，再套模板；模板不是正確性證明。</li>
+    </ul>
+  </div>
+</section>
+""" % (
+        errors,
+        refs,
+        page.get("desc", topic["home_desc"]),
+        meta["signals"],
+        meta["invariant"],
+    )
 
 
 SETTINGS_PANEL = """
@@ -701,11 +1102,21 @@ def main():
             out_path = os.path.join(ROOT, page["path"])
             os.makedirs(os.path.dirname(out_path), exist_ok=True)
             if page["id"] == "index":
-                body = build_topic_index_body(topic)
+                body = (
+                    render_beginner_intro(topic, page) +
+                    build_topic_index_body(topic) +
+                    render_beginner_recap(topic, page)
+                )
                 pagenav = render_pagenav(page["path"], topic, page["id"])
                 title, desc = topic["name"], topic["home_desc"]
             else:
                 body = fix_cross_refs(read_frag(topic, page["frag"]), page["path"], topic)
+                if page["id"] != "s07" or topic["id"] != "ds":
+                    body = (
+                        render_beginner_intro(topic, page) +
+                        body +
+                        render_beginner_recap(topic, page)
+                    )
                 pagenav = render_pagenav(page["path"], topic, page["id"])
                 title, desc = page["title"], page["desc"]
             html = render_shell(page["path"], page["id"], title, desc, topic, body, pagenav)
